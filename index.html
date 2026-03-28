@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChambaYa — Encontrá quien lo haga</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --verde: #00C96B;
+  --verde-o: #00A857;
+  --verde-c: #E6FAF1;
+  --naranja: #FF6B2B;
+  --fondo: #F4F6F9;
+  --blanco: #FFFFFF;
+  --texto: #111827;
+  --suave: #6B7280;
+  --borde: #E5E7EB;
+  --sombra: 0 2px 16px rgba(0,0,0,0.08);
+  --sombra-lg: 0 8px 32px rgba(0,0,0,0.14);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Nunito', sans-serif; background: var(--fondo); color: var(--texto); }
+
+/* NAV */
+.navbar {
+  background: var(--blanco);
+  border-bottom: 2px solid var(--borde);
+  padding: 0 48px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--sombra);
+}
+.logo { font-size: 1.6rem; font-weight: 900; color: var(--texto); text-decoration: none; }
+.logo em { color: var(--verde); font-style: normal; }
+.nav-btns { display: flex; gap: 12px; }
+.btn {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: .95rem;
+  padding: 11px 24px;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .2s;
+  display: inline-block;
+}
+.btn-verde { background: var(--verde); color: #fff; }
+.btn-verde:hover { background: var(--verde-o); }
+.btn-outline { background: transparent; border: 2px solid var(--borde); color: var(--texto); }
+.btn-outline:hover { border-color: var(--verde); color: var(--verde); }
+.btn-lg { padding: 16px 36px; font-size: 1.05rem; }
+
+/* HERO */
+.hero {
+  text-align: center;
+  padding: 96px 24px 80px;
+  max-width: 780px;
+  margin: 0 auto;
+}
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--verde-c);
+  border: 1px solid rgba(0,196,107,.3);
+  color: var(--verde-o);
+  padding: 6px 18px;
+  border-radius: 50px;
+  font-size: .82rem;
+  font-weight: 800;
+  margin-bottom: 28px;
+}
+.hero-tag::before {
+  content: '';
+  width: 7px; height: 7px;
+  background: var(--verde);
+  border-radius: 50%;
+  animation: pulse 2s ease infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(1.4)} }
+.hero h1 {
+  font-size: clamp(2.4rem, 6vw, 4.2rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -2px;
+  margin-bottom: 20px;
+}
+.hero h1 span { color: var(--verde); }
+.hero p {
+  font-size: 1.1rem;
+  color: var(--suave);
+  font-weight: 700;
+  max-width: 500px;
+  margin: 0 auto 40px;
+  line-height: 1.65;
+}
+.hero-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+/* COMO FUNCIONA */
+.como {
+  background: var(--blanco);
+  padding: 88px 24px;
+  border-top: 2px solid var(--borde);
+  border-bottom: 2px solid var(--borde);
+}
+.como-inner { max-width: 960px; margin: 0 auto; text-align: center; }
+.section-lbl { font-size: .75rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--verde); margin-bottom: 12px; }
+.section-title { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; letter-spacing: -1px; margin-bottom: 52px; }
+.pasos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+.paso { background: var(--fondo); border-radius: 20px; padding: 36px 24px; text-align: left; transition: transform .2s; }
+.paso:hover { transform: translateY(-4px); }
+.paso-num { width: 36px; height: 36px; background: var(--verde); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: .95rem; margin-bottom: 16px; }
+.paso-icon { font-size: 2rem; margin-bottom: 10px; }
+.paso h3 { font-size: 1.05rem; font-weight: 900; margin-bottom: 8px; }
+.paso p { font-size: .88rem; color: var(--suave); font-weight: 700; line-height: 1.6; }
+
+/* CATEGORÍAS */
+.cats-section { padding: 88px 24px; background: var(--fondo); }
+.cats-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.4fr; gap: 72px; align-items: center; }
+.cats-title { font-size: clamp(2rem, 4vw, 3rem); font-weight: 900; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 16px; }
+.cats-sub { font-size: 1rem; color: var(--suave); font-weight: 700; line-height: 1.65; margin-bottom: 28px; }
+.cats-steps { display: flex; flex-direction: column; gap: 16px; margin-bottom: 36px; }
+.cats-step { display: flex; align-items: center; gap: 14px; font-size: .95rem; font-weight: 700; }
+.step-num { width: 32px; height: 32px; background: var(--verde); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: .88rem; flex-shrink: 0; }
+.carousel-wrap { height: 500px; overflow: hidden; position: relative; mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%); }
+.carousel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.carousel-col { display: flex; flex-direction: column; gap: 12px; }
+.cat-card { background: var(--blanco); border: 1.5px solid var(--borde); border-radius: 16px; padding: 16px; display: flex; align-items: center; gap: 14px; cursor: pointer; transition: all .2s; }
+.cat-card:hover { border-color: var(--verde); background: var(--verde-c); transform: translateY(-2px); box-shadow: var(--sombra); }
+.cat-icon { width: 54px; height: 54px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.7rem; flex-shrink: 0; }
+.cat-name { font-size: .9rem; font-weight: 900; margin-bottom: 3px; }
+.cat-desc { font-size: .75rem; color: var(--suave); font-weight: 700; line-height: 1.4; }
+
+/* TRUST */
+.trust-section { background: var(--blanco); padding: 100px 24px; border-top: 2px solid var(--borde); }
+.trust-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 88px; align-items: center; }
+.trust-img-wrap { position: relative; }
+.trust-img { width: 100%; height: 500px; object-fit: cover; object-position: top; border-radius: 24px; display: block; box-shadow: var(--sombra-lg); }
+.trust-badge { position: absolute; background: #fff; border-radius: 50px; padding: 12px 20px; display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.14); animation: float 3s ease-in-out infinite; }
+.trust-badge-1 { bottom: 110px; left: -28px; animation-delay: 0s; }
+.trust-badge-2 { bottom: 44px; left: 24px; animation-delay: 1.2s; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+.tb-icon { font-size: 1.2rem; }
+.tb-title { font-size: .85rem; font-weight: 900; color: var(--texto); }
+.tb-sub { font-size: .72rem; color: var(--suave); font-weight: 700; }
+.trust-rating { position: absolute; top: 28px; left: -28px; background: #fff; border-radius: 16px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; box-shadow: 0 8px 28px rgba(0,0,0,0.12); animation: float 3s ease-in-out infinite; animation-delay: .6s; }
+.rating-av { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+.rating-num { font-size: 1rem; font-weight: 900; }
+.rating-lbl { font-size: .72rem; color: var(--suave); font-weight: 700; }
+.trust-title { font-size: clamp(2rem, 4vw, 3rem); font-weight: 900; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 40px; }
+.trust-feature { display: flex; align-items: flex-start; gap: 18px; margin-bottom: 28px; }
+.tf-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+.tf-title { font-size: 1rem; font-weight: 900; margin-bottom: 5px; }
+.tf-desc { font-size: .88rem; color: var(--suave); font-weight: 700; line-height: 1.6; }
+
+/* FOOTER */
+.footer { background: #0F172A; padding: 72px 48px 0; }
+.footer-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 48px; padding-bottom: 56px; border-bottom: 1px solid rgba(255,255,255,.1); }
+.footer-logo { font-size: 1.5rem; font-weight: 900; color: #fff; margin-bottom: 12px; }
+.footer-logo em { color: var(--verde); font-style: normal; }
+.footer-desc { font-size: .85rem; font-weight: 700; color: rgba(255,255,255,.5); line-height: 1.65; margin-bottom: 22px; }
+.footer-social { display: flex; gap: 10px; }
+.soc-btn { width: 36px; height: 36px; background: rgba(255,255,255,.08); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .9rem; text-decoration: none; transition: background .2s; cursor: pointer; }
+.soc-btn:hover { background: var(--verde); }
+.footer-col-title { font-size: .8rem; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 18px; }
+.footer-link { display: block; font-size: .85rem; font-weight: 700; color: rgba(255,255,255,.5); text-decoration: none; margin-bottom: 11px; transition: color .2s; cursor: pointer; }
+.footer-link:hover { color: var(--verde); }
+.footer-bottom { max-width: 1100px; margin: 0 auto; padding: 22px 0; display: flex; justify-content: space-between; align-items: center; font-size: .78rem; font-weight: 700; color: rgba(255,255,255,.4); flex-wrap: wrap; gap: 8px; }
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .cats-inner { grid-template-columns: 1fr; gap: 48px; }
+  .carousel-wrap { height: 340px; }
+  .trust-inner { grid-template-columns: 1fr; gap: 56px; }
+  .trust-img { height: 340px; }
+  .trust-badge-1 { left: 8px; }
+  .trust-rating { left: 8px; }
+  .pasos { grid-template-columns: 1fr; }
+  .footer-inner { grid-template-columns: 1fr 1fr; gap: 36px; }
+  .navbar { padding: 0 20px; }
+}
+@media (max-width: 540px) {
+  .footer-inner { grid-template-columns: 1fr; }
+  .footer { padding: 56px 24px 0; }
+  .hero { padding: 72px 20px 60px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="logo">Chamba<em>Ya</em></a>
+  <div class="nav-btns">
+    <a href="login.html" class="btn btn-outline">Entrar</a>
+    <a href="login.html" class="btn btn-verde">Registrarme gratis</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-tag">🇦🇷 La primera plataforma argentina de trabajo</div>
+  <h1>Encontrá quien<br>lo <span>haga</span> hoy.</h1>
+  <p>Publicá lo que necesitás, recibí ofertas de trabajadores verificados y pagá seguro.</p>
+  <div class="hero-btns">
+    <a href="login.html" class="btn btn-verde btn-lg">Necesito ayuda</a>
+    <a href="login.html" class="btn btn-lg" style="background:#fff;border:2px solid var(--borde);color:var(--texto)">Buscar tareas</a>
+  </div>
+</section>
+
+<section class="como">
+  <div class="como-inner">
+    <div class="section-lbl">Proceso</div>
+    <div class="section-title">Tres pasos. Sin vueltas.</div>
+    <div class="pasos">
+      <div class="paso">
+        <div class="paso-num">1</div>
+        <div class="paso-icon">📋</div>
+        <h3>Publicás tu tarea</h3>
+        <p>Describí qué necesitás, agregá fotos y tu presupuesto. Gratis y en 3 minutos.</p>
+      </div>
+      <div class="paso">
+        <div class="paso-num">2</div>
+        <div class="paso-icon">💬</div>
+        <h3>Recibís ofertas privadas</h3>
+        <p>Los taskers te mandan sus cotizaciones. Solo vos las ves. Elegís el mejor.</p>
+      </div>
+      <div class="paso">
+        <div class="paso-num">3</div>
+        <div class="paso-icon">✅</div>
+        <h3>Pagás cuando terminó</h3>
+        <p>Tu plata queda guardada hasta que quedás conforme. Sin riesgos.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cats-section">
+  <div class="cats-inner">
+    <div>
+      <div class="section-lbl">Categorías</div>
+      <h2 class="cats-title">Publicá tu tarea<br>en segundos.</h2>
+      <p class="cats-sub">Ahorrarte horas y resolver todo lo que tenés pendiente en el hogar.</p>
+      <div class="cats-steps">
+        <div class="cats-step"><div class="step-num">1</div><span>Describí qué necesitás</span></div>
+        <div class="cats-step"><div class="step-num">2</div><span>Poné tu presupuesto</span></div>
+        <div class="cats-step"><div class="step-num">3</div><span>Recibí ofertas y elegí el mejor</span></div>
+      </div>
+      <a href="login.html" class="btn btn-verde" style="padding:15px 32px;font-size:1rem;border-radius:50px">Publicar tarea</a>
+    </div>
+    <div class="carousel-wrap">
+      <div class="carousel-grid">
+        <div class="carousel-col" id="col1">
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#E0F2FE,#BAE6FD)">🔧</div><div><div class="cat-name">Plomería</div><div class="cat-desc">Canillas, cañerías y pérdidas</div></div></div>
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#FCE7F3,#FBCFE8)">🎨</div><div><div class="cat-name">Pintura</div><div class="cat-desc">Interior y exterior</div></div></div>
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#D1FAE5,#A7F3D0)">🧹</div><div><div class="cat-name">Limpieza</div><div class="cat-desc">Limpieza profunda del hogar</div></div></div>
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#FFE4E6,#FECDD3)">🛵</div><div><div class="cat-name">Mandados</div><div class="cat-desc">Delivery urgente y trámites</div></div></div>
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#F3E8FF,#E9D5FF)">🔨</div><div><div class="cat-name">Carpintería</div><div class="cat-desc">Muebles, puertas y aberturas</div></div></div>
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#D1FAE5,#A7F3D0)">🎯</div><div><div class="cat-name">Marketing</div><div class="cat-desc">Logos, redes y publicidad</div></div></div>
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#E0F2FE,#BAE6FD)">🔧</div><div><div class="cat-name">Plomería</div><div class="cat-desc">Canillas, cañerías y pérdidas</div></div></div>
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#FCE7F3,#FBCFE8)">🎨</div><div><div class="cat-name">Pintura</div><div class="cat-desc">Interior y exterior</div></div></div>
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#D1FAE5,#A7F3D0)">🧹</div><div><div class="cat-name">Limpieza</div><div class="cat-desc">Limpieza profunda del hogar</div></div></div>
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#FFE4E6,#FECDD3)">🛵</div><div><div class="cat-name">Mandados</div><div class="cat-desc">Delivery urgente y trámites</div></div></div>
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#F3E8FF,#E9D5FF)">🔨</div><div><div class="cat-name">Carpintería</div><div class="cat-desc">Muebles, puertas y aberturas</div></div></div>
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#D1FAE5,#A7F3D0)">🎯</div><div><div class="cat-name">Marketing</div><div class="cat-desc">Logos, redes y publicidad</div></div></div>
+        </div>
+        <div class="carousel-col" id="col2">
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#FEF9C3,#FEF08A)">⚡</div><div><div class="cat-name">Electricidad</div><div class="cat-desc">Instalaciones y tableros</div></div></div>
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#E0E7FF,#C7D2FE)">📦</div><div><div class="cat-name">Mudanzas</div><div class="cat-desc">Embalaje y transporte</div></div></div>
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#FEF3C7,#FDE68A)">🌿</div><div><div class="cat-name">Jardín</div><div class="cat-desc">Poda y corte de pasto</div></div></div>
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#E0F2FE,#BAE6FD)">🖥️</div><div><div class="cat-name">Tecnología</div><div class="cat-desc">Soporte técnico</div></div></div>
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#FEF9C3,#FEF08A)">📸</div><div><div class="cat-name">Fotografía</div><div class="cat-desc">Eventos y productos</div></div></div>
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#FCE7F3,#FBCFE8)">✨</div><div><div class="cat-name">Algo más</div><div class="cat-desc">Cualquier tarea</div></div></div>
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#FEF9C3,#FEF08A)">⚡</div><div><div class="cat-name">Electricidad</div><div class="cat-desc">Instalaciones y tableros</div></div></div>
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#E0E7FF,#C7D2FE)">📦</div><div><div class="cat-name">Mudanzas</div><div class="cat-desc">Embalaje y transporte</div></div></div>
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#FEF3C7,#FDE68A)">🌿</div><div><div class="cat-name">Jardín</div><div class="cat-desc">Poda y corte de pasto</div></div></div>
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#E0F2FE,#BAE6FD)">🖥️</div><div><div class="cat-name">Tecnología</div><div class="cat-desc">Soporte técnico</div></div></div>
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#FEF9C3,#FEF08A)">📸</div><div><div class="cat-name">Fotografía</div><div class="cat-desc">Eventos y productos</div></div></div>
+          <div class="cat-card"><div class="cat-icon" style="background:linear-gradient(135deg,#FCE7F3,#FBCFE8)">✨</div><div><div class="cat-name">Algo más</div><div class="cat-desc">Cualquier tarea</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="trust-section">
+  <div class="trust-inner">
+    <div class="trust-img-wrap">
+      <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=700&q=80" alt="Usuaria ChambaYa" class="trust-img">
+      <div class="trust-badge trust-badge-1">
+        <span class="tb-icon">👍</span>
+        <div><div class="tb-title">Trabajo terminado</div><div class="tb-sub">hace 2 minutos</div></div>
+      </div>
+      <div class="trust-badge trust-badge-2">
+        <span class="tb-icon">✅</span>
+        <div><div class="tb-title">Pago liberado</div><div class="tb-sub">hace 2 minutos</div></div>
+      </div>
+      <div class="trust-rating">
+        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&q=80" alt="usuario" class="rating-av">
+        <div><div class="rating-num">4.9 ⭐</div><div class="rating-lbl">Calificación general</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="section-lbl">Seguridad</div>
+      <h2 class="trust-title">Tu tranquilidad<br>es lo primero.</h2>
+      <div class="trust-feature">
+        <div class="tf-icon" style="background:#E6FAF1;color:#00A857">💰</div>
+        <div><div class="tf-title">Pagos seguros</div><div class="tf-desc">Tu dinero queda retenido hasta que el trabajo esté terminado y vos estés conforme. Si algo falla, te lo devolvemos.</div></div>
+      </div>
+      <div class="trust-feature">
+        <div class="tf-icon" style="background:#FFF0E8;color:#FF6B2B">⭐</div>
+        <div><div class="tf-title">Calificaciones reales</div><div class="tf-desc">Cada tasker tiene opiniones verificadas de clientes reales. Elegís con información real, no con promesas.</div></div>
+      </div>
+      <div class="trust-feature">
+        <div class="tf-icon" style="background:#EFF6FF;color:#3B82F6">🪪</div>
+        <div><div class="tf-title">Identidad verificada</div><div class="tf-desc">Todos los taskers pasan por verificación de DNI antes de poder ofertar. Sabés con quién estás trabajando.</div></div>
+      </div>
+      <a href="login.html" class="btn btn-verde" style="margin-top:36px;padding:16px 36px;font-size:1rem;border-radius:50px;display:inline-block">
+        Publicar tarea gratis
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div>
+      <div class="footer-logo">Chamba<em>Ya</em></div>
+      <p class="footer-desc">La primera plataforma argentina de tareas del hogar y servicios profesionales.</p>
+      <div class="footer-social">
+        <span class="soc-btn">📘</span>
+        <span class="soc-btn">📸</span>
+        <span class="soc-btn">🐦</span>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Para clientes</div>
+      <a href="#" class="footer-link">Cómo funciona</a>
+      <a href="login.html" class="footer-link">Publicar una tarea</a>
+      <a href="login.html" class="footer-link">Iniciar sesión</a>
+      <a href="#" class="footer-link">Preguntas frecuentes</a>
+    </div>
+    <div>
+      <div class="footer-col-title">Para taskers</div>
+      <a href="login.html" class="footer-link">Registrarme como tasker</a>
+      <a href="#" class="footer-link">Cómo ganar dinero</a>
+      <a href="#" class="footer-link">Categorías de trabajo</a>
+      <a href="#" class="footer-link">Preguntas frecuentes</a>
+    </div>
+    <div>
+      <div class="footer-col-title">ChambaYa</div>
+      <a href="#" class="footer-link">Sobre nosotros</a>
+      <a href="#" class="footer-link">Contacto</a>
+      <a href="#" class="footer-link">Términos y condiciones</a>
+      <a href="#" class="footer-link">Política de privacidad</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 ChambaYa. Hecho con ❤️ en Argentina 🇦🇷</span>
+    <span>Todos los derechos reservados.</span>
+  </div>
+</footer>
+
+<script>
+function initCarousel() {
+  const col1 = document.getElementById('col1');
+  const col2 = document.getElementById('col2');
+  if (!col1 || !col2) return;
+  let p1 = 0, p2 = 0, paused = false;
+  const speed = 0.55;
+  const wrap = document.querySelector('.carousel-wrap');
+  wrap.addEventListener('mouseenter', () => paused = true);
+  wrap.addEventListener('mouseleave', () => paused = false);
+  function h(col) { return col.scrollHeight / 2; }
+  p2 = h(col2) / 2;
+  function tick() {
+    if (!paused) {
+      p1 -= speed;
+      if (Math.abs(p1) >= h(col1)) p1 = 0;
+      col1.style.transform = `translateY(${p1}px)`;
+      p2 += speed;
+      if (p2 >= h(col2)) p2 = 0;
+      col2.style.transform = `translateY(${-h(col2) + p2}px)`;
+    }
+    requestAnimationFrame(tick);
+  }
+  tick();
+}
+window.addEventListener('load', initCarousel);
+</script>
+</body>
+</html>
