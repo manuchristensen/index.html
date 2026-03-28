@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChambaYa — Entrar o registrarse</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+<script>
+  const SUPABASE_URL = 'https://jfcqvxrzloveggntwgie.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpmY3F2eHJ6bG92ZWdnbnR3Z2llIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2NDQxMjcsImV4cCI6MjA5MDIyMDEyN30.LiKYSuce1HorUFa8c_lND0z1y9LV9fFOzUWOTZtBOTU';
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+:root {
+  --verde: #00C96B;
+  --verde-o: #00A857;
+  --verde-c: #E6FAF1;
+  --rojo: #EF4444;
+  --rojo-c: #FEF2F2;
+  --fondo: #F4F6F9;
+  --blanco: #FFFFFF;
+  --texto: #111827;
+  --suave: #6B7280;
+  --borde: #E5E7EB;
+  --sombra-lg: 0 8px 32px rgba(0,0,0,0.14);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Nunito', sans-serif;
+  background: var(--fondo);
+  color: var(--texto);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* NAV */
+.navbar {
+  background: var(--blanco);
+  border-bottom: 2px solid var(--borde);
+  padding: 0 48px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.logo { font-size: 1.6rem; font-weight: 900; color: var(--texto); text-decoration: none; }
+.logo em { color: var(--verde); font-style: normal; }
+.nav-back {
+  font-size: .9rem;
+  font-weight: 800;
+  color: var(--suave);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color .2s;
+}
+.nav-back:hover { color: var(--verde); }
+
+/* MAIN */
+.main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+
+/* AUTH BOX */
+.auth-box {
+  background: var(--blanco);
+  border-radius: 24px;
+  box-shadow: var(--sombra-lg);
+  width: 100%;
+  max-width: 900px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  overflow: hidden;
+  min-height: 560px;
+}
+
+/* PANEL IZQUIERDO */
+.auth-left {
+  background: linear-gradient(135deg, #00C96B 0%, #00A857 100%);
+  padding: 52px 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.auth-left::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 220px; height: 220px;
+  background: rgba(255,255,255,.08);
+  border-radius: 50%;
+}
+.auth-left::after {
+  content: '';
+  position: absolute;
+  bottom: -80px; left: -30px;
+  width: 180px; height: 180px;
+  background: rgba(255,255,255,.06);
+  border-radius: 50%;
+}
+.left-logo {
+  font-size: 1.8rem;
+  font-weight: 900;
+  margin-bottom: 36px;
+  position: relative;
+}
+.left-logo span { opacity: .7; }
+.auth-left h2 {
+  font-size: 1.9rem;
+  font-weight: 900;
+  line-height: 1.15;
+  margin-bottom: 14px;
+  letter-spacing: -.5px;
+  position: relative;
+}
+.auth-left p {
+  font-size: .95rem;
+  opacity: .85;
+  font-weight: 700;
+  line-height: 1.6;
+  margin-bottom: 32px;
+  position: relative;
+}
+.left-features { position: relative; display: flex; flex-direction: column; gap: 14px; }
+.left-feat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: .9rem;
+  font-weight: 700;
+  opacity: .92;
+}
+.left-feat-icon {
+  width: 32px; height: 32px;
+  background: rgba(255,255,255,.2);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+/* PANEL DERECHO */
+.auth-right {
+  padding: 52px 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.auth-right-title {
+  font-size: 1.4rem;
+  font-weight: 900;
+  margin-bottom: 6px;
+  text-align: center;
+}
+.auth-right-sub {
+  font-size: .88rem;
+  color: var(--suave);
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+/* TABS */
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  background: var(--fondo);
+  padding: 4px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+.auth-tab {
+  padding: 10px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: .9rem;
+  cursor: pointer;
+  color: var(--suave);
+  transition: all .2s;
+}
+.auth-tab.on {
+  background: var(--blanco);
+  color: var(--texto);
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+
+/* ALERTA */
+.alert {
+  padding: 11px 14px;
+  border-radius: 10px;
+  font-size: .85rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+  display: flex;
+  gap: 8px;
+}
+.alert-error { background: var(--rojo-c); color: var(--rojo); }
+.alert-ok { background: var(--verde-c); color: var(--verde-o); }
+
+/* GOOGLE BTN */
+.google-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 13px;
+  border: 2px solid var(--borde);
+  border-radius: 12px;
+  background: var(--blanco);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  font-size: .95rem;
+  cursor: pointer;
+  transition: all .2s;
+  margin-bottom: 6px;
+  color: var(--texto);
+}
+.google-btn:hover { border-color: #4285F4; background: #F8FAFF; }
+
+/* DIVIDER */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+  color: var(--suave);
+  font-size: .82rem;
+  font-weight: 700;
+}
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--borde); }
+
+/* FORM */
+.form-group { margin-bottom: 14px; }
+.form-label { display: block; font-size: .85rem; font-weight: 900; margin-bottom: 6px; }
+.form-input {
+  width: 100%;
+  font-family: 'Nunito', sans-serif;
+  font-size: .95rem;
+  font-weight: 700;
+  padding: 12px 15px;
+  border: 2px solid var(--borde);
+  border-radius: 11px;
+  background: var(--blanco);
+  color: var(--texto);
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+  -webkit-appearance: none;
+}
+.form-input:focus {
+  border-color: var(--verde);
+  box-shadow: 0 0 0 3px rgba(0,196,107,.1);
+}
+.form-input::placeholder { color: #B0B7C3; }
+
+/* SUBMIT BTN */
+.btn-submit {
+  width: 100%;
+  background: var(--verde);
+  color: #fff;
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: 1rem;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all .2s;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-submit:hover { background: var(--verde-o); }
+.btn-submit:disabled { opacity: .7; cursor: not-allowed; }
+
+/* SPINNER */
+.spinner {
+  width: 18px; height: 18px;
+  border: 3px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* SWITCH LINK */
+.switch-link {
+  text-align: center;
+  margin-top: 16px;
+  font-size: .85rem;
+  color: var(--suave);
+  font-weight: 700;
+}
+.switch-link button {
+  background: none;
+  border: none;
+  color: var(--verde);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 900;
+  font-size: .85rem;
+  cursor: pointer;
+  padding: 0;
+}
+.switch-link button:hover { text-decoration: underline; }
+
+/* RESPONSIVE */
+@media (max-width: 680px) {
+  .auth-box { grid-template-columns: 1fr; }
+  .auth-left { display: none; }
+  .auth-right { padding: 36px 28px; }
+  .navbar { padding: 0 20px; }
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="logo">Chamba<em>Ya</em></a>
+  <a href="index.html" class="nav-back">← Volver al inicio</a>
+</nav>
+
+<div class="main">
+  <div class="auth-box">
+
+    <!-- PANEL IZQUIERDO -->
+    <div class="auth-left">
+      <div class="left-logo">Chamba<span>Ya</span></div>
+      <h2>Encontrá quien lo haga hoy.</h2>
+      <p>Publicá tu tarea, recibí ofertas de trabajadores verificados y pagá seguro.</p>
+      <div class="left-features">
+        <div class="left-feat">
+          <div class="left-feat-icon">📋</div>
+          <span>Publicá cualquier tarea gratis</span>
+        </div>
+        <div class="left-feat">
+          <div class="left-feat-icon">🔒</div>
+          <span>Las ofertas son privadas — solo las ves vos</span>
+        </div>
+        <div class="left-feat">
+          <div class="left-feat-icon">✅</div>
+          <span>Pagá solo cuando quedás conforme</span>
+        </div>
+        <div class="left-feat">
+          <div class="left-feat-icon">🇦🇷</div>
+          <span>Hecho para Argentina</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL DERECHO -->
+    <div class="auth-right">
+      <div class="auth-right-title" id="auth-title">Bienvenido de vuelta</div>
+      <div class="auth-right-sub" id="auth-sub">Entrá a tu cuenta para continuar</div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab on" id="tab-login" onclick="switchTab('login')">Entrar</button>
+        <button class="auth-tab" id="tab-registro" onclick="switchTab('registro')">Registrarme</button>
+      </div>
+
+      <div id="alert-box"></div>
+
+      <!-- GOOGLE -->
+      <button class="google-btn" onclick="loginGoogle()">
+        <svg width="20" height="20" viewBox="0 0 48 48">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+        Continuar con Google
+      </button>
+
+      <div class="divider">o con tu email</div>
+
+      <!-- FORM LOGIN -->
+      <div id="form-login">
+        <div class="form-group">
+          <label class="form-label">Tu email</label>
+          <input class="form-input" type="email" id="login-email" placeholder="tu@email.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contraseña</label>
+          <input class="form-input" type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <button class="btn-submit" id="btn-login" onclick="doLogin()">Entrar</button>
+        <div class="switch-link">
+          ¿No tenés cuenta?
+          <button onclick="switchTab('registro')">Registrate gratis</button>
+        </div>
+      </div>
+
+      <!-- FORM REGISTRO -->
+      <div id="form-registro" style="display:none">
+        <div class="form-group">
+          <label class="form-label">Tu nombre completo</label>
+          <input class="form-input" type="text" id="reg-nombre" placeholder="Ej: Carlos Rodríguez" autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" type="email" id="reg-email" placeholder="tu@email.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contraseña</label>
+          <input class="form-input" type="password" id="reg-pass" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label class="form-label">¿En qué zona estás?</label>
+          <select class="form-input" id="reg-zona">
+            <option value="" disabled selected>Elegí tu zona</option>
+            <option>CABA</option>
+            <option>GBA Norte</option>
+            <option>GBA Sur</option>
+            <option>GBA Oeste</option>
+            <option>Córdoba Capital</option>
+            <option>Rosario</option>
+            <option>Mendoza</option>
+            <option>Otra ciudad</option>
+          </select>
+        </div>
+        <button class="btn-submit" id="btn-registro" onclick="doRegistro()">Crear cuenta gratis</button>
+        <div class="switch-link">
+          ¿Ya tenés cuenta?
+          <button onclick="switchTab('login')">Entrá</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Si ya está logueado, ir directo a la app
+db.auth.getSession().then(({ data: { session } }) => {
+  if (session) window.location.href = 'app.html';
+});
+
+function switchTab(tab) {
+  const isLogin = tab === 'login';
+  document.getElementById('tab-login').classList.toggle('on', isLogin);
+  document.getElementById('tab-registro').classList.toggle('on', !isLogin);
+  document.getElementById('form-login').style.display = isLogin ? 'block' : 'none';
+  document.getElementById('form-registro').style.display = isLogin ? 'none' : 'block';
+  document.getElementById('auth-title').textContent = isLogin ? 'Bienvenido de vuelta' : 'Creá tu cuenta gratis';
+  document.getElementById('auth-sub').textContent = isLogin ? 'Entrá a tu cuenta para continuar' : 'Es gratis y tarda menos de 1 minuto';
+  document.getElementById('alert-box').innerHTML = '';
+}
+
+async function loginGoogle() {
+  const { error } = await db.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin + '/app.html' }
+  });
+  if (error) showAlert('error', '❌ Error al conectar con Google');
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  if (!email || !pass) { showAlert('error', '⚠️ Completá email y contraseña'); return; }
+
+  const btn = document.getElementById('btn-login');
+  btn.innerHTML = '<div class="spinner"></div> Entrando...';
+  btn.disabled = true;
+
+  const { error } = await db.auth.signInWithPassword({ email, password: pass });
+  if (error) {
+    showAlert('error', '❌ Email o contraseña incorrectos');
+    btn.innerHTML = 'Entrar';
+    btn.disabled = false;
+  } else {
+    window.location.href = 'app.html';
+  }
+}
+
+async function doRegistro() {
+  const nombre = document.getElementById('reg-nombre').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass = document.getElementById('reg-pass').value;
+  const zona = document.getElementById('reg-zona').value;
+
+  if (!nombre || !email || !pass || !zona) { showAlert('error', '⚠️ Completá todos los campos'); return; }
+  if (pass.length < 6) { showAlert('error', '⚠️ La contraseña debe tener al menos 6 caracteres'); return; }
+
+  const btn = document.getElementById('btn-registro');
+  btn.innerHTML = '<div class="spinner"></div> Creando cuenta...';
+  btn.disabled = true;
+
+  const { data, error } = await db.auth.signUp({
+    email, password: pass,
+    options: { data: { nombre, zona } }
+  });
+
+  if (error) {
+    showAlert('error', '❌ ' + (error.message.includes('already') ? 'Este email ya está registrado' : error.message));
+    btn.innerHTML = 'Crear cuenta gratis';
+    btn.disabled = false;
+    return;
+  }
+
+  if (data.user) {
+    await db.from('profiles').upsert({ id: data.user.id, nombre, zona, email });
+    window.location.href = 'app.html';
+  }
+}
+
+function showAlert(tipo, msg) {
+  document.getElementById('alert-box').innerHTML =
+    `<div class="alert alert-${tipo === 'error' ? 'error' : 'ok'}">${msg}</div>`;
+}
+
+// Enter key support
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const loginVisible = document.getElementById('form-login').style.display !== 'none';
+  if (loginVisible) doLogin();
+  else doRegistro();
+});
+</script>
+</body>
+</html>
