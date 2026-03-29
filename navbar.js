@@ -56,7 +56,7 @@ document.addEventListener('click', () => {
 // Cerrar sesión
 async function cerrarSesion() {
   await db.auth.signOut();
-  window.location.replace('index.html');
+  window.location.replace('../index.html');
 }
 
 // Toast global reutilizable en cualquier página
