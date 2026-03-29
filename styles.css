@@ -96,7 +96,7 @@ img { display: block; max-width: 100%; }
 }
 .nav-logo { font-size: 1.5rem; font-weight: 900; text-decoration: none; color: var(--texto); flex-shrink: 0; margin-right: 8px; }
 .nav-logo em { color: var(--verde); font-style: normal; }
-.nav-publicar { background: var(--verde); color: #fff; font-weight: 900; font-size: .92rem; padding: 10px 22px; border: none; border-radius: var(--radio-pill); cursor: pointer; text-decoration: none; white-space: nowrap; margin-right: 28px; transition: all .2s; flex-shrink: 0; }
+.nav-publicar { background: var(--verde); color: #fff; font-weight: 900; font-size: .92rem; padding: 10px 22px; border: none; border-radius: var(--radio-pill); cursor: pointer; text-decoration: none; white-space: nowrap; margin-left: 32px; margin-right: 28px; transition: all .2s; flex-shrink: 0; }
 .nav-publicar:hover { background: var(--verde-o); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,196,107,.3); }
 .nav-links { display: flex; align-items: center; gap: 2px; flex: 1; }
 .nav-link { font-size: .92rem; font-weight: 800; color: var(--suave); text-decoration: none; padding: 8px 14px; border-radius: var(--radio); transition: all .2s; white-space: nowrap; }
