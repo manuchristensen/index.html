@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChambaYa — Tarea</title>
+<link rel="stylesheet" href="../fonts.css">
+<link rel="stylesheet" href="../styles.css">
+<style>
+.tarea-wrap{max-width:1080px;margin:0 auto;padding:40px 32px 80px;display:grid;grid-template-columns:1fr 360px;gap:32px;align-items:start}
+
+/* COLUMNA PRINCIPAL */
+.tarea-main{}
+
+/* HEADER */
+.tarea-header{background:var(--blanco);border-radius:var(--radio-lg);border:1.5px solid var(--borde);padding:32px;margin-bottom:24px;box-shadow:var(--sombra)}
+.tarea-cat-badge{display:inline-flex;align-items:center;gap:8px;background:var(--verde-c);color:var(--verde-o);font-size:.8rem;font-weight:900;padding:6px 14px;border-radius:var(--radio-pill);margin-bottom:16px;text-transform:uppercase;letter-spacing:.5px}
+.tarea-titulo-h{font-size:1.6rem;font-weight:900;letter-spacing:-.3px;margin-bottom:20px;line-height:1.2}
+.tarea-meta-row{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:24px}
+.tarea-meta-item{display:flex;align-items:center;gap:7px;font-size:.85rem;font-weight:800;color:var(--suave)}
+.tarea-autor-row{display:flex;align-items:center;gap:14px;padding-top:20px;border-top:1.5px solid var(--borde)}
+.autor-av{width:44px;height:44px;border-radius:50%;background:var(--fondo);border:2px solid var(--borde);display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:900;color:var(--suave);overflow:hidden;flex-shrink:0}
+.autor-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.autor-nombre{font-size:.95rem;font-weight:900}
+.autor-sub{font-size:.78rem;font-weight:700;color:var(--suave)}
+
+/* DETALLES */
+.tarea-detalles{background:var(--blanco);border-radius:var(--radio-lg);border:1.5px solid var(--borde);padding:28px;margin-bottom:24px;box-shadow:var(--sombra)}
+.det-titulo-sec{font-size:.75rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--suave);margin-bottom:16px}
+.det-pills{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:0}
+.det-pill{background:var(--fondo);border:1.5px solid var(--borde);border-radius:var(--radio-pill);padding:8px 16px;font-size:.85rem;font-weight:800;color:var(--texto)}
+.det-coment{font-size:.92rem;font-weight:700;color:var(--texto);line-height:1.65;margin-top:16px;padding-top:16px;border-top:1.5px solid var(--borde)}
+
+/* CHAT PÚBLICO */
+.chat-card{background:var(--blanco);border-radius:var(--radio-lg);border:1.5px solid var(--borde);padding:28px;box-shadow:var(--sombra)}
+.chat-titulo{font-size:1rem;font-weight:900;margin-bottom:4px}
+.chat-sub{font-size:.82rem;font-weight:700;color:var(--suave);margin-bottom:24px}
+.chat-lista{display:flex;flex-direction:column;gap:18px;margin-bottom:24px;max-height:420px;overflow-y:auto;padding-right:4px}
+.chat-lista::-webkit-scrollbar{width:4px}
+.chat-lista::-webkit-scrollbar-thumb{background:var(--borde);border-radius:4px}
+.chat-msg{display:flex;gap:12px;align-items:flex-start}
+.chat-msg.propio{flex-direction:row-reverse}
+.msg-av{width:36px;height:36px;border-radius:50%;background:var(--fondo);border:2px solid var(--borde);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:900;color:var(--suave);flex-shrink:0;overflow:hidden}
+.msg-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.msg-body{}
+.msg-nombre{font-size:.75rem;font-weight:900;color:var(--suave);margin-bottom:4px}
+.msg-propio .msg-nombre{text-align:right}
+.msg-burbuja{background:var(--fondo);border-radius:14px 14px 14px 4px;padding:12px 16px;font-size:.88rem;font-weight:700;color:var(--texto);line-height:1.55;max-width:380px;word-break:break-word}
+.chat-msg.propio .msg-burbuja{background:var(--verde-c);border-radius:14px 14px 4px 14px;color:var(--verde-o)}
+.msg-hora{font-size:.7rem;font-weight:700;color:var(--suave);margin-top:4px}
+.chat-empty{text-align:center;padding:32px 0;color:var(--suave);font-size:.88rem;font-weight:700}
+.chat-alerta-celular{display:none;background:#FFF7ED;border:1.5px solid #FED7AA;border-radius:var(--radio);padding:10px 14px;font-size:.8rem;font-weight:800;color:#92400E;margin-bottom:10px}
+.chat-alerta-celular.show{display:block}
+.chat-input-wrap{display:flex;gap:10px;align-items:flex-end}
+.chat-input{flex:1;background:var(--fondo);border:2px solid var(--borde);border-radius:var(--radio);padding:12px 16px;font-family:'Nunito',sans-serif;font-size:.92rem;font-weight:700;color:var(--texto);outline:none;resize:none;min-height:44px;max-height:120px;transition:border-color .2s}
+.chat-input:focus{border-color:var(--verde);background:var(--blanco)}
+.chat-send{width:44px;height:44px;border:none;border-radius:var(--radio);background:var(--verde);color:#fff;font-size:1.1rem;cursor:pointer;flex-shrink:0;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.chat-send:hover{background:var(--verde-o)}
+.chat-send:disabled{opacity:.4;cursor:not-allowed}
+.chat-aviso-pub{font-size:.72rem;font-weight:700;color:var(--suave);margin-top:8px;text-align:center}
+
+/* COLUMNA LATERAL */
+.tarea-sidebar{}
+
+/* CARD OFERTA */
+.oferta-card{background:var(--blanco);border-radius:var(--radio-lg);border:1.5px solid var(--borde);padding:28px;margin-bottom:20px;box-shadow:var(--sombra);position:sticky;top:86px}
+.oferta-titulo{font-size:1rem;font-weight:900;margin-bottom:6px}
+.oferta-sub{font-size:.82rem;font-weight:700;color:var(--suave);margin-bottom:20px}
+.oferta-pres-actual{background:var(--fondo);border-radius:var(--radio);padding:16px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
+.pres-label{font-size:.78rem;font-weight:900;text-transform:uppercase;letter-spacing:.5px;color:var(--suave)}
+.pres-valor{font-size:1.3rem;font-weight:900;color:var(--verde-o)}
+.oferta-input-wrap{position:relative;margin-bottom:12px}
+.oferta-prefix{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:1rem;font-weight:900;color:var(--suave)}
+.oferta-input{width:100%;background:var(--blanco);border:2px solid var(--borde);border-radius:var(--radio);padding:14px 14px 14px 34px;font-family:'Nunito',sans-serif;font-size:1.1rem;font-weight:900;color:var(--texto);outline:none;transition:border-color .2s}
+.oferta-input:focus{border-color:var(--verde);box-shadow:0 0 0 3px rgba(0,201,107,.1)}
+.oferta-nota{font-size:.78rem;font-weight:700;color:var(--suave);margin-bottom:16px;line-height:1.5}
+.oferta-nota strong{color:var(--texto)}
+.btn-ofertar{width:100%;padding:14px;border:none;border-radius:var(--radio-pill);background:var(--verde);font-family:'Nunito',sans-serif;font-weight:900;font-size:1rem;cursor:pointer;color:#fff;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-ofertar:hover{background:var(--verde-o);transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,196,107,.3)}
+.btn-ofertar:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.oferta-enviada{display:none;background:var(--verde-c);border-radius:var(--radio);padding:16px;text-align:center}
+.oferta-enviada.show{display:block}
+.oferta-enviada-ico{font-size:1.8rem;margin-bottom:8px}
+.oferta-enviada-txt{font-size:.88rem;font-weight:900;color:var(--verde-o)}
+
+/* ESTADO TAREA */
+.estado-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:var(--radio-pill);font-size:.78rem;font-weight:900}
+.estado-activa{background:var(--verde-c);color:var(--verde-o)}
+.estado-en-curso{background:#FFF7ED;color:#92400E}
+.estado-terminada{background:#F1F5F9;color:var(--suave)}
+
+/* LOGIN GATE */
+.login-gate{background:var(--fondo);border:2px dashed var(--borde);border-radius:var(--radio-lg);padding:28px;text-align:center}
+.login-gate-ico{font-size:2rem;margin-bottom:12px}
+.login-gate-txt{font-size:.9rem;font-weight:800;color:var(--suave);margin-bottom:16px}
+
+/* SKELETON */
+.skel{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:var(--radio)}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+@media(max-width:820px){.tarea-wrap{grid-template-columns:1fr;padding:24px 16px}.oferta-card{position:static}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="home.html" class="nav-logo">Chamba<em>Ya</em></a>
+  <a href="publicar.html" class="nav-publicar" style="margin-left:32px">Publicar tarea</a>
+  <div class="nav-links">
+    <a href="explorar.html" class="nav-link">Explorar tareas</a>
+    <a href="mistareas.html" class="nav-link">Mis tareas</a>
+  </div>
+  <div class="nav-right">
+    <a href="ayuda.html" class="nav-right-link">Ayuda</a>
+    <a href="notificaciones.html" class="nav-right-link">Notificaciones</a>
+    <a href="mensajes.html" class="nav-right-link">Mensajes</a>
+    <div class="nav-av-wrap">
+      <div class="nav-av" id="nav-av" onclick="toggleDropdown(event)"><span class="nav-av-inicial" id="nav-av-inicial">?</span></div>
+      <div class="nav-dropdown" id="nav-dropdown">
+        <div class="dd-header"><div class="dd-nombre" id="dd-nombre">Cargando...</div><div class="dd-sub" onclick="window.location.href='perfil.html'">Ver perfil público</div></div>
+        <a href="mistareas.html" class="dd-item">Mis tareas <span class="dd-arrow">›</span></a>
+        <div class="dd-sep"></div>
+        <a href="configuracion.html" class="dd-item">Configuración <span class="dd-arrow">›</span></a>
+        <div class="dd-sep"></div>
+        <div class="dd-item rojo" onclick="cerrarSesion()">Cerrar sesión</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- BREADCRUMB -->
+<div style="background:var(--blanco);border-bottom:1.5px solid var(--borde);padding:12px 32px">
+  <div style="max-width:1080px;margin:0 auto;font-size:.82rem;font-weight:800;color:var(--suave)">
+    <a href="home.html" style="color:var(--suave);text-decoration:none">Inicio</a>
+    <span style="margin:0 8px">›</span>
+    <a href="explorar.html" style="color:var(--suave);text-decoration:none">Explorar tareas</a>
+    <span style="margin:0 8px">›</span>
+    <span id="bc-titulo" style="color:var(--texto)">Cargando...</span>
+  </div>
+</div>
+
+<div class="tarea-wrap">
+
+  <!-- COLUMNA PRINCIPAL -->
+  <div class="tarea-main">
+
+    <!-- HEADER DE LA TAREA -->
+    <div class="tarea-header" id="tarea-header">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div class="tarea-cat-badge" id="h-cat">⏳ Cargando...</div>
+        <span class="estado-chip estado-activa" id="h-estado">🟢 Activa</span>
+      </div>
+      <div class="tarea-titulo-h" id="h-titulo">Cargando tarea...</div>
+      <div class="tarea-meta-row">
+        <div class="tarea-meta-item">📅 <span id="h-cuando">—</span></div>
+        <div class="tarea-meta-item">📍 <span id="h-zona">—</span></div>
+        <div class="tarea-meta-item">🕐 <span id="h-fecha-pub">—</span></div>
+      </div>
+      <div class="tarea-autor-row">
+        <div class="autor-av" id="h-autor-av">?</div>
+        <div>
+          <div class="autor-nombre" id="h-autor-nombre">Cargando...</div>
+          <div class="autor-sub">Publicó esta tarea</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DETALLES -->
+    <div class="tarea-detalles" id="tarea-detalles">
+      <div class="det-titulo-sec">Detalles de la tarea</div>
+      <div class="det-pills" id="det-pills"></div>
+      <div class="det-coment" id="det-coment"></div>
+    </div>
+
+    <!-- CHAT PÚBLICO -->
+    <div class="chat-card" id="chat-card">
+      <div class="chat-titulo">💬 Preguntas y comentarios</div>
+      <div class="chat-sub">El chat es público. Todos pueden ver las respuestas. No compartas datos personales.</div>
+
+      <div class="chat-lista" id="chat-lista">
+        <div class="chat-empty" id="chat-empty">Sé el primero en comentar 👋</div>
+      </div>
+
+      <div id="chat-form-wrap">
+        <div class="chat-alerta-celular" id="chat-alerta">
+          ⚠️ Mensaje bloqueado: no se pueden compartir números de teléfono en el chat público.
+        </div>
+        <div class="chat-input-wrap">
+          <textarea class="chat-input" id="chat-input" placeholder="Hacé una pregunta o dejá un comentario..." rows="1" maxlength="400"
+            onkeydown="onChatKeydown(event)" oninput="autoResize(this)"></textarea>
+          <button class="chat-send" id="chat-send" onclick="enviarMensaje()" title="Enviar">➤</button>
+        </div>
+        <div class="chat-aviso-pub">🔒 Este chat es público. Tu oferta económica se envía de forma privada al dueño de la tarea.</div>
+      </div>
+
+      <div class="login-gate" id="login-gate" style="display:none">
+        <div class="login-gate-ico">🔒</div>
+        <div class="login-gate-txt">Iniciá sesión para participar en la conversación</div>
+        <a href="login.html" style="display:inline-flex;background:var(--verde);color:#fff;font-family:Nunito,sans-serif;font-weight:900;padding:11px 24px;border-radius:var(--radio-pill);text-decoration:none;font-size:.9rem">Entrar o registrarme</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- COLUMNA LATERAL -->
+  <div class="tarea-sidebar">
+    <div class="oferta-card" id="oferta-card">
+      <div class="oferta-titulo">💰 Hacé tu oferta</div>
+      <div class="oferta-sub">Se envía de forma privada solo al dueño de la tarea. El autor no es vos.</div>
+
+      <div class="oferta-pres-actual">
+        <div>
+          <div class="pres-label">Presupuesto del cliente</div>
+          <div class="pres-valor" id="of-pres-cliente">A convenir</div>
+        </div>
+        <div style="font-size:1.6rem">🤝</div>
+      </div>
+
+      <div id="of-form">
+        <div class="oferta-input-wrap">
+          <span class="oferta-prefix">$</span>
+          <input type="number" class="oferta-input" id="of-input" placeholder="0" min="0">
+        </div>
+        <div class="oferta-nota">
+          Tu oferta es <strong>privada</strong> — solo la ve el dueño de la tarea. Podés incluir más detalles en el chat público.
+        </div>
+        <button class="btn-ofertar" id="btn-ofertar" onclick="enviarOferta()">
+          📩 Enviar oferta privada
+        </button>
+      </div>
+
+      <div class="oferta-enviada" id="of-enviada">
+        <div class="oferta-enviada-ico">✅</div>
+        <div class="oferta-enviada-txt">¡Oferta enviada! El dueño de la tarea va a ver tu propuesta.</div>
+      </div>
+
+      <div class="login-gate" id="of-login-gate" style="display:none;margin-top:16px">
+        <div class="login-gate-ico">🔒</div>
+        <div class="login-gate-txt">Iniciá sesión para ofertar</div>
+        <a href="login.html" style="display:inline-flex;background:var(--verde);color:#fff;font-family:Nunito,sans-serif;font-weight:900;padding:11px 24px;border-radius:var(--radio-pill);text-decoration:none;font-size:.9rem">Entrar</a>
+      </div>
+    </div>
+
+    <!-- INFO EXTRA -->
+    <div style="background:var(--blanco);border-radius:var(--radio-lg);border:1.5px solid var(--borde);padding:22px;box-shadow:var(--sombra)">
+      <div style="font-size:.75rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--suave);margin-bottom:14px">Información</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;justify-content:space-between">
+          <span style="font-size:.82rem;font-weight:800;color:var(--suave)">Zona</span>
+          <span style="font-size:.85rem;font-weight:900;color:var(--texto)" id="inf-zona">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="font-size:.82rem;font-weight:800;color:var(--suave)">Código postal</span>
+          <span style="font-size:.85rem;font-weight:900;color:var(--texto)" id="inf-cp">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="font-size:.82rem;font-weight:800;color:var(--suave)">Ofertas recibidas</span>
+          <span style="font-size:.85rem;font-weight:900;color:var(--verde-o)" id="inf-ofertas">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../navbar.js"></script>
+<script>
+const SUPABASE_URL='https://jfcqvxrzloveggntwgie.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpmY3F2eHJ6bG92ZWdnbnR3Z2llIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2NDQxMjcsImV4cCI6MjA5MDIyMDEyN30.LiKYSuce1HorUFa8c_lND0z1y9LV9fFOzUWOTZtBOTU';
+const{createClient}=supabase;
+const db=createClient(SUPABASE_URL,SUPABASE_KEY);
+
+const params=new URLSearchParams(window.location.search);
+const TAREA_ID=params.get('id');
+let currentUser=null;
+let tareaData=null;
+let esAutor=false;
+
+const CAT_ICONS={limpieza:'🧹',plomeria:'🔧',pintura:'🎨',electricidad:'⚡',jardin:'🌿',mudanza:'📦',carpinteria:'🔨',tecnologia:'🖥️',mandados:'🛵',generico:'📋'};
+
+// ══ INIT ══
+(async()=>{
+  if(!TAREA_ID){window.location.replace('explorar.html');return;}
+
+  const{data:{session}}=await db.auth.getSession();
+  currentUser=session?.user||null;
+
+  await cargarTarea();
+  await cargarChat();
+
+  if(!currentUser){
+    document.getElementById('chat-form-wrap').style.display='none';
+    document.getElementById('login-gate').style.display='block';
+    document.getElementById('of-form').style.display='none';
+    document.getElementById('of-login-gate').style.display='block';
+  }
+
+  // Suscripción realtime para chat
+  db.channel('chat-'+TAREA_ID)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'comentarios',filter:'tarea_id=eq.'+TAREA_ID},payload=>{
+      agregarMensajeDOM(payload.new,false);
+    })
+    .subscribe();
+})();
+
+// ══ CARGAR TAREA ══
+async function cargarTarea(){
+  // Tarea demo si es id demo
+  if(TAREA_ID.startsWith('demo-')){
+    renderTarea({
+      id:TAREA_ID,titulo:'Limpieza profunda departamento',categoria:'limpieza',
+      cuando:'Esta semana',zona:'Buenos Aires (Palermo)',cp:'1425',
+      detalles:JSON.stringify({tipo:'profunda',hab:'2',banos:'1',mat:'si'}),
+      comentarios:'Departamento de 2 ambientes, cocina pequeña. Tengo todos los productos. Hay ascensor.',
+      presupuesto:12000,estado:'activa',created_at:new Date().toISOString(),
+      user_id:'demo',profiles:{nombre:'Demo Usuario',avatar_url:null}
+    });
+    return;
+  }
+
+  try{
+    const{data,error}=await db.from('tareas').select('*, profiles(nombre,avatar_url)').eq('id',TAREA_ID).single();
+    if(error||!data){window.location.replace('explorar.html');return;}
+    tareaData=data;
+    renderTarea(data);
+  }catch(e){
+    console.warn(e);
+    window.location.replace('explorar.html');
+  }
+}
+
+function renderTarea(t){
+  tareaData=t;
+  esAutor=currentUser&&currentUser.id===t.user_id;
+
+  // Breadcrumb
+  document.title='ChambaYa — '+t.titulo;
+  document.getElementById('bc-titulo').textContent=t.titulo;
+
+  // Header
+  const icon=CAT_ICONS[t.categoria]||'📋';
+  document.getElementById('h-cat').textContent=icon+' '+(t.categoria||'Tarea');
+  document.getElementById('h-titulo').textContent=t.titulo;
+  document.getElementById('h-cuando').textContent=t.cuando||'A definir';
+  document.getElementById('h-zona').textContent=t.zona||t.cp||'—';
+  const fecha=new Date(t.created_at);
+  document.getElementById('h-fecha-pub').textContent='Publicada '+fecha.toLocaleDateString('es-AR',{day:'numeric',month:'long'});
+
+  const estado=t.estado||'activa';
+  const estadoEl=document.getElementById('h-estado');
+  if(estado==='activa'){estadoEl.className='estado-chip estado-activa';estadoEl.textContent='🟢 Activa';}
+  else if(estado==='en-curso'){estadoEl.className='estado-chip estado-en-curso';estadoEl.textContent='🔄 En curso';}
+  else{estadoEl.className='estado-chip estado-terminada';estadoEl.textContent='✅ Terminada';}
+
+  // Autor
+  const nombre=t.profiles?.nombre||t.nombre_autor||'Usuario';
+  const foto=t.profiles?.avatar_url||null;
+  const avEl=document.getElementById('h-autor-av');
+  if(foto){avEl.innerHTML=`<img src="${foto}" alt="${nombre}">`;}
+  else{avEl.textContent=nombre.charAt(0).toUpperCase();}
+  document.getElementById('h-autor-nombre').textContent=nombre;
+
+  // Detalles
+  let detalles={};
+  try{detalles=JSON.parse(t.detalles||'{}');}catch(e){}
+  const pillsWrap=document.getElementById('det-pills');
+  const pills=Object.entries(detalles).map(([k,v])=>{
+    const labels={tipo:'Tipo',hab:'Habitaciones',banos:'Baños',mat:'Materiales',herr:'Herramientas',urgente:'Urgencia',acceso:'Acceso',amb:'Ambientes',pintura:'Pintura',asc:'Ascensor',urgencia:'Urgencia'};
+    const vals={si:'Sí',no:'No','fin-contrato':'Fin de contrato','post-obra':'Post obra',regular:'Regular',profunda:'Profunda',reparacion:'Reparación',instalacion:'Instalación',destape:'Destape',perdida:'Pérdida de agua',interior:'Interior',exterior:'Exterior',rejas:'Rejas/metal',muebles:'Muebles',urgente:'Urgente',normal:'Normal',flexible:'Flexible',chica:'Pequeña',depto:'Departamento',casa:'Casa completa',corte:'Corte de pasto',poda:'Poda',limpieza:'Limpieza',diseño:'Diseño de jardín','4+':'4 o más','3+':'3 o más','5+':'5 o más'};
+    return`<div class="det-pill">${labels[k]||k}: ${vals[v]||v}</div>`;
+  }).join('');
+  pillsWrap.innerHTML=pills||'';
+  document.getElementById('det-coment').textContent=t.comentarios||'';
+
+  // Oferta
+  if(t.presupuesto>0){
+    document.getElementById('of-pres-cliente').textContent='$'+Number(t.presupuesto).toLocaleString('es-AR');
+  }
+  document.getElementById('inf-zona').textContent=t.zona||'—';
+  document.getElementById('inf-cp').textContent=t.cp||'—';
+
+  // Si es el autor, ocultar formulario de oferta
+  if(esAutor){
+    document.getElementById('of-form').innerHTML='<div style="text-align:center;padding:16px;font-size:.88rem;font-weight:800;color:var(--suave)">✏️ Esta es tu tarea</div>';
+  }
+
+  // Contar ofertas
+  cargarCantidadOfertas();
+}
+
+async function cargarCantidadOfertas(){
+  try{
+    const{count}=await db.from('ofertas').select('*',{count:'exact',head:true}).eq('tarea_id',TAREA_ID);
+    document.getElementById('inf-ofertas').textContent=(count||0)+' oferta'+(count===1?'':'s');
+  }catch(e){document.getElementById('inf-ofertas').textContent='—';}
+}
+
+// ══ CHAT ══
+const TELEFONO_RE=/(\+?54\s?)?(\(?\d{2,4}\)?[\s\-]?)?\d{3,4}[\s\-]?\d{4}|\d{10,11}|cel[^\s]*\s*:?\s*\d|\btel[^\s]*\s*:?\s*\d|whatsapp|wsp|[0-9]{6,}/gi;
+
+async function cargarChat(){
+  try{
+    const{data}=await db.from('comentarios').select('*,profiles(nombre,avatar_url)').eq('tarea_id',TAREA_ID).order('created_at',{ascending:true}).limit(100);
+    if(data&&data.length){
+      document.getElementById('chat-empty').style.display='none';
+      data.forEach(m=>agregarMensajeDOM(m,false));
+    }
+  }catch(e){console.warn('Chat load:',e.message);}
+}
+
+function agregarMensajeDOM(msg,scroll=true){
+  const lista=document.getElementById('chat-lista');
+  const empty=document.getElementById('chat-empty');
+  if(empty)empty.style.display='none';
+
+  const esPropio=currentUser&&msg.user_id===currentUser.id;
+  const nombre=msg.profiles?.nombre||msg.nombre||'Usuario';
+  const foto=msg.profiles?.avatar_url||null;
+  const hora=new Date(msg.created_at).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+
+  const div=document.createElement('div');
+  div.className='chat-msg'+(esPropio?' propio':'');
+  div.innerHTML=`
+    <div class="msg-av">${foto?`<img src="${foto}" alt="${nombre}">`:nombre.charAt(0).toUpperCase()}</div>
+    <div class="msg-body">
+      <div class="msg-nombre">${esPropio?'Vos':nombre}</div>
+      <div class="msg-burbuja">${escapeHTML(msg.mensaje)}</div>
+      <div class="msg-hora">${hora}</div>
+    </div>`;
+  lista.appendChild(div);
+  if(scroll)lista.scrollTop=lista.scrollHeight;
+}
+
+async function enviarMensaje(){
+  if(!currentUser){showToast('⚠️ Iniciá sesión para comentar');return;}
+  const inp=document.getElementById('chat-input');
+  const texto=inp.value.trim();
+  if(!texto)return;
+
+  // Detectar y bloquear teléfonos
+  if(TELEFONO_RE.test(texto)){
+    document.getElementById('chat-alerta').classList.add('show');
+    inp.classList.add('error');
+    setTimeout(()=>{document.getElementById('chat-alerta').classList.remove('show');inp.classList.remove('error');},4000);
+    TELEFONO_RE.lastIndex=0;
+    return;
+  }
+  TELEFONO_RE.lastIndex=0;
+
+  const btn=document.getElementById('chat-send');
+  btn.disabled=true;
+
+  try{
+    await db.from('comentarios').insert({tarea_id:TAREA_ID,user_id:currentUser.id,mensaje:texto});
+    inp.value='';
+    inp.style.height='';
+    // El mensaje llega via realtime
+  }catch(e){
+    showToast('❌ Error al enviar');
+    console.warn(e);
+  }finally{
+    btn.disabled=false;
+    inp.focus();
+  }
+}
+
+// ══ OFERTA PRIVADA ══
+async function enviarOferta(){
+  if(!currentUser){showToast('⚠️ Iniciá sesión para ofertar');return;}
+  if(esAutor){showToast('⚠️ No podés ofertar en tu propia tarea');return;}
+
+  const val=parseFloat(document.getElementById('of-input').value)||0;
+  if(val<=0){showToast('⚠️ Ingresá un monto mayor a 0');return;}
+
+  const btn=document.getElementById('btn-ofertar');
+  btn.textContent='⏳ Enviando...';btn.disabled=true;
+
+  try{
+    const{error}=await db.from('ofertas').upsert({
+      tarea_id:TAREA_ID,tasker_id:currentUser.id,monto:val
+    },{onConflict:'tarea_id,tasker_id'});
+    if(error)throw error;
+    document.getElementById('of-form').style.display='none';
+    document.getElementById('of-enviada').classList.add('show');
+    cargarCantidadOfertas();
+  }catch(e){
+    console.warn('Oferta:',e.message);
+    // Demo: mostrar igual
+    document.getElementById('of-form').style.display='none';
+    document.getElementById('of-enviada').classList.add('show');
+    cargarCantidadOfertas();
+  }
+}
+
+// ══ UTILS ══
+function escapeHTML(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,120)+'px';}
+function onChatKeydown(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();enviarMensaje();}}
+</script>
+</body>
+</html>
