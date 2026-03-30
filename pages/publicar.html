@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChambaYa - Publicar tarea</title>
+<link rel="stylesheet" href="../fonts.css">
+<link rel="stylesheet" href="../styles.css">
+<style>
+.pub-wrap{display:flex;min-height:calc(100vh - 66px)}
+.pub-sidebar{width:240px;flex-shrink:0;padding:48px 28px;border-right:1.5px solid var(--borde);background:var(--blanco);position:sticky;top:66px;height:calc(100vh - 66px)}
+.pub-sidebar-titulo{font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:1.2px;color:var(--suave);margin-bottom:28px}
+.step-row{display:flex;align-items:center;gap:14px;padding:6px 0}
+.step-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--borde);background:var(--fondo);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:900;color:var(--suave);flex-shrink:0;transition:all .25s}
+.step-label{font-size:.88rem;font-weight:800;color:var(--suave);transition:color .2s}
+.step-connector{width:2px;height:18px;background:var(--borde);margin-left:13px;transition:background .25s}
+.step-row.activo .step-dot{background:var(--verde);border-color:var(--verde);color:#fff}
+.step-row.activo .step-label{color:var(--texto);font-weight:900}
+.step-row.done .step-dot{background:var(--verde-c);border-color:var(--verde);color:var(--verde-o)}
+.step-connector.done{background:var(--verde)}
+.pub-main{flex:1;padding:56px 88px 140px;max-width:800px}
+.pub-panel{display:none;animation:fadeUp .3s ease}
+.pub-panel.activo{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.pub-titulo{font-size:1.9rem;font-weight:900;letter-spacing:-.5px;margin-bottom:8px}
+.pub-sub{font-size:.98rem;color:var(--suave);font-weight:700;margin-bottom:44px}
+.pub-field{margin-bottom:30px}
+.pub-label{display:block;font-size:.95rem;font-weight:900;margin-bottom:8px}
+.pub-label .req{color:var(--rojo);margin-left:3px}
+.pub-hint{display:block;font-size:.82rem;color:var(--suave);font-weight:700;margin-bottom:10px}
+.pub-input{width:100%;background:var(--blanco);border:2px solid var(--borde);border-radius:var(--radio);padding:15px 18px;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:700;color:var(--texto);outline:none;resize:none;transition:border-color .2s,box-shadow .2s}
+.pub-input:focus{border-color:var(--verde);box-shadow:0 0 0 3px rgba(0,201,107,.1)}
+.pub-input::placeholder{color:#CBD5E1}
+.pub-input.error-field{border-color:var(--rojo)!important;box-shadow:0 0 0 3px rgba(239,68,68,.1)!important}
+.cuando-chips{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.cuando-chip{padding:11px 22px;border:2px solid var(--borde);border-radius:var(--radio-pill);font-family:'Nunito',sans-serif;font-size:.9rem;font-weight:800;color:var(--suave);cursor:pointer;background:var(--blanco);transition:all .2s}
+.cuando-chip:hover,.cuando-chip.sel{border-color:var(--verde);color:var(--verde-o);background:var(--verde-c)}
+.fecha-extra{display:none;margin-top:14px;max-width:300px}
+.fecha-extra.show{display:block}
+
+/* CP LOOKUP */
+.cp-row{display:flex;gap:12px;align-items:flex-start}
+.cp-input-wrap{position:relative;width:140px;flex-shrink:0}
+.cp-flag{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1rem}
+.cp-num{padding-left:40px!important;width:100%}
+.cp-spinner{display:none;position:absolute;right:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;border:2px solid var(--borde);border-top-color:var(--verde);border-radius:50%;animation:spin .6s linear infinite}
+.cp-spinner.show{display:block}
+@keyframes spin{to{transform:translateY(-50%) rotate(360deg)}}
+.cp-resultado{flex:1}
+.cp-ok{background:var(--verde-c);border:1.5px solid var(--verde);border-radius:var(--radio);padding:12px 16px;display:none}
+.cp-ok.show{display:block}
+.cp-ok-nombre{font-size:.95rem;font-weight:900;color:var(--verde-o)}
+.cp-ok-coords{font-size:.72rem;font-weight:700;color:var(--suave);margin-top:2px}
+.cp-error{background:var(--rojo-c);border:1.5px solid var(--rojo);border-radius:var(--radio);padding:12px 16px;font-size:.85rem;font-weight:800;color:var(--rojo);display:none}
+.cp-error.show{display:block}
+
+/* DETALLES */
+.det-section{margin-bottom:32px}
+.det-section-title{font-size:.85rem;font-weight:900;color:var(--suave);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px}
+.big-opts{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:4px}
+.big-opt{flex:1;min-width:130px;max-width:190px;background:var(--blanco);border:2px solid var(--borde);border-radius:var(--radio-lg);padding:22px 14px;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;transition:all .2s;text-align:center}
+.big-opt:hover,.big-opt.sel{border-color:var(--verde);background:var(--verde-c)}
+.big-opt-icon{font-size:2.2rem}
+.big-opt-name{font-size:.88rem;font-weight:900;color:var(--texto)}
+.num-chips{display:flex;gap:10px;flex-wrap:wrap}
+.num-chip{width:52px;height:44px;border:2px solid var(--borde);border-radius:var(--radio);background:var(--blanco);font-family:'Nunito',sans-serif;font-size:.9rem;font-weight:900;color:var(--suave);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.num-chip:hover,.num-chip.sel{border-color:var(--verde);color:var(--verde-o);background:var(--verde-c)}
+.sino-chips{display:flex;gap:12px}
+.sino-chip{flex:1;max-width:220px;padding:13px;border:2px solid var(--borde);border-radius:var(--radio);background:var(--blanco);font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:900;color:var(--suave);cursor:pointer;text-align:center;transition:all .2s}
+.sino-chip:hover,.sino-chip.sel{border-color:var(--verde);background:var(--verde-c);color:var(--verde-o)}
+.pres-wrap{position:relative;max-width:360px}
+.pres-prefix{position:absolute;left:18px;top:50%;transform:translateY(-50%);font-size:1rem;font-weight:900;color:var(--suave)}
+.pres-input{padding-left:36px!important}
+.pres-chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.pres-chip{padding:9px 18px;border:2px solid var(--borde);border-radius:var(--radio-pill);font-family:'Nunito',sans-serif;font-size:.85rem;font-weight:800;color:var(--suave);cursor:pointer;background:var(--blanco);transition:all .2s}
+.pres-chip:hover{border-color:var(--verde);color:var(--verde-o);background:var(--verde-c)}
+.char-count{font-size:.75rem;font-weight:700;color:var(--suave);margin-top:6px;text-align:right}
+.char-count.ok{color:var(--verde-o)}
+.pub-footer{position:fixed;bottom:0;left:240px;right:0;background:var(--blanco);border-top:1.5px solid var(--borde);padding:14px 88px;display:flex;align-items:center;justify-content:space-between;z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,.06)}
+.footer-progress{font-size:.82rem;font-weight:800;color:var(--suave)}
+.footer-btns{display:flex;gap:12px}
+.btn-back{padding:12px 28px;border:2px solid var(--borde);border-radius:var(--radio-pill);background:var(--blanco);font-family:'Nunito',sans-serif;font-weight:900;font-size:.92rem;cursor:pointer;color:var(--suave);transition:all .2s}
+.btn-back:hover{border-color:var(--texto);color:var(--texto)}
+.btn-next{padding:12px 36px;border:none;border-radius:var(--radio-pill);background:var(--verde);font-family:'Nunito',sans-serif;font-weight:900;font-size:.92rem;cursor:pointer;color:#fff;transition:all .2s;min-width:160px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-next:hover{background:var(--verde-o);transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,196,107,.3)}
+.btn-next:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.pub-success{display:none;text-align:center;padding:80px 20px}
+.pub-success.show{display:block}
+.suc-icon{width:84px;height:84px;border-radius:50%;background:var(--verde-c);display:flex;align-items:center;justify-content:center;font-size:2.6rem;margin:0 auto 24px;animation:pop .4s cubic-bezier(.34,1.4,.64,1)}
+@keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.suc-titulo{font-size:1.8rem;font-weight:900;margin-bottom:10px}
+.suc-sub{font-size:1rem;color:var(--suave);font-weight:700;margin-bottom:36px;max-width:420px;margin-left:auto;margin-right:auto}
+.suc-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.res-grid{background:var(--fondo);border-radius:var(--radio-lg);padding:24px;margin-top:8px;display:flex;flex-direction:column;gap:10px}
+.res-row{display:flex;justify-content:space-between;gap:12px}
+.res-key{font-size:.82rem;font-weight:800;color:var(--suave)}
+.res-val{font-size:.88rem;font-weight:900;color:var(--texto);text-align:right}
+@media(max-width:900px){.pub-sidebar{display:none}.pub-footer{left:0;padding:14px 20px}.pub-main{padding:32px 20px 120px}}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="home.html" class="nav-logo">Chamba<em>Ya</em></a>
+  <a href="publicar.html" class="nav-publicar" style="margin-left:32px">Publicar tarea</a>
+  <div class="nav-links">
+    <a href="explorar.html" class="nav-link">Explorar tareas</a>
+    <a href="mistareas.html" class="nav-link">Mis tareas</a>
+  </div>
+  <div class="nav-right">
+    <a href="ayuda.html" class="nav-right-link">Ayuda</a>
+    <a href="notificaciones.html" class="nav-right-link">Notificaciones</a>
+    <a href="mensajes.html" class="nav-right-link">Mensajes</a>
+    <div class="nav-av-wrap">
+      <div class="nav-av" id="nav-av" onclick="toggleDropdown(event)"><span class="nav-av-inicial" id="nav-av-inicial">?</span></div>
+      <div class="nav-dropdown" id="nav-dropdown">
+        <div class="dd-header"><div class="dd-nombre" id="dd-nombre">Cargando...</div><div class="dd-sub" onclick="window.location.href='perfil.html'">Ver perfil publico</div></div>
+        <a href="mistareas.html" class="dd-item">Mis tareas <span class="dd-arrow">›</span></a>
+        <div class="dd-sep"></div>
+        <a href="configuracion.html" class="dd-item">Configuracion <span class="dd-arrow">›</span></a>
+        <div class="dd-sep"></div>
+        <div class="dd-item rojo" onclick="cerrarSesion()">Cerrar sesion</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="pub-wrap">
+  <aside class="pub-sidebar">
+    <div class="pub-sidebar-titulo">Nueva tarea</div>
+    <div class="step-row activo" id="side-1"><div class="step-dot">1</div><div class="step-label">Tarea y fecha</div></div>
+    <div class="step-connector" id="conn-1"></div>
+    <div class="step-row" id="side-2"><div class="step-dot">2</div><div class="step-label">Ubicacion</div></div>
+    <div class="step-connector" id="conn-2"></div>
+    <div class="step-row" id="side-3"><div class="step-dot">3</div><div class="step-label">Detalles</div></div>
+    <div class="step-connector" id="conn-3"></div>
+    <div class="step-row" id="side-4"><div class="step-dot">4</div><div class="step-label">Presupuesto</div></div>
+  </aside>
+
+  <main class="pub-main">
+
+    <!-- PASO 1: TAREA Y FECHA -->
+    <div class="pub-panel activo" id="panel-1">
+      <div class="pub-titulo">Que necesitas que te hagan?</div>
+      <div class="pub-sub">Describilo en pocas palabras. Los detalles los completas despues.</div>
+      <div class="pub-field">
+        <label class="pub-label">Cual es tu tarea?<span class="req">*</span></label>
+        <input type="text" class="pub-input" id="inp-titulo" placeholder="Ej: Limpiar departamento, Arreglar canilla, Pintar living..." maxlength="80" oninput="onTituloChange()">
+        <div class="char-count" id="titulo-count">0 / 80</div>
+      </div>
+      <div class="pub-field">
+        <label class="pub-label">Cuando lo necesitas?<span class="req">*</span></label>
+        <div class="cuando-chips">
+          <button class="cuando-chip" onclick="selCuando(this,'en-fecha')">En una fecha</button>
+          <button class="cuando-chip" onclick="selCuando(this,'antes-de')">Antes de una fecha</button>
+          <button class="cuando-chip" onclick="selCuando(this,'flexible')">Soy flexible</button>
+        </div>
+        <div class="fecha-extra" id="fecha-extra">
+          <input type="date" class="pub-input" id="inp-fecha" onchange="onFechaChange()">
+        </div>
+      </div>
+    </div>
+
+    <!-- PASO 2: UBICACION -->
+    <div class="pub-panel" id="panel-2">
+      <div class="pub-titulo">Donde necesitas que se haga?</div>
+      <div class="pub-sub">Ingresa el codigo postal para que los taskers cercanos puedan verte en el mapa.</div>
+
+      <div class="pub-field">
+        <label class="pub-label">Codigo postal argentino<span class="req">*</span></label>
+        <span class="pub-hint">Ingresa los 4 digitos. Ej: 7600 para Mar del Plata, 5000 para Cordoba, 1425 para Palermo.</span>
+        <div class="cp-row">
+          <div class="cp-input-wrap">
+            <span class="cp-flag">&#127462;&#127479;</span>
+            <input type="text" class="pub-input cp-num" id="inp-cp" placeholder="1000" maxlength="4" oninput="onCPChange(this.value)">
+            <div class="cp-spinner" id="cp-spinner"></div>
+          </div>
+          <div class="cp-resultado">
+            <div class="cp-ok" id="cp-ok">
+              <div class="cp-ok-nombre" id="cp-ok-nombre"></div>
+              <div class="cp-ok-coords" id="cp-ok-coords"></div>
+            </div>
+            <div class="cp-error" id="cp-error">Codigo postal no encontrado. Verifica los 4 digitos.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pub-field">
+        <label class="pub-label">Direccion de referencia<span class="req">*</span></label>
+        <span class="pub-hint">Calle, numero, barrio o referencia. Esto ayuda al tasker a llegar.</span>
+        <input type="text" class="pub-input" id="inp-dir" placeholder="Ej: Av. Colon 1234, Barrio Centro" maxlength="120">
+      </div>
+    </div>
+
+    <!-- PASO 3: DETALLES -->
+    <div class="pub-panel" id="panel-3">
+      <div class="pub-titulo" id="det-titulo">Contanos mas detalles</div>
+      <div class="pub-sub">Cuanto mas detallado, mejores ofertas vas a recibir.</div>
+      <div id="det-contenido"></div>
+      <div class="pub-field" style="margin-top:8px">
+        <label class="pub-label">Comentarios adicionales<span class="req">*</span></label>
+        <span class="pub-hint">Cualquier info extra util para el tasker. Minimo 10 caracteres.</span>
+        <textarea class="pub-input" id="inp-coment" rows="4" placeholder="Ej: Tengo los materiales, hay ascensor, necesito factura, horario preferido..." maxlength="500" oninput="onComentChange()"></textarea>
+        <div class="char-count" id="coment-count">0 / 500</div>
+      </div>
+    </div>
+
+    <!-- PASO 4: PRESUPUESTO -->
+    <div class="pub-panel" id="panel-4">
+      <div class="pub-titulo">Cuanto estas dispuesto a pagar?</div>
+      <div class="pub-sub">Es orientativo. Los taskers van a hacerte sus ofertas y podes negociar.</div>
+      <div class="pub-field">
+        <label class="pub-label">Tu presupuesto estimado</label>
+        <div class="pres-wrap">
+          <span class="pres-prefix">$</span>
+          <input type="number" class="pub-input pres-input" id="inp-pres" placeholder="0" min="0" oninput="onPresChange()">
+        </div>
+        <div class="pres-chips">
+          <button class="pres-chip" onclick="setPres(5000)">$5.000</button>
+          <button class="pres-chip" onclick="setPres(10000)">$10.000</button>
+          <button class="pres-chip" onclick="setPres(20000)">$20.000</button>
+          <button class="pres-chip" onclick="setPres(50000)">$50.000</button>
+          <button class="pres-chip" onclick="setPres(100000)">$100.000</button>
+        </div>
+        <span class="pub-hint" style="margin-top:14px;display:block">Si no sabes el precio, dejalo en 0 y los taskers te van a cotizar.</span>
+      </div>
+      <div class="res-grid">
+        <div style="font-size:.75rem;font-weight:900;text-transform:uppercase;letter-spacing:.8px;color:var(--suave);margin-bottom:6px">Resumen</div>
+        <div class="res-row"><span class="res-key">Tarea</span><span class="res-val" id="res-titulo">-</span></div>
+        <div class="res-row"><span class="res-key">Cuando</span><span class="res-val" id="res-cuando">-</span></div>
+        <div class="res-row"><span class="res-key">Ubicacion</span><span class="res-val" id="res-ubi">-</span></div>
+        <div class="res-row"><span class="res-key">Presupuesto</span><span class="res-val" id="res-pres" style="color:var(--verde-o)">-</span></div>
+      </div>
+    </div>
+
+    <!-- SUCCESS -->
+    <div class="pub-success" id="pub-success">
+      <div class="suc-icon">&#127881;</div>
+      <div class="suc-titulo">Tarea publicada!</div>
+      <div class="suc-sub">Ya esta visible en el mapa para los taskers cercanos. En minutos vas a empezar a recibir ofertas.</div>
+      <div class="suc-btns">
+        <a id="link-tarea" href="mistareas.html" class="btn-next" style="text-decoration:none">Ver mi tarea</a>
+        <a href="home.html" class="btn-back" style="text-decoration:none;display:inline-flex;align-items:center">Volver al inicio</a>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="pub-footer" id="pub-footer">
+  <div class="footer-progress" id="footer-prog">Paso 1 de 4</div>
+  <div class="footer-btns">
+    <button class="btn-back" id="btn-back" onclick="volver()" style="display:none">Volver</button>
+    <button class="btn-next" id="btn-next" onclick="siguiente()">Siguiente</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../navbar.js"></script>
+<script>
+// db disponible desde navbar.js
+let paso = 1;
+let cpTimer = null;
+
+const d = {
+  titulo:'', cuando:'', fecha:'',
+  cp:'', localidad:'', provincia:'', lat:null, lng:null,
+  dir:'', detalles:{}, coment:'', pres:0
+};
+
+// ══ CP LOOKUP — tabla local + Nominatim fallback ══
+// La API georef NO soporta búsqueda por codigo_postal numérico de 4 dígitos
+// Usamos tabla local curada + Nominatim de OpenStreetMap como fallback
+
+const CP_LOCAL = {
+  '1000':'Buenos Aires, CABA',
+  '1001':'Buenos Aires, CABA','1002':'Buenos Aires, CABA','1004':'Buenos Aires, CABA',
+  '1006':'Buenos Aires, CABA','1008':'Buenos Aires, CABA','1010':'Buenos Aires, CABA',
+  '1020':'San Telmo, CABA','1028':'La Boca, CABA','1055':'Puerto Madero, CABA',
+  '1064':'Barracas, CABA','1100':'Constitucion, CABA','1178':'Flores, CABA',
+  '1200':'Villa Ortuzar, CABA','1214':'Palermo, CABA','1221':'Palermo, CABA',
+  '1241':'Belgrano, CABA','1270':'Nunez, CABA','1282':'Villa Urquiza, CABA',
+  '1290':'Saavedra, CABA','1300':'Villa Crespo, CABA','1301':'Almagro, CABA',
+  '1405':'Caballito, CABA','1406':'Caballito, CABA','1407':'Villa del Parque, CABA',
+  '1408':'Velez Sarsfield, CABA','1414':'Villa Real, CABA','1416':'Agronomia, CABA',
+  '1417':'Villa Pueyrredon, CABA','1420':'Chacarita, CABA','1421':'Paternal, CABA',
+  '1422':'Villa Crespo, CABA','1424':'Almagro, CABA','1425':'Palermo, CABA',
+  '1426':'Palermo, CABA','1427':'Villa Urquiza, CABA','1428':'Belgrano, CABA',
+  '1429':'Belgrano, CABA','1430':'Belgrano, CABA','1431':'Nunez, CABA',
+  '1432':'Saavedra, CABA','1437':'Villa Devoto, CABA','1440':'Flores, CABA',
+  '1450':'Boedo, CABA','1453':'Balvanera, CABA','1460':'Parque Chacabuco, CABA',
+  '1476':'Villa Lugano, CABA',
+  '1601':'Villa Martelli, GBA Norte','1602':'Florida, GBA Norte',
+  '1605':'Munro, GBA Norte','1609':'Boulogne, GBA Norte','1629':'Pilar, GBA Norte',
+  '1641':'Acassuso, GBA Norte','1642':'San Isidro, GBA Norte',
+  '1645':'San Fernando, GBA Norte','1646':'Tigre, GBA Norte',
+  '1650':'San Martin, GBA Oeste','1661':'Ramos Mejia, GBA Oeste',
+  '1663':'Haedo, GBA Oeste','1665':'Castelar, GBA Oeste',
+  '1667':'Ituzaingo, GBA Oeste','1669':'Moron, GBA Oeste',
+  '1675':'Moreno, GBA Oeste','1719':'Merlo, GBA Oeste',
+  '1750':'San Justo, GBA Sur','1770':'Temperley, GBA Sur',
+  '1800':'Quilmes, GBA Sur','1832':'Lomas de Zamora, GBA Sur',
+  '1840':'Monte Grande, GBA Sur','1846':'Adrogue, GBA Sur',
+  '1850':'Lanus, GBA Sur','1870':'Avellaneda, GBA Sur',
+  '1884':'Bernal, GBA Sur','1890':'Berazategui, GBA Sur',
+  '1894':'Florencio Varela, GBA Sur',
+  '1900':'La Plata, Buenos Aires','1902':'La Plata, Buenos Aires',
+  '2000':'Rosario, Santa Fe','2014':'Rosario, Santa Fe',
+  '2200':'Rafaela, Santa Fe','3000':'Santa Fe Capital',
+  '3100':'Parana, Entre Rios','3200':'Gualeguaychu, Entre Rios',
+  '3400':'Corrientes Capital','3500':'Resistencia, Chaco',
+  '3600':'Formosa Capital','4000':'San Miguel de Tucuman',
+  '4200':'Santiago del Estero','4400':'Salta Capital',
+  '4600':'San Salvador de Jujuy',
+  '5000':'Cordoba Capital','5002':'Cordoba Capital','5004':'Cordoba Capital',
+  '5006':'Cordoba Capital','5008':'Cordoba Capital',
+  '5100':'Villa Carlos Paz, Cordoba','5200':'Rio Cuarto, Cordoba',
+  '5400':'San Luis Capital',
+  '5500':'Mendoza Capital','5502':'Godoy Cruz, Mendoza',
+  '5521':'Guaymallan, Mendoza','5600':'San Rafael, Mendoza',
+  '6000':'Mercedes, Buenos Aires','6300':'Santa Rosa, La Pampa',
+  '7000':'Tandil, Buenos Aires',
+  '7600':'Mar del Plata, Buenos Aires','7602':'Mar del Plata, Buenos Aires',
+  '7604':'Mar del Plata, Buenos Aires','7606':'Mar del Plata, Buenos Aires',
+  '7608':'Mar del Plata, Buenos Aires',
+  '7609':'Santa Clara del Mar, Buenos Aires',
+  '7630':'Necochea, Buenos Aires',
+  '8000':'Bahia Blanca, Buenos Aires','8300':'Neuquen Capital',
+  '8400':'San Carlos de Bariloche, Rio Negro',
+  '8500':'Viedma, Rio Negro',
+  '9000':'Comodoro Rivadavia, Chubut','9100':'Trelew, Chubut',
+  '9300':'Puerto Madryn, Chubut','9400':'Rio Gallegos, Santa Cruz',
+  '9500':'El Calafate, Santa Cruz',
+  '9600':'Ushuaia, Tierra del Fuego','9610':'Rio Grande, Tierra del Fuego',
+};
+
+// Coordenadas para los CPs mas comunes
+const CP_COORDS = {
+  '1000':[-34.6037,-58.3816],'1214':[-34.5880,-58.4318],'1425':[-34.5854,-58.4321],
+  '1241':[-34.5620,-58.4564],'1405':[-34.6197,-58.4533],'1420':[-34.5891,-58.4636],
+  '1450':[-34.6349,-58.4178],'1900':[-34.9215,-57.9545],
+  '2000':[-32.9468,-60.6393],'3000':[-31.6333,-60.7000],
+  '4000':[-26.8083,-65.2176],'4400':[-24.7821,-65.4232],
+  '5000':[-31.4167,-64.1833],'5500':[-32.8908,-68.8272],
+  '7600':[-38.0000,-57.5500],'7609':[-37.8500,-57.5333],
+  '8000':[-38.7196,-62.2724],'8300':[-38.9516,-68.0591],
+  '8400':[-41.1333,-71.3000],'9000':[-45.8667,-67.4833],
+  '9600':[-54.8000,-68.3000],
+};
+
+async function buscarCP(cp) {
+  const spinner = document.getElementById('cp-spinner');
+  const okDiv = document.getElementById('cp-ok');
+  const errDiv = document.getElementById('cp-error');
+  okDiv.classList.remove('show');
+  errDiv.classList.remove('show');
+  if (cp.length !== 4) return;
+  spinner.classList.add('show');
+
+  try {
+    // 1. Buscar en tabla local primero (instantáneo, sin API)
+    if (CP_LOCAL[cp]) {
+      const nombreLocal = CP_LOCAL[cp];
+      const coords = CP_COORDS[cp] || null;
+      d.cp = cp;
+      d.localidad = nombreLocal.split(',')[0].trim();
+      d.provincia = nombreLocal.split(',')[1]?.trim() || '';
+      d.lat = coords ? coords[0] : null;
+      d.lng = coords ? coords[1] : null;
+      document.getElementById('cp-ok-nombre').textContent = nombreLocal;
+      document.getElementById('cp-ok-coords').textContent = coords ? `${coords[0].toFixed(4)}, ${coords[1].toFixed(4)}` : '';
+      spinner.classList.remove('show');
+      okDiv.classList.add('show');
+      document.getElementById('inp-cp').classList.remove('error-field');
+      return;
+    }
+
+    // 2. Fallback: Nominatim de OpenStreetMap (gratis, sin key)
+    const url = `https://nominatim.openstreetmap.org/search?postalcode=${cp}&country=AR&format=json&limit=1&addressdetails=1`;
+    const res = await fetch(url, { headers: { 'Accept-Language': 'es' } });
+    const data = await res.json();
+    spinner.classList.remove('show');
+
+    if (data && data.length > 0) {
+      const loc = data[0];
+      const addr = loc.address || {};
+      const ciudad = addr.city || addr.town || addr.village || addr.suburb || addr.municipality || 'Argentina';
+      const prov = addr.state || '';
+      d.cp = cp;
+      d.localidad = ciudad;
+      d.provincia = prov;
+      d.lat = parseFloat(loc.lat);
+      d.lng = parseFloat(loc.lon);
+      document.getElementById('cp-ok-nombre').textContent = ciudad + (prov ? ', ' + prov : '');
+      document.getElementById('cp-ok-coords').textContent = `${d.lat.toFixed(4)}, ${d.lng.toFixed(4)}`;
+      okDiv.classList.add('show');
+      document.getElementById('inp-cp').classList.remove('error-field');
+    } else {
+      // CP no encontrado en ninguna fuente
+      errDiv.classList.add('show');
+      document.getElementById('inp-cp').classList.add('error-field');
+      d.lat = null; d.lng = null; d.localidad = '';
+    }
+  } catch(e) {
+    spinner.classList.remove('show');
+    // Sin red: si el CP tiene formato válido, lo aceptamos igual
+    if (/^[0-9]{4}$/.test(cp)) {
+      d.cp = cp; d.lat = null; d.lng = null;
+      document.getElementById('cp-ok-nombre').textContent = 'CP ' + cp + ' (verificar conexion)';
+      document.getElementById('cp-ok-coords').textContent = '';
+      okDiv.classList.add('show');
+    } else {
+      errDiv.classList.add('show');
+    }
+  }
+}
+
+function onCPChange(val) {
+  val = val.replace(/\D/g, '');
+  document.getElementById('inp-cp').value = val;
+  d.cp = val;
+
+  // Reset
+  document.getElementById('cp-ok').classList.remove('show');
+  document.getElementById('cp-error').classList.remove('show');
+  d.lat = null; d.lng = null; d.localidad = '';
+
+  // Debounce para no spamear la API
+  clearTimeout(cpTimer);
+  if (val.length === 4) {
+    cpTimer = setTimeout(() => buscarCP(val), 500);
+  }
+}
+
+// ══ DETECCION DE CATEGORIA ══
+const CATS = {
+  limpieza:['limpi','bano','cocin','habitaci','piso','ventana','departamento','hogar','polvo','mugre'],
+  plomeria:['canilla','caner','perdida','agua','plomer','desague','pileta','grifo','cano','filtra'],
+  pintura:['pint','livin','pared','exterior','interior','esmalte','barniz','repint'],
+  electricidad:['electric','luz','cable','enchufe','tablero','corto','foco','lampara','aire','split'],
+  jardin:['jardin','pasto','planta','arbol','poda','cesped','riego','hojas','yuyos'],
+  mudanza:['mudanza','mueble','caja','transport','camion','flete','traslado'],
+  carpinteria:['carpint','puerta','ventana','madera','estanteri','placard','armario'],
+  tecnologia:['compu','pc','celular','wifi','router','internet','virus','tecnico'],
+  mandados:['mandado','tramite','banco','super','compra','delivery','fila']
+};
+
+function detectCat(t) {
+  t = t.toLowerCase();
+  for (const [c, ps] of Object.entries(CATS)) {
+    if (ps.some(p => t.includes(p))) return c;
+  }
+  return 'generico';
+}
+
+function getCatIcon(cat) {
+  const icons = {limpieza:'🧹',plomeria:'🔧',pintura:'🎨',electricidad:'⚡',jardin:'🌿',mudanza:'📦',carpinteria:'🔨',tecnologia:'🖥️',mandados:'🛵',generico:'📋'};
+  return icons[cat] || '📋';
+}
+
+// ══ TEMPLATES PASO 3 ══
+const TMPL = {
+  limpieza:`<div class="det-section"><div class="det-section-title">Que tipo de limpieza?</div><div class="big-opts"><div class="big-opt" onclick="selDet(this,'tipo','regular')"><div class="big-opt-icon">🧹</div><div class="big-opt-name">Regular</div></div><div class="big-opt" onclick="selDet(this,'tipo','profunda')"><div class="big-opt-icon">✨</div><div class="big-opt-name">Profunda</div></div><div class="big-opt" onclick="selDet(this,'tipo','fin-contrato')"><div class="big-opt-icon">🏠</div><div class="big-opt-name">Fin de contrato</div></div><div class="big-opt" onclick="selDet(this,'tipo','post-obra')"><div class="big-opt-icon">🏗️</div><div class="big-opt-name">Post obra</div></div></div></div><div class="det-section"><div class="det-section-title">Cuantas habitaciones?</div><div class="num-chips"><button class="num-chip" onclick="selNum(this,'hab','0')">0</button><button class="num-chip" onclick="selNum(this,'hab','1')">1</button><button class="num-chip" onclick="selNum(this,'hab','2')">2</button><button class="num-chip" onclick="selNum(this,'hab','3')">3</button><button class="num-chip" onclick="selNum(this,'hab','4+')">4+</button></div></div><div class="det-section"><div class="det-section-title">Cuantos banos?</div><div class="num-chips"><button class="num-chip" onclick="selNum(this,'banos','0')">0</button><button class="num-chip" onclick="selNum(this,'banos','1')">1</button><button class="num-chip" onclick="selNum(this,'banos','2')">2</button><button class="num-chip" onclick="selNum(this,'banos','3+')">3+</button></div></div><div class="det-section"><div class="det-section-title">El tasker lleva materiales?</div><div class="sino-chips"><button class="sino-chip" onclick="selSino(this,'mat','si')">Si, que traiga todo</button><button class="sino-chip" onclick="selSino(this,'mat','no')">No, los tengo yo</button></div></div>`,
+  plomeria:`<div class="det-section"><div class="det-section-title">Que tipo de trabajo?</div><div class="big-opts"><div class="big-opt" onclick="selDet(this,'tipo','reparacion')"><div class="big-opt-icon">🔧</div><div class="big-opt-name">Reparacion</div></div><div class="big-opt" onclick="selDet(this,'tipo','instalacion')"><div class="big-opt-icon">🚿</div><div class="big-opt-name">Instalacion</div></div><div class="big-opt" onclick="selDet(this,'tipo','destape')"><div class="big-opt-icon">🌀</div><div class="big-opt-name">Destape</div></div><div class="big-opt" onclick="selDet(this,'tipo','perdida')"><div class="big-opt-icon">💧</div><div class="big-opt-name">Perdida</div></div></div></div><div class="det-section"><div class="det-section-title">Es urgente?</div><div class="sino-chips"><button class="sino-chip" onclick="selSino(this,'urgente','si')">Si, urgente</button><button class="sino-chip" onclick="selSino(this,'urgente','no')">No urgente</button></div></div>`,
+  pintura:`<div class="det-section"><div class="det-section-title">Que queres pintar?</div><div class="big-opts"><div class="big-opt" onclick="selDet(this,'tipo','interior')"><div class="big-opt-icon">🏠</div><div class="big-opt-name">Interior</div></div><div class="big-opt" onclick="selDet(this,'tipo','exterior')"><div class="big-opt-icon">🌤️</div><div class="big-opt-name">Exterior</div></div><div class="big-opt" onclick="selDet(this,'tipo','rejas')"><div class="big-opt-icon">🔩</div><div class="big-opt-name">Rejas</div></div><div class="big-opt" onclick="selDet(this,'tipo','muebles')"><div class="big-opt-icon">🪑</div><div class="big-opt-name">Muebles</div></div></div></div><div class="det-section"><div class="det-section-title">Cuantos ambientes?</div><div class="num-chips"><button class="num-chip" onclick="selNum(this,'amb','1')">1</button><button class="num-chip" onclick="selNum(this,'amb','2')">2</button><button class="num-chip" onclick="selNum(this,'amb','3')">3</button><button class="num-chip" onclick="selNum(this,'amb','4')">4</button><button class="num-chip" onclick="selNum(this,'amb','5+')">5+</button></div></div><div class="det-section"><div class="det-section-title">La pintura es tuya?</div><div class="sino-chips"><button class="sino-chip" onclick="selSino(this,'pintura','si')">Si, la tengo yo</button><button class="sino-chip" onclick="selSino(this,'pintura','no')">Que la traiga el tasker</button></div></div>`,
+  electricidad:`<div class="det-section"><div class="det-section-title">Que necesitas?</div><div class="big-opts"><div class="big-opt" onclick="selDet(this,'tipo','instalacion')"><div class="big-opt-icon">🔌</div><div class="big-opt-name">Instalacion</div></div><div class="big-opt" onclick="selDet(this,'tipo','reparacion')"><div class="big-opt-icon">🔧</div><div class="big-opt-name">Reparacion</div></div><div class="big-opt" onclick="selDet(this,'tipo','aire')"><div class="big-opt-icon">❄️</div><div class="big-opt-name">Aire acond.</div></div><div class="big-opt" onclick="selDet(this,'tipo','tablero')"><div class="big-opt-icon">⚡</div><div class="big-opt-name">Tablero</div></div></div></div><div class="det-section"><div class="det-section-title">Es urgente?</div><div class="sino-chips"><button class="sino-chip" onclick="selSino(this,'urgente','si')">Si, urgente</button><button class="sino-chip" onclick="selSino(this,'urgente','no')">No urgente</button></div></div>`,
+  jardin:`<div class="det-section"><div class="det-section-title">Que necesitas?</div><div class="big-opts"><div class="big-opt" onclick="selDet(this,'tipo','corte')"><div class="big-opt-icon">🌿</div><div class="big-opt-name">Corte de pasto</div></div><div class="big-opt" onclick="selDet(this,'tipo','poda')"><div class="big-opt-icon">✂️</div><div class="big-opt-name">Poda</div></div><div class="big-opt" onclick="selDet(this,'tipo','limpieza')"><div class="big-opt-icon">🍂</div><div class="big-opt-name">Limpieza</div></div><div class="big-opt" onclick="selDet(this,'tipo','diseno')"><div class="big-opt-icon">🌸</div><div class="big-opt-name">Diseno</div></div></div></div><div class="det-section"><div class="det-section-title">El tasker lleva herramientas?</div><div class="sino-chips"><button class="sino-chip" onclick="selSino(this,'herr','si')">Si, que traiga todo</button><button class="sino-chip" onclick="selSino(this,'herr','no')">Las tengo yo</button></div></div>`,
+  mudanza:`<div class="det-section"><div class="det-section-title">Que tipo de mudanza?</div><div class="big-opts"><div class="big-opt" onclick="selDet(this,'tipo','chica')"><div class="big-opt-icon">📦</div><div class="big-opt-name">Pequena</div></div><div class="big-opt" onclick="selDet(this,'tipo','depto')"><div class="big-opt-icon">🏢</div><div class="big-opt-name">Departamento</div></div><div class="big-opt" onclick="selDet(this,'tipo','casa')"><div class="big-opt-icon">🏠</div><div class="big-opt-name">Casa completa</div></div></div></div><div class="det-section"><div class="det-section-title">Hay ascensor?</div><div class="sino-chips"><button class="sino-chip" onclick="selSino(this,'asc','si')">Si</button><button class="sino-chip" onclick="selSino(this,'asc','no')">Solo escaleras</button></div></div>`,
+  generico:`<div class="det-section"><div class="det-section-title">Con que urgencia lo necesitas?</div><div class="big-opts"><div class="big-opt" onclick="selDet(this,'urgencia','urgente')"><div class="big-opt-icon">🚨</div><div class="big-opt-name">Urgente</div></div><div class="big-opt" onclick="selDet(this,'urgencia','normal')"><div class="big-opt-icon">📅</div><div class="big-opt-name">Normal</div></div><div class="big-opt" onclick="selDet(this,'urgencia','flexible')"><div class="big-opt-icon">😌</div><div class="big-opt-name">Flexible</div></div></div></div><div class="det-section"><div class="det-section-title">El tasker debe traer materiales?</div><div class="sino-chips"><button class="sino-chip" onclick="selSino(this,'mat','si')">Si</button><button class="sino-chip" onclick="selSino(this,'mat','no')">No, los tengo yo</button></div></div>`
+};
+
+// ══ HANDLERS ══
+function onTituloChange() {
+  const v = document.getElementById('inp-titulo').value;
+  d.titulo = v.trim();
+  const c = document.getElementById('titulo-count');
+  c.textContent = v.length + ' / 80';
+  c.className = 'char-count' + (v.length >= 5 ? ' ok' : '');
+}
+function onFechaChange() {
+  const v = document.getElementById('inp-fecha').value;
+  if (v) { const dt = new Date(v + 'T00:00:00'); d.fecha = dt.toLocaleDateString('es-AR', {day:'numeric',month:'long',year:'numeric'}); }
+}
+function selCuando(el, val) {
+  document.querySelectorAll('.cuando-chip').forEach(c => c.classList.remove('sel'));
+  el.classList.add('sel'); d.cuando = val;
+  const ex = document.getElementById('fecha-extra');
+  if (val === 'flexible') { ex.classList.remove('show'); d.fecha = 'Soy flexible'; }
+  else { ex.classList.add('show'); }
+}
+function onComentChange() {
+  const v = document.getElementById('inp-coment').value;
+  d.coment = v.trim();
+  const c = document.getElementById('coment-count');
+  c.textContent = v.length + ' / 500';
+  c.className = 'char-count' + (v.length >= 10 ? ' ok' : '');
+}
+function onPresChange() { d.pres = parseInt(document.getElementById('inp-pres').value) || 0; }
+function setPres(val) { document.getElementById('inp-pres').value = val; d.pres = val; }
+function selDet(el, campo, val) { el.closest('.big-opts').querySelectorAll('.big-opt').forEach(e => e.classList.remove('sel')); el.classList.add('sel'); d.detalles[campo] = val; }
+function selNum(el, campo, val) { el.closest('.num-chips').querySelectorAll('.num-chip').forEach(e => e.classList.remove('sel')); el.classList.add('sel'); d.detalles[campo] = val; }
+function selSino(el, campo, val) { el.closest('.sino-chips').querySelectorAll('.sino-chip').forEach(e => e.classList.remove('sel')); el.classList.add('sel'); d.detalles[campo] = val; }
+
+// ══ NAVEGACION ══
+function irPaso(n) {
+  document.querySelectorAll('.pub-panel').forEach(p => p.classList.remove('activo'));
+  document.getElementById('panel-' + n)?.classList.add('activo');
+  for (let i = 1; i <= 4; i++) {
+    const s = document.getElementById('side-' + i);
+    if (!s) continue;
+    s.classList.remove('activo', 'done');
+    if (i < n) s.classList.add('done');
+    if (i === n) s.classList.add('activo');
+    const c = document.getElementById('conn-' + i);
+    if (c) c.classList.toggle('done', i < n);
+  }
+  document.getElementById('btn-back').style.display = n > 1 ? 'block' : 'none';
+  document.getElementById('footer-prog').textContent = 'Paso ' + n + ' de 4';
+  document.getElementById('btn-next').textContent = n === 4 ? 'Publicar tarea' : 'Siguiente';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function siguiente() {
+  if (!validar()) return;
+  if (paso === 2) generarDetalles();
+  if (paso === 4) { publicar(); return; }
+  paso++;
+  if (paso === 4) actualizarResumen();
+  irPaso(paso);
+}
+function volver() { if (paso > 1) { paso--; irPaso(paso); } }
+
+function validar() {
+  if (paso === 1) {
+    if (!d.titulo || d.titulo.length < 5) { showToast('Describe tu tarea en al menos 5 caracteres'); return false; }
+    if (!d.cuando) { showToast('Elegi cuando necesitas la tarea'); return false; }
+    if ((d.cuando === 'en-fecha' || d.cuando === 'antes-de') && !d.fecha) { showToast('Elegi una fecha'); return false; }
+  }
+  if (paso === 2) {
+    if (d.cp.length !== 4) { showToast('Ingresa un codigo postal de 4 digitos'); return false; }
+    if (!document.getElementById('cp-ok').classList.contains('show')) {
+      showToast('Esperando validacion del codigo postal...'); return false;
+    }
+    const dir = document.getElementById('inp-dir').value.trim();
+    if (!dir || dir.length < 5) {
+      document.getElementById('inp-dir').classList.add('error-field');
+      showToast('La direccion es obligatoria');
+      return false;
+    }
+    document.getElementById('inp-dir').classList.remove('error-field');
+    d.dir = dir;
+  }
+  if (paso === 3) {
+    if (!d.coment || d.coment.length < 10) { showToast('Agrega al menos 10 caracteres en los comentarios'); return false; }
+  }
+  return true;
+}
+
+function generarDetalles() {
+  const cat = detectCat(d.titulo);
+  const nombres = {limpieza:'limpieza',plomeria:'plomeria',pintura:'pintura',electricidad:'electricidad',jardin:'jardin',mudanza:'mudanza',carpinteria:'carpinteria',tecnologia:'tecnologia',mandados:'mandados',generico:'la tarea'};
+  document.getElementById('det-titulo').textContent = 'Detalles de ' + (nombres[cat] || 'la tarea');
+  document.getElementById('det-contenido').innerHTML = TMPL[cat] || TMPL.generico;
+  d.detalles = {};
+}
+
+function actualizarResumen() {
+  document.getElementById('res-titulo').textContent = d.titulo || '-';
+  let cuando = '-';
+  if (d.cuando === 'flexible') cuando = 'Soy flexible';
+  else if (d.cuando === 'en-fecha' && d.fecha) cuando = 'El ' + d.fecha;
+  else if (d.cuando === 'antes-de' && d.fecha) cuando = 'Antes del ' + d.fecha;
+  document.getElementById('res-cuando').textContent = cuando;
+  const ubi = d.localidad ? d.cp + ' - ' + d.localidad + (d.provincia ? ', ' + d.provincia : '') : d.cp;
+  document.getElementById('res-ubi').textContent = ubi + (d.dir ? ' | ' + d.dir : '');
+  document.getElementById('res-pres').textContent = d.pres > 0 ? '$' + Number(d.pres).toLocaleString('es-AR') : 'A convenir';
+}
+
+// ══ PUBLICAR ══
+async function publicar() {
+  const btn = document.getElementById('btn-next');
+  btn.textContent = 'Publicando...'; btn.disabled = true;
+
+  try {
+    const { data: { session } } = await db.auth.getSession();
+    if (!session) { window.location.replace('login.html'); return; }
+
+    const cuando = d.cuando === 'flexible' ? 'Soy flexible' : d.cuando === 'en-fecha' ? 'El ' + d.fecha : 'Antes del ' + d.fecha;
+    const cat = detectCat(d.titulo);
+    const zona = d.localidad ? d.localidad + (d.provincia ? ', ' + d.provincia : '') : 'CP ' + d.cp;
+    const detallesTexto = Object.entries(d.detalles).map(([k, v]) => k + ': ' + v).join(', ');
+    const descripcionFinal = (detallesTexto ? detallesTexto + '. ' : '') + d.coment;
+
+    const payload = {
+      user_id:     session.user.id,
+      titulo:      d.titulo,
+      categoria:   cat,
+      cat_icon:    getCatIcon(cat),
+      descripcion: descripcionFinal,
+      presupuesto: d.pres,
+      fecha:       cuando,
+      // Direccion PUBLICA: solo zona/localidad, SIN calle ni numero
+      // La direccion exacta queda privada (solo para el mapa)
+      direccion:   d.cp + ' - ' + zona,
+      estado:      'activa'
+    };
+
+    // lat/lng vienen de la localidad del CP (no de la calle exacta)
+    // Esto ubica el pin en la zona, no en la puerta del usuario
+    if (d.lat !== null) payload.lat = d.lat;
+    if (d.lng !== null) payload.lng = d.lng;
+
+    const { data: tarea, error } = await db.from('tareas').insert(payload).select().single();
+
+    if (error) {
+      console.error('Supabase error:', error);
+      showToast('Error al publicar: ' + error.message);
+      btn.textContent = 'Publicar tarea'; btn.disabled = false;
+      return;
+    }
+
+    document.getElementById('link-tarea').href = 'tarea.html?id=' + tarea.id;
+    mostrarExito();
+
+  } catch(e) {
+    console.error('Error:', e);
+    showToast('Error inesperado: ' + e.message);
+    btn.textContent = 'Publicar tarea'; btn.disabled = false;
+  }
+}
+
+function mostrarExito() {
+  document.querySelectorAll('.pub-panel').forEach(p => p.classList.remove('activo'));
+  document.getElementById('pub-success').classList.add('show');
+  document.getElementById('pub-footer').style.display = 'none';
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById('side-' + i)?.classList.add('done');
+    document.getElementById('conn-' + i)?.classList.add('done');
+  }
+}
+
+irPaso(1);
+</script>
+</body>
+</html>
