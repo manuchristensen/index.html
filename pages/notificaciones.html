@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChambaYa — Notificaciones</title>
+<link rel="stylesheet" href="../fonts.css">
+<link rel="stylesheet" href="../styles.css">
+<style>
+.notif-wrap{max-width:800px;margin:0 auto;padding:40px 32px 80px}
+
+/* HEADER */
+.notif-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
+.notif-titulo{font-size:1.6rem;font-weight:900;letter-spacing:-.3px}
+.btn-mark-all{padding:9px 18px;border:1.5px solid var(--borde);border-radius:var(--radio-pill);background:var(--blanco);font-family:'Nunito',sans-serif;font-weight:800;font-size:.82rem;cursor:pointer;color:var(--suave);transition:all .2s}
+.btn-mark-all:hover{border-color:var(--verde);color:var(--verde-o)}
+
+/* TABS */
+.notif-tabs{display:flex;background:var(--fondo);padding:4px;border-radius:var(--radio);margin-bottom:24px;width:fit-content;gap:4px}
+.notif-tab{padding:9px 20px;border-radius:9px;border:none;background:transparent;font-family:'Nunito',sans-serif;font-weight:800;font-size:.88rem;cursor:pointer;color:var(--suave);transition:all .2s}
+.notif-tab.activo{background:var(--blanco);color:var(--texto);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+
+/* LISTA */
+.notif-lista{display:flex;flex-direction:column;gap:0}
+
+.notif-item{
+  display:flex;align-items:flex-start;gap:16px;padding:18px 20px;
+  background:var(--blanco);border-bottom:1.5px solid var(--borde);
+  cursor:pointer;transition:background .15s;text-decoration:none;color:inherit;
+  position:relative;
+}
+.notif-item:first-child{border-radius:var(--radio-lg) var(--radio-lg) 0 0}
+.notif-item:last-child{border-radius:0 0 var(--radio-lg) var(--radio-lg);border-bottom:none}
+.notif-item:only-child{border-radius:var(--radio-lg)}
+.notif-item:hover{background:#F8FAFC}
+.notif-item.no-leida{background:#F0FDF9}
+.notif-item.no-leida:hover{background:#E6FAF1}
+
+/* Punto no leida */
+.notif-dot{width:9px;height:9px;border-radius:50%;background:var(--verde);flex-shrink:0;margin-top:6px;transition:opacity .2s}
+.notif-dot.leida{opacity:0}
+
+/* Avatar actor */
+.notif-av-wrap{position:relative;flex-shrink:0}
+.notif-av{
+  width:44px;height:44px;border-radius:50%;
+  background:var(--fondo);border:2px solid var(--borde);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;font-weight:900;color:var(--suave);overflow:hidden;
+  text-decoration:none;transition:border-color .2s;
+}
+.notif-av:hover{border-color:var(--verde)}
+.notif-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.notif-tipo-ico{
+  position:absolute;bottom:-2px;right:-2px;
+  width:20px;height:20px;border-radius:50%;
+  background:var(--blanco);border:2px solid var(--borde);
+  display:flex;align-items:center;justify-content:center;font-size:.7rem;
+}
+
+/* Contenido */
+.notif-body{flex:1;min-width:0}
+.notif-texto{font-size:.9rem;font-weight:800;color:var(--texto);margin-bottom:4px;line-height:1.4}
+.notif-texto a{color:var(--verde-o);text-decoration:none;font-weight:900}
+.notif-texto a:hover{text-decoration:underline}
+.notif-mensaje{font-size:.82rem;font-weight:700;color:var(--suave);margin-bottom:6px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:520px}
+.notif-tiempo{font-size:.72rem;font-weight:800;color:var(--suave)}
+
+/* Badge contador en nav */
+.nav-notif-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;background:var(--rojo);color:#fff;font-size:.62rem;font-weight:900;border-radius:var(--radio-pill);padding:0 5px;margin-left:4px}
+
+/* Empty */
+.notif-empty{text-align:center;padding:72px 20px;background:var(--blanco);border-radius:var(--radio-lg);border:1.5px solid var(--borde)}
+.notif-empty-ico{font-size:3rem;margin-bottom:16px}
+.notif-empty-titulo{font-size:1rem;font-weight:900;margin-bottom:8px}
+.notif-empty-sub{font-size:.88rem;font-weight:700;color:var(--suave)}
+
+/* Skeleton */
+.skel-notif{display:flex;align-items:flex-start;gap:16px;padding:18px 20px;background:var(--blanco);border-bottom:1.5px solid var(--borde)}
+.skel-notif:first-child{border-radius:var(--radio-lg) var(--radio-lg) 0 0}
+.skel-notif:last-child{border-radius:0 0 var(--radio-lg) var(--radio-lg);border-bottom:none}
+.sk{background:linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:8px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@media(max-width:600px){.notif-wrap{padding:24px 16px 60px}}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="home.html" class="nav-logo">Chamba<em>Ya</em></a>
+  <a href="publicar.html" class="nav-publicar" style="margin-left:32px">Publicar tarea</a>
+  <div class="nav-links">
+    <a href="explorar.html" class="nav-link">Explorar tareas</a>
+    <a href="mistareas.html" class="nav-link">Mis tareas</a>
+  </div>
+  <div class="nav-right">
+    <a href="ayuda.html" class="nav-right-link">Ayuda</a>
+    <a href="notificaciones.html" class="nav-right-link activa">Notificaciones</a>
+    <a href="mensajes.html" class="nav-right-link">Mensajes</a>
+    <div class="nav-av-wrap">
+      <div class="nav-av" id="nav-av" onclick="toggleDropdown(event)"><span class="nav-av-inicial" id="nav-av-inicial">?</span></div>
+      <div class="nav-dropdown" id="nav-dropdown">
+        <div class="dd-header"><div class="dd-nombre" id="dd-nombre">Cargando...</div><div class="dd-sub" onclick="irPerfil()">Ver perfil público</div></div>
+        <a href="mistareas.html" class="dd-item">Mis tareas <span class="dd-arrow">›</span></a>
+        <div class="dd-sep"></div>
+        <a href="configuracion.html" class="dd-item">Configuración <span class="dd-arrow">›</span></a>
+        <div class="dd-sep"></div>
+        <div class="dd-item rojo" onclick="cerrarSesion()">Cerrar sesión</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="notif-wrap">
+  <div class="notif-header">
+    <div>
+      <div class="notif-titulo">🔔 Notificaciones</div>
+    </div>
+    <button class="btn-mark-all" onclick="marcarTodasLeidas()" id="btn-mark">Marcar todas como leídas</button>
+  </div>
+
+  <div class="notif-tabs">
+    <button class="notif-tab activo" id="tab-todas" onclick="setTab('todas',this)">Todas</button>
+    <button class="notif-tab" id="tab-ofertas" onclick="setTab('oferta',this)">Ofertas</button>
+    <button class="notif-tab" id="tab-preguntas" onclick="setTab('pregunta',this)">Preguntas</button>
+    <button class="notif-tab" id="tab-respuestas" onclick="setTab('respuesta',this)">Respuestas</button>
+  </div>
+
+  <div id="notif-contenido">
+    <!-- Skeletons -->
+    <div class="skel-notif"><div class="sk" style="width:44px;height:44px;border-radius:50%;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:8px"><div class="sk" style="height:14px;width:70%"></div><div class="sk" style="height:12px;width:50%"></div><div class="sk" style="height:10px;width:20%"></div></div></div>
+    <div class="skel-notif"><div class="sk" style="width:44px;height:44px;border-radius:50%;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:8px"><div class="sk" style="height:14px;width:60%"></div><div class="sk" style="height:12px;width:40%"></div><div class="sk" style="height:10px;width:15%"></div></div></div>
+    <div class="skel-notif"><div class="sk" style="width:44px;height:44px;border-radius:50%;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:8px"><div class="sk" style="height:14px;width:75%"></div><div class="sk" style="height:12px;width:45%"></div><div class="sk" style="height:10px;width:18%"></div></div></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../navbar.js"></script>
+<script>
+// db desde navbar.js
+let miUserId = null;
+let todasNotifs = [];
+let tabActual = 'todas';
+
+const TIPO_CONFIG = {
+  oferta:    { ico:'💰', color:'#D1FAE5', label:'hizo una oferta en' },
+  pregunta:  { ico:'💬', color:'#EFF6FF', label:'preguntó en' },
+  respuesta: { ico:'💬', color:'#F0FDF9', label:'respondió tu pregunta en' },
+  tarea_nueva:{ ico:'📋', color:'#FEF9C3', label:'nueva tarea disponible' },
+};
+
+(async () => {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) { window.location.replace('login.html'); return; }
+  miUserId = session.user.id;
+  await cargarNotificaciones();
+  iniciarRealtime();
+})();
+
+function irPerfil() { window.location.href = 'perfil.html?id=' + miUserId; }
+
+async function cargarNotificaciones() {
+  try {
+    const { data, error } = await db.from('notificaciones')
+      .select('*').eq('user_id', miUserId)
+      .order('created_at', { ascending: false }).limit(60);
+
+    if (error) throw error;
+    todasNotifs = data || [];
+    renderNotificaciones();
+  } catch(e) {
+    console.error(e);
+    document.getElementById('notif-contenido').innerHTML = `<div class="notif-empty"><div class="notif-empty-ico">⚠️</div><div class="notif-empty-titulo">Error al cargar</div><div class="notif-empty-sub">Intenta recargar la página</div></div>`;
+  }
+}
+
+function renderNotificaciones() {
+  const cont = document.getElementById('notif-contenido');
+  let filtradas = tabActual === 'todas' ? todasNotifs : todasNotifs.filter(n => n.tipo === tabActual);
+
+  if (!filtradas.length) {
+    const msgs = { todas:'No tenés notificaciones todavía', oferta:'No tenés ofertas nuevas', pregunta:'No tenés preguntas nuevas', respuesta:'No tenés respuestas nuevas' };
+    cont.innerHTML = `<div class="notif-empty"><div class="notif-empty-ico">🔔</div><div class="notif-empty-titulo">${msgs[tabActual]||'Sin notificaciones'}</div><div class="notif-empty-sub">Cuando alguien interactúe con tus tareas, va a aparecer acá.</div></div>`;
+    return;
+  }
+
+  // Agrupar por fecha
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const ayer = new Date(hoy); ayer.setDate(ayer.getDate()-1);
+  const grupos = {};
+  filtradas.forEach(n => {
+    const d = new Date(n.created_at); d.setHours(0,0,0,0);
+    let grupo;
+    if (d.getTime() === hoy.getTime()) grupo = 'Hoy';
+    else if (d.getTime() === ayer.getTime()) grupo = 'Ayer';
+    else grupo = d.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
+    if (!grupos[grupo]) grupos[grupo] = [];
+    grupos[grupo].push(n);
+  });
+
+  let html = '';
+  for (const [grupo, items] of Object.entries(grupos)) {
+    html += `<div style="font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--suave);padding:16px 4px 8px">${grupo}</div>`;
+    html += `<div style="border-radius:var(--radio-lg);overflow:hidden;border:1.5px solid var(--borde);margin-bottom:4px">`;
+    items.forEach((n, i) => { html += renderNotifItem(n, i, items.length); });
+    html += '</div>';
+  }
+  cont.innerHTML = html;
+
+  // Marcar como leídas al verlas
+  marcarLeidas(filtradas.filter(n => !n.leida).map(n => n.id));
+}
+
+function renderNotifItem(n) {
+  const cfg = TIPO_CONFIG[n.tipo] || { ico:'📌', color:'#F1F5F9', label:'interactuó en' };
+  const actor = n.actor_nombre || 'Un usuario';
+  const hace = tiempoRelativo(new Date(n.created_at));
+  const ini = actor.charAt(0).toUpperCase();
+  const link = n.tarea_id ? `tarea.html?id=${n.tarea_id}` : '#';
+  const leida = n.leida;
+
+  // Texto según tipo
+  let textoHTML = '';
+  if (n.tipo === 'oferta') {
+    textoHTML = `<a href="perfil.html?id=${n.actor_id||''}" onclick="event.stopPropagation()">${escH(actor)}</a> hizo una oferta en tu tarea`;
+  } else if (n.tipo === 'pregunta') {
+    textoHTML = `<a href="perfil.html?id=${n.actor_id||''}" onclick="event.stopPropagation()">${escH(actor)}</a> preguntó en tu tarea`;
+  } else if (n.tipo === 'respuesta') {
+    textoHTML = `El propietario respondió tu pregunta`;
+  } else {
+    textoHTML = escH(n.titulo);
+  }
+
+  return `
+    <a class="notif-item${leida?'':' no-leida'}" href="${link}" onclick="marcarUnaLeida('${n.id}')">
+      <div style="width:9px;height:9px;border-radius:50%;background:var(--verde);flex-shrink:0;margin-top:6px;opacity:${leida?0:1};transition:opacity .2s"></div>
+      <div class="notif-av-wrap">
+        <a class="notif-av" href="perfil.html?id=${n.actor_id||''}" onclick="event.stopPropagation()" style="background:${cfg.color}">${ini}</a>
+        <div class="notif-tipo-ico">${cfg.ico}</div>
+      </div>
+      <div class="notif-body">
+        <div class="notif-texto">${textoHTML}</div>
+        ${n.mensaje ? `<div class="notif-mensaje">"${escH(n.mensaje)}"</div>` : ''}
+        <div class="notif-tiempo">${hace}</div>
+      </div>
+    </a>`;
+}
+
+function setTab(tipo, el) {
+  tabActual = tipo;
+  document.querySelectorAll('.notif-tab').forEach(t => t.classList.remove('activo'));
+  el.classList.add('activo');
+  renderNotificaciones();
+}
+
+async function marcarLeidas(ids) {
+  if (!ids.length) return;
+  try {
+    await db.from('notificaciones').update({ leida: true }).in('id', ids);
+    ids.forEach(id => {
+      const n = todasNotifs.find(n => n.id === id);
+      if (n) n.leida = true;
+    });
+  } catch(e) {}
+}
+
+async function marcarUnaLeida(id) {
+  const n = todasNotifs.find(n => n.id === id);
+  if (n && !n.leida) { n.leida = true; await marcarLeidas([id]); }
+}
+
+async function marcarTodasLeidas() {
+  const noLeidas = todasNotifs.filter(n => !n.leida).map(n => n.id);
+  if (!noLeidas.length) { showToast('Ya están todas leídas'); return; }
+  await marcarLeidas(noLeidas);
+  renderNotificaciones();
+  showToast('Todas marcadas como leídas');
+}
+
+function iniciarRealtime() {
+  db.channel('notifs-rt').on('postgres_changes',{event:'INSERT',schema:'public',table:'notificaciones',filter:`user_id=eq.${miUserId}`}, payload => {
+    if (payload.new) {
+      todasNotifs.unshift(payload.new);
+      renderNotificaciones();
+    }
+  }).subscribe();
+}
+
+function tiempoRelativo(fecha) {
+  const diff = Date.now() - fecha.getTime();
+  const mins = Math.floor(diff/60000), horas = Math.floor(diff/3600000), dias = Math.floor(diff/86400000);
+  if (mins<2) return 'Ahora mismo';
+  if (mins<60) return `Hace ${mins} min`;
+  if (horas<24) return `Hace ${horas}h`;
+  if (dias<7) return `Hace ${dias} día${dias!==1?'s':''}`;
+  return fecha.toLocaleDateString('es-AR',{day:'numeric',month:'short'});
+}
+
+function escH(t){if(!t)return'';const d=document.createElement('div');d.textContent=String(t);return d.innerHTML;}
+</script>
+</body>
+</html>

@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChambaYa — Tarea</title>
+<link rel="stylesheet" href="../fonts.css">
+<link rel="stylesheet" href="../styles.css">
+<style>
+.tarea-wrap{max-width:1100px;margin:0 auto;padding:36px 32px 80px;display:grid;grid-template-columns:1fr 380px;gap:28px;align-items:start}
+
+/* HEADER */
+.tarea-header{background:var(--blanco);border-radius:var(--radio-lg);border:1.5px solid var(--borde);padding:32px;margin-bottom:20px;box-shadow:var(--sombra)}
+.tarea-badges{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.tarea-cat-badge{display:inline-flex;align-items:center;gap:6px;background:var(--verde-c);color:var(--verde-o);font-size:.78rem;font-weight:900;padding:5px 12px;border-radius:var(--radio-pill);text-transform:uppercase;letter-spacing:.5px}
+.estado-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:var(--radio-pill);font-size:.78rem;font-weight:900}
+.ep-activa{background:var(--verde-c);color:var(--verde-o)}
+.ep-cancelada{background:var(--rojo-c);color:var(--rojo)}
+.ep-en-curso{background:#FFF7ED;color:#C2410C}
+.ep-terminada{background:var(--azul-c);color:#1D4ED8}
+.tarea-titulo-h{font-size:1.55rem;font-weight:900;letter-spacing:-.3px;margin-bottom:18px;line-height:1.25}
+.tarea-meta-row{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:22px}
+.tarea-meta-item{display:flex;align-items:center;gap:6px;font-size:.83rem;font-weight:800;color:var(--suave)}
+.tarea-autor-row{display:flex;align-items:center;gap:14px;padding-top:18px;border-top:1.5px solid var(--borde)}
+.autor-av{width:42px;height:42px;border-radius:50%;background:var(--fondo);border:2px solid var(--borde);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:900;color:var(--suave);overflow:hidden;flex-shrink:0;cursor:pointer;transition:border-color .2s}
+.autor-av:hover{border-color:var(--verde)}
+.autor-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.autor-nombre{font-size:.92rem;font-weight:900;color:var(--texto);cursor:pointer}
+.autor-nombre:hover{color:var(--verde-o);text-decoration:underline}
+.autor-sub{font-size:.75rem;font-weight:700;color:var(--suave)}
+
+/* BANNER CANCELADA */
+.banner-cancelada{background:linear-gradient(135deg,#FEF2F2,#FEE2E2);border:1.5px solid #FECACA;border-radius:var(--radio-lg);padding:28px;margin-bottom:20px;box-shadow:var(--sombra)}
+.bc-ico{font-size:2.2rem;margin-bottom:10px}
+.bc-titulo{font-size:1.4rem;font-weight:900;color:var(--rojo);margin-bottom:6px}
+.bc-sub{font-size:.88rem;font-weight:700;color:#B91C1C;margin-bottom:8px}
+.bc-meta{font-size:.78rem;font-weight:700;color:#B91C1C;opacity:.75}
+
+/* DETALLES */
+.tarea-detalles{background:var(--blanco);border-radius:var(--radio-lg);border:1.5px solid var(--borde);padding:26px;margin-bottom:20px;box-shadow:var(--sombra)}
+.det-titulo-sec{font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--suave);margin-bottom:14px}
+.det-pills{display:flex;flex-wrap:wrap;gap:8px}
+.det-pill{background:var(--fondo);border:1.5px solid var(--borde);border-radius:var(--radio-pill);padding:7px 14px;font-size:.82rem;font-weight:800;color:var(--texto)}
+.det-coment{font-size:.9rem;font-weight:700;color:var(--texto);line-height:1.65;margin-top:14px;padding-top:14px;border-top:1.5px solid var(--borde)}
+
+/* Q&A */
+.qa-card{background:var(--blanco);border-radius:var(--radio-lg);border:1.5px solid var(--borde);padding:26px;box-shadow:var(--sombra)}
+.qa-titulo{font-size:1rem;font-weight:900;margin-bottom:4px}
+.qa-sub{font-size:.82rem;font-weight:700;color:var(--suave);margin-bottom:22px}
+.qa-lista{display:flex;flex-direction:column;gap:22px;margin-bottom:22px}
+.qa-empty{text-align:center;padding:28px 0;color:var(--suave);font-size:.88rem;font-weight:700}
+
+/* Pregunta individual con thread */
+.qa-item{border-left:3px solid var(--borde);padding-left:14px;transition:border-color .2s}
+.qa-item:hover{border-left-color:var(--verde)}
+.qa-pregunta-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}
+.qa-av{width:32px;height:32px;border-radius:50%;background:var(--fondo);border:2px solid var(--borde);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:900;color:var(--suave);flex-shrink:0;overflow:hidden;cursor:pointer;text-decoration:none;transition:border-color .2s}
+.qa-av:hover{border-color:var(--verde)}
+.qa-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.qa-burbuja-wrap{flex:1}
+.qa-nombre{font-size:.72rem;font-weight:900;color:var(--suave);margin-bottom:3px;cursor:pointer}
+.qa-nombre:hover{color:var(--verde-o)}
+.qa-burbuja{background:var(--fondo);border-radius:0 12px 12px 12px;padding:11px 15px;font-size:.87rem;font-weight:700;color:var(--texto);line-height:1.5;word-break:break-word;display:inline-block;max-width:100%}
+.qa-hora{font-size:.68rem;font-weight:700;color:var(--suave);margin-top:3px}
+
+/* Respuesta */
+.qa-resp-wrap{margin-left:42px;margin-top:8px}
+.qa-resp-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:6px}
+.qa-resp-av{width:28px;height:28px;border-radius:50%;background:var(--verde-c);border:2px solid var(--verde);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:900;color:var(--verde-o);flex-shrink:0}
+.qa-resp-body{}
+.qa-resp-etiqueta{font-size:.68rem;font-weight:900;color:var(--verde-o);margin-bottom:2px;text-transform:uppercase;letter-spacing:.4px}
+.qa-resp-burbuja{background:var(--verde-c);border-radius:0 12px 12px 12px;padding:10px 14px;font-size:.85rem;font-weight:700;color:var(--verde-o);line-height:1.5;word-break:break-word;display:inline-block;max-width:100%}
+.qa-resp-hora{font-size:.65rem;font-weight:700;color:var(--suave);margin-top:2px}
+.qa-pendiente{font-size:.75rem;font-weight:700;color:var(--suave);font-style:italic;margin-left:42px;margin-top:4px}
+
+/* Form responder (autor) */
+.qa-resp-form{margin-left:42px;margin-top:8px}
+.qa-resp-input{width:100%;background:var(--blanco);border:1.5px solid var(--borde);border-radius:var(--radio);padding:10px 14px;font-family:'Nunito',sans-serif;font-size:.87rem;font-weight:700;color:var(--texto);outline:none;resize:none;transition:border-color .2s;min-height:38px;max-height:100px}
+.qa-resp-input:focus{border-color:var(--verde);box-shadow:0 0 0 3px rgba(0,201,107,.1)}
+.qa-resp-input::placeholder{color:#CBD5E1}
+.qa-resp-btns{display:flex;gap:8px;margin-top:6px}
+.btn-resp{padding:7px 16px;background:var(--verde);color:#fff;border:none;border-radius:var(--radio-pill);font-family:'Nunito',sans-serif;font-weight:900;font-size:.8rem;cursor:pointer;transition:all .2s}
+.btn-resp:hover{background:var(--verde-o)}
+.btn-resp:disabled{opacity:.5;cursor:not-allowed}
+.btn-resp-cancel{padding:7px 14px;background:transparent;color:var(--suave);border:1.5px solid var(--borde);border-radius:var(--radio-pill);font-family:'Nunito',sans-serif;font-weight:900;font-size:.8rem;cursor:pointer;transition:all .2s}
+.btn-resp-cancel:hover{border-color:var(--texto);color:var(--texto)}
+
+/* Form nueva pregunta */
+.qa-alerta{display:none;background:#FFF7ED;border:1.5px solid #FED7AA;border-radius:var(--radio);padding:9px 13px;font-size:.78rem;font-weight:800;color:#92400E;margin-bottom:10px}
+.qa-alerta.show{display:block}
+.qa-input-row{display:flex;gap:10px;align-items:flex-end}
+.qa-input{flex:1;background:var(--fondo);border:2px solid var(--borde);border-radius:var(--radio);padding:12px 16px;font-family:'Nunito',sans-serif;font-size:.9rem;font-weight:700;color:var(--texto);outline:none;resize:none;min-height:44px;max-height:120px;transition:border-color .2s}
+.qa-input:focus{border-color:var(--verde);background:var(--blanco)}
+.qa-input::placeholder{color:#CBD5E1}
+.qa-send{width:44px;height:44px;border:none;border-radius:var(--radio);background:var(--verde);color:#fff;font-size:1.1rem;cursor:pointer;flex-shrink:0;transition:all .2s;display:flex;align-items:center;justify-content:center}
+.qa-send:hover{background:var(--verde-o)}
+.qa-send:disabled{opacity:.4;cursor:not-allowed}
+.qa-aviso{font-size:.7rem;font-weight:700;color:var(--suave);margin-top:7px;text-align:center}
+
+/* SIDEBAR */
+.oferta-card,.autor-panel{background:var(--blanco);border-radius:var(--radio-lg);border:1.5px solid var(--borde);padding:26px;margin-bottom:20px;box-shadow:var(--sombra);position:sticky;top:86px}
+
+/* AUTOR PANEL */
+.autor-panel-titulo{font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--suave);margin-bottom:16px}
+.autor-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.autor-stat{background:var(--fondo);border-radius:var(--radio);padding:12px;text-align:center}
+.autor-stat-num{font-size:1.4rem;font-weight:900;color:var(--texto)}
+.autor-stat-lbl{font-size:.68rem;font-weight:800;color:var(--suave);text-transform:uppercase;letter-spacing:.5px}
+.ofertas-lista{display:flex;flex-direction:column;gap:8px;margin-bottom:18px;max-height:260px;overflow-y:auto}
+.ofertas-lista::-webkit-scrollbar{width:3px}
+.ofertas-lista::-webkit-scrollbar-thumb{background:var(--borde);border-radius:4px}
+.oferta-item{background:var(--fondo);border-radius:var(--radio);padding:12px 14px;display:flex;align-items:flex-start;gap:10px;border:1.5px solid var(--borde);transition:border-color .2s;cursor:pointer;text-decoration:none}
+.oferta-item:hover{border-color:var(--verde)}
+.oferta-av{width:34px;height:34px;border-radius:50%;background:var(--verde-c);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:900;color:var(--verde-o);flex-shrink:0}
+.oferta-info{flex:1;min-width:0}
+.oferta-nombre{font-size:.82rem;font-weight:900;color:var(--texto)}
+.oferta-coment{font-size:.72rem;font-weight:700;color:var(--suave);margin-top:2px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.oferta-monto{font-size:.95rem;font-weight:900;color:var(--verde-o);flex-shrink:0}
+.ofertas-empty{text-align:center;padding:16px;color:var(--suave);font-size:.82rem;font-weight:700}
+.btn-cancelar{width:100%;padding:11px;border:2px solid var(--rojo);border-radius:var(--radio-pill);background:transparent;font-family:'Nunito',sans-serif;font-weight:900;font-size:.88rem;cursor:pointer;color:var(--rojo);transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-cancelar:hover{background:var(--rojo-c)}
+
+/* TASKER PANEL */
+.oferta-titulo{font-size:1rem;font-weight:900;margin-bottom:5px}
+.oferta-sub{font-size:.8rem;font-weight:700;color:var(--suave);margin-bottom:16px}
+.oferta-pres-ref{background:var(--fondo);border-radius:var(--radio);padding:13px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.pres-label{font-size:.7rem;font-weight:900;text-transform:uppercase;letter-spacing:.5px;color:var(--suave)}
+.pres-valor{font-size:1.2rem;font-weight:900;color:var(--verde-o)}
+.oferta-input-wrap{position:relative;margin-bottom:10px}
+.oferta-prefix{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:.95rem;font-weight:900;color:var(--suave)}
+.oferta-input{width:100%;background:var(--blanco);border:2px solid var(--borde);border-radius:var(--radio);padding:12px 12px 12px 30px;font-family:'Nunito',sans-serif;font-size:1.05rem;font-weight:900;color:var(--texto);outline:none;transition:border-color .2s}
+.oferta-input:focus{border-color:var(--verde);box-shadow:0 0 0 3px rgba(0,201,107,.1)}
+.oferta-coment-input{width:100%;background:var(--blanco);border:2px solid var(--borde);border-radius:var(--radio);padding:11px 13px;font-family:'Nunito',sans-serif;font-size:.87rem;font-weight:700;color:var(--texto);outline:none;resize:none;min-height:68px;max-height:110px;transition:border-color .2s;margin-bottom:10px}
+.oferta-coment-input:focus{border-color:var(--verde);box-shadow:0 0 0 3px rgba(0,201,107,.1)}
+.oferta-coment-input::placeholder{color:#CBD5E1}
+.oferta-nota{font-size:.74rem;font-weight:700;color:var(--suave);margin-bottom:12px;line-height:1.5}
+.oferta-nota strong{color:var(--texto)}
+.btn-ofertar{width:100%;padding:13px;border:none;border-radius:var(--radio-pill);background:var(--verde);font-family:'Nunito',sans-serif;font-weight:900;font-size:.95rem;cursor:pointer;color:#fff;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-ofertar:hover{background:var(--verde-o);transform:translateY(-1px);box-shadow:0 4px 14px rgba(0,196,107,.3)}
+.btn-ofertar:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.oferta-enviada{display:none;background:var(--verde-c);border-radius:var(--radio-lg);padding:20px;text-align:center}
+.oferta-enviada.show{display:block}
+.oferta-enviada-ico{font-size:2rem;margin-bottom:6px}
+.oferta-enviada-titulo{font-size:.95rem;font-weight:900;color:var(--verde-o);margin-bottom:3px}
+.oferta-enviada-txt{font-size:.8rem;font-weight:700;color:var(--verde-o);opacity:.85}
+
+/* INFO CARD */
+.info-card{background:var(--blanco);border-radius:var(--radio-lg);border:1.5px solid var(--borde);padding:20px;box-shadow:var(--sombra)}
+.info-titulo{font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.8px;color:var(--suave);margin-bottom:12px}
+.info-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--borde)}
+.info-row:last-child{border-bottom:none;padding-bottom:0}
+.info-key{font-size:.78rem;font-weight:800;color:var(--suave);flex-shrink:0}
+.info-val{font-size:.82rem;font-weight:900;color:var(--texto);text-align:right}
+
+/* LOGIN GATE */
+.login-gate{background:var(--fondo);border:2px dashed var(--borde);border-radius:var(--radio-lg);padding:22px;text-align:center}
+.login-gate-ico{font-size:1.8rem;margin-bottom:8px}
+.login-gate-txt{font-size:.86rem;font-weight:800;color:var(--suave);margin-bottom:12px}
+
+/* MODAL CANCELAR */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal-box{background:var(--blanco);border-radius:var(--radio-lg);padding:36px;max-width:400px;width:90%;box-shadow:var(--sombra-lg);text-align:center}
+.modal-ico{font-size:2.5rem;margin-bottom:12px}
+.modal-titulo{font-size:1.15rem;font-weight:900;margin-bottom:8px}
+.modal-sub{font-size:.86rem;font-weight:700;color:var(--suave);margin-bottom:26px;line-height:1.6}
+.modal-btns{display:flex;gap:12px;justify-content:center}
+.btn-modal-volver{flex:1;padding:12px;border:2px solid var(--borde);border-radius:var(--radio-pill);background:var(--blanco);font-family:'Nunito',sans-serif;font-weight:900;font-size:.88rem;cursor:pointer;color:var(--suave);transition:all .2s}
+.btn-modal-volver:hover{border-color:var(--texto);color:var(--texto)}
+.btn-modal-confirmar{flex:1;padding:12px;border:none;border-radius:var(--radio-pill);background:var(--rojo);font-family:'Nunito',sans-serif;font-weight:900;font-size:.88rem;cursor:pointer;color:#fff;transition:all .2s}
+.btn-modal-confirmar:hover{background:#DC2626}
+
+@media(max-width:820px){.tarea-wrap{grid-template-columns:1fr;padding:20px 16px 60px}.autor-panel,.oferta-card{position:static}}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="home.html" class="nav-logo">Chamba<em>Ya</em></a>
+  <a href="publicar.html" class="nav-publicar" style="margin-left:32px">Publicar tarea</a>
+  <div class="nav-links">
+    <a href="explorar.html" class="nav-link">Explorar tareas</a>
+    <a href="mistareas.html" class="nav-link">Mis tareas</a>
+  </div>
+  <div class="nav-right">
+    <a href="ayuda.html" class="nav-right-link">Ayuda</a>
+    <a href="notificaciones.html" class="nav-right-link" id="nav-notif-link">Notificaciones</a>
+    <a href="mensajes.html" class="nav-right-link">Mensajes</a>
+    <div class="nav-av-wrap">
+      <div class="nav-av" id="nav-av" onclick="toggleDropdown(event)"><span class="nav-av-inicial" id="nav-av-inicial">?</span></div>
+      <div class="nav-dropdown" id="nav-dropdown">
+        <div class="dd-header"><div class="dd-nombre" id="dd-nombre">Cargando...</div><div class="dd-sub" onclick="window.location.href='perfil.html?id='+miUserId">Ver perfil público</div></div>
+        <a href="mistareas.html" class="dd-item">Mis tareas <span class="dd-arrow">›</span></a>
+        <div class="dd-sep"></div>
+        <a href="configuracion.html" class="dd-item">Configuración <span class="dd-arrow">›</span></a>
+        <div class="dd-sep"></div>
+        <div class="dd-item rojo" onclick="cerrarSesion()">Cerrar sesión</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div style="background:var(--blanco);border-bottom:1.5px solid var(--borde);padding:11px 32px">
+  <div style="max-width:1100px;margin:0 auto;font-size:.8rem;font-weight:800;color:var(--suave)">
+    <a href="home.html" style="color:var(--suave);text-decoration:none">Inicio</a>
+    <span style="margin:0 8px">›</span>
+    <a href="explorar.html" style="color:var(--suave);text-decoration:none">Explorar tareas</a>
+    <span style="margin:0 8px">›</span>
+    <span id="bc-titulo" style="color:var(--texto)">Cargando...</span>
+  </div>
+</div>
+
+<div class="tarea-wrap">
+  <!-- COLUMNA PRINCIPAL -->
+  <div>
+    <div class="tarea-header" id="tarea-header">
+      <div class="tarea-badges">
+        <div class="tarea-cat-badge" id="h-cat">⏳ Cargando...</div>
+        <span class="estado-chip ep-activa" id="h-estado">🟢 Activa</span>
+      </div>
+      <div class="tarea-titulo-h" id="h-titulo">Cargando...</div>
+      <div class="tarea-meta-row">
+        <div class="tarea-meta-item">📅 <span id="h-cuando">—</span></div>
+        <div class="tarea-meta-item">📍 <span id="h-zona">—</span></div>
+        <div class="tarea-meta-item">🕐 <span id="h-fecha-pub">—</span></div>
+      </div>
+      <div class="tarea-autor-row">
+        <a class="autor-av" id="h-autor-av" href="#" onclick="irAlPerfil(event)">?</a>
+        <div>
+          <div class="autor-nombre" id="h-autor-nombre" onclick="irAlPerfil()">Cargando...</div>
+          <div class="autor-sub">Publicó esta tarea</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="banner-cancelada" id="banner-cancelada" style="display:none">
+      <div class="bc-ico">❌</div>
+      <div class="bc-titulo">Esta tarea fue cancelada</div>
+      <div class="bc-sub">El dueño decidió cancelarla.</div>
+      <div class="bc-meta" id="bc-fecha-cancel"></div>
+    </div>
+
+    <div class="tarea-detalles">
+      <div class="det-titulo-sec">Detalles</div>
+      <div class="det-pills" id="det-pills"></div>
+      <div class="det-coment" id="det-coment"></div>
+    </div>
+
+    <!-- Q&A -->
+    <div class="qa-card" id="qa-card">
+      <div class="qa-titulo">💬 Preguntas y respuestas</div>
+      <div class="qa-sub" id="qa-sub-txt">Hacé tu consulta. Solo el dueño de la tarea puede responder.</div>
+
+      <div class="qa-lista" id="qa-lista">
+        <div class="qa-empty" id="qa-empty">Todavía no hay preguntas. ¡Sé el primero! 👋</div>
+      </div>
+
+      <!-- Form visitante (no autor) -->
+      <div id="qa-form-visitante" style="display:none">
+        <div class="qa-alerta" id="qa-alerta">⚠️ No se pueden compartir números de teléfono.</div>
+        <div class="qa-input-row">
+          <textarea class="qa-input" id="qa-input" placeholder="Hacé una pregunta sobre esta tarea..." rows="1" maxlength="400"
+            onkeydown="onQAKey(event)" oninput="autoH(this)"></textarea>
+          <button class="qa-send" id="qa-send" onclick="enviarPregunta()" title="Enviar">➤</button>
+        </div>
+        <div class="qa-aviso">🔒 Solo el dueño puede responder. Tu pregunta es visible para todos.</div>
+      </div>
+
+      <!-- Aviso autor -->
+      <div id="qa-form-autor" style="display:none">
+        <div style="background:var(--verde-c);border-radius:var(--radio);padding:13px;font-size:.84rem;font-weight:800;color:var(--verde-o);text-align:center">
+          ✏️ Sos el dueño. Respondé las preguntas de arriba cuando lleguen.
+        </div>
+      </div>
+
+      <!-- Sin sesión -->
+      <div class="login-gate" id="qa-login-gate" style="display:none">
+        <div class="login-gate-ico">🔒</div>
+        <div class="login-gate-txt">Iniciá sesión para hacer preguntas</div>
+        <a href="login.html" style="display:inline-flex;background:var(--verde);color:#fff;font-family:Nunito,sans-serif;font-weight:900;padding:10px 22px;border-radius:var(--radio-pill);text-decoration:none;font-size:.88rem">Entrar</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div>
+    <!-- PANEL AUTOR -->
+    <div class="autor-panel" id="panel-autor" style="display:none">
+      <div class="autor-panel-titulo">Tu tarea</div>
+      <div class="autor-stats">
+        <div class="autor-stat"><div class="autor-stat-num" id="stat-ofertas">0</div><div class="autor-stat-lbl">Ofertas</div></div>
+        <div class="autor-stat"><div class="autor-stat-num" id="stat-preguntas">0</div><div class="autor-stat-lbl">Preguntas</div></div>
+      </div>
+      <div style="font-size:.7rem;font-weight:900;text-transform:uppercase;letter-spacing:.8px;color:var(--suave);margin-bottom:10px">Ofertas recibidas</div>
+      <div class="ofertas-lista" id="ofertas-lista">
+        <div class="ofertas-empty">Aún no hay ofertas.<br><span style="font-size:.72rem">Los taskers van a aparecer acá.</span></div>
+      </div>
+      <div id="btn-cancelar-wrap">
+        <button class="btn-cancelar" onclick="abrirModalCancelar()">❌ Cancelar tarea</button>
+      </div>
+    </div>
+
+    <!-- PANEL TASKER -->
+    <div class="oferta-card" id="panel-tasker" style="display:none">
+      <div class="oferta-titulo">💰 Hacé tu oferta</div>
+      <div class="oferta-sub">Se envía de forma privada solo al dueño. Incluí tu monto y por qué sos la mejor opción.</div>
+      <div class="oferta-pres-ref">
+        <div><div class="pres-label">Presupuesto del cliente</div><div class="pres-valor" id="of-pres-cliente">A convenir</div></div>
+        <div style="font-size:1.4rem">🤝</div>
+      </div>
+      <div id="of-form">
+        <div class="oferta-input-wrap">
+          <span class="oferta-prefix">$</span>
+          <input type="number" class="oferta-input" id="of-input" placeholder="0" min="0">
+        </div>
+        <textarea class="oferta-coment-input" id="of-coment" placeholder="Contale tu experiencia, disponibilidad y por qué sos ideal para esta tarea..." maxlength="300"></textarea>
+        <div class="oferta-nota">Tu oferta es <strong>100% privada</strong> — solo la ve el dueño.</div>
+        <button class="btn-ofertar" id="btn-ofertar" onclick="enviarOferta()">📩 Enviar oferta privada</button>
+      </div>
+      <div class="oferta-enviada" id="of-enviada">
+        <div class="oferta-enviada-ico">✅</div>
+        <div class="oferta-enviada-titulo">¡Oferta enviada!</div>
+        <div class="oferta-enviada-txt">El dueño va a ver tu propuesta. Si le interesa te va a contactar.</div>
+      </div>
+      <div class="login-gate" id="of-login-gate" style="display:none;margin-top:4px">
+        <div class="login-gate-ico">🔒</div>
+        <div class="login-gate-txt">Iniciá sesión para ofertar</div>
+        <a href="login.html" style="display:inline-flex;background:var(--verde);color:#fff;font-family:Nunito,sans-serif;font-weight:900;padding:10px 22px;border-radius:var(--radio-pill);text-decoration:none;font-size:.88rem">Entrar</a>
+      </div>
+    </div>
+
+    <!-- INFO -->
+    <div class="info-card">
+      <div class="info-titulo">Información</div>
+      <div class="info-row"><span class="info-key">Ubicación</span><span class="info-val" id="inf-zona">—</span></div>
+      <div class="info-row"><span class="info-key">Cuando</span><span class="info-val" id="inf-cuando">—</span></div>
+      <div class="info-row"><span class="info-key">Presupuesto</span><span class="info-val" id="inf-pres" style="color:var(--verde-o)">—</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CANCELAR -->
+<div class="modal-overlay" id="modal-cancelar" onclick="if(event.target===this)cerrarModal()">
+  <div class="modal-box">
+    <div class="modal-ico">⚠️</div>
+    <div class="modal-titulo">¿Cancelar esta tarea?</div>
+    <div class="modal-sub">Esta acción no se puede deshacer. La tarea va a desaparecer del mapa y los taskers no podrán más ofertar.</div>
+    <div class="modal-btns">
+      <button class="btn-modal-volver" onclick="cerrarModal()">Volver</button>
+      <button class="btn-modal-confirmar" id="btn-confirmar" onclick="confirmarCancelar()">Sí, cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../navbar.js"></script>
+<script>
+// db desde navbar.js
+const params = new URLSearchParams(window.location.search);
+const TAREA_ID = params.get('id');
+let currentUser = null;
+let miUserId = null;
+let tareaData = null;
+let esAutor = false;
+let autorId = null;
+let preguntasMap = {}; // id -> elemento DOM
+
+const CAT_ICONS = {limpieza:'🧹',plomeria:'🔧',pintura:'🎨',electricidad:'⚡',jardin:'🌿',mudanza:'📦',carpinteria:'🔨',tecnologia:'🖥️',mandados:'🛵',generico:'📋'};
+const TELEFONO_RE = /(\+?54\s?)?(\(?\d{2,4}\)?[\s\-]?)?\d{3,4}[\s\-]?\d{4}|\d{10,11}|cel[^\s]*\s*:?\s*\d|\btel[^\s]*\s*:?\s*\d|whatsapp|wsp|[0-9]{7,}/gi;
+
+// ══ INIT ══
+(async () => {
+  if (!TAREA_ID) { window.location.replace('home.html'); return; }
+  const { data: { session } } = await db.auth.getSession();
+  currentUser = session?.user || null;
+  miUserId = currentUser?.id || null;
+  await cargarTarea();
+  await cargarPreguntas();
+  iniciarRealtime();
+})();
+
+function irAlPerfil(e) {
+  if (e) e.preventDefault();
+  if (autorId) window.location.href = 'perfil.html?id=' + autorId;
+}
+
+// ══ CARGAR TAREA ══
+async function cargarTarea() {
+  try {
+    const { data, error } = await db.from('tareas').select('*').eq('id', TAREA_ID).single();
+    if (error || !data) { document.getElementById('h-titulo').textContent = 'No se encontró esta tarea'; return; }
+    tareaData = data;
+    autorId = data.user_id;
+    esAutor = miUserId && miUserId === data.user_id;
+    renderTarea(data);
+  } catch(e) { console.error(e); }
+}
+
+function renderTarea(t) {
+  const icon = t.cat_icon || CAT_ICONS[t.categoria] || '📋';
+  const estado = t.estado || 'activa';
+  document.title = 'ChambaYa — ' + t.titulo;
+  document.getElementById('bc-titulo').textContent = t.titulo;
+  document.getElementById('h-cat').textContent = icon + ' ' + (t.categoria||'Tarea').toUpperCase();
+  document.getElementById('h-titulo').textContent = t.titulo;
+  document.getElementById('h-cuando').textContent = t.fecha || t.cuando || 'A definir';
+  document.getElementById('h-zona').textContent = t.direccion || t.zona || '—';
+  document.getElementById('h-fecha-pub').textContent = 'Publicada ' + new Date(t.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'long'});
+
+  const estadoMap = {activa:{cls:'ep-activa',txt:'🟢 Activa'},'en-curso':{cls:'ep-en-curso',txt:'🔄 En curso'},terminada:{cls:'ep-terminada',txt:'✅ Terminada'},cancelada:{cls:'ep-cancelada',txt:'❌ Cancelada'}};
+  const ei = estadoMap[estado]||estadoMap.activa;
+  const eEl = document.getElementById('h-estado');
+  eEl.className = 'estado-chip ' + ei.cls;
+  eEl.textContent = ei.txt;
+
+  // Autor - intentar cargar su perfil
+  cargarPerfilAutor(t.user_id);
+
+  // Detalles
+  let dets = {};
+  try { dets = typeof t.detalles === 'object' ? t.detalles : JSON.parse(t.detalles||'{}'); } catch(e){}
+  const lbls = {tipo:'Tipo',hab:'Habitaciones',banos:'Baños',mat:'Materiales',herr:'Herramientas',urgente:'Urgencia',acceso:'Acceso',amb:'Ambientes',pintura:'Pintura',asc:'Ascensor',urgencia:'Urgencia'};
+  const vls = {si:'Sí',no:'No','fin-contrato':'Fin de contrato','post-obra':'Post obra',regular:'Regular',profunda:'Profunda',reparacion:'Reparación',instalacion:'Instalación',destape:'Destape',perdida:'Pérdida',interior:'Interior',exterior:'Exterior',rejas:'Rejas/metal',muebles:'Muebles',urgente:'Urgente',normal:'Normal',flexible:'Flexible',chica:'Pequeña',depto:'Depto.',casa:'Casa completa',corte:'Corte de pasto',poda:'Poda',limpieza:'Limpieza'};
+  document.getElementById('det-pills').innerHTML = Object.entries(dets).map(([k,v])=>`<div class="det-pill">${lbls[k]||k}: ${vls[v]||v}</div>`).join('');
+  document.getElementById('det-coment').textContent = t.descripcion || t.comentarios || '';
+
+  document.getElementById('inf-zona').textContent = t.direccion || t.zona || '—';
+  document.getElementById('inf-cuando').textContent = t.fecha || t.cuando || '—';
+  document.getElementById('inf-pres').textContent = t.presupuesto > 0 ? '$'+Number(t.presupuesto).toLocaleString('es-AR') : 'A convenir';
+
+  if (estado === 'cancelada') {
+    document.getElementById('banner-cancelada').style.display = 'block';
+    if (t.cancelada_at) document.getElementById('bc-fecha-cancel').textContent = 'Cancelada el ' + new Date(t.cancelada_at).toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
+  }
+
+  // Paneles según rol
+  if (!currentUser) {
+    document.getElementById('panel-tasker').style.display = 'block';
+    document.getElementById('of-form').style.display = 'none';
+    document.getElementById('of-login-gate').style.display = 'block';
+    document.getElementById('qa-login-gate').style.display = 'block';
+  } else if (esAutor) {
+    document.getElementById('panel-autor').style.display = 'block';
+    document.getElementById('qa-form-autor').style.display = 'block';
+    if (estado === 'cancelada') document.getElementById('btn-cancelar-wrap').style.display = 'none';
+    cargarOfertas();
+  } else {
+    document.getElementById('panel-tasker').style.display = 'block';
+    document.getElementById('qa-form-visitante').style.display = 'block';
+    if (t.presupuesto > 0) document.getElementById('of-pres-cliente').textContent = '$'+Number(t.presupuesto).toLocaleString('es-AR');
+    if (estado === 'cancelada') {
+      document.getElementById('of-form').style.display = 'none';
+      document.getElementById('of-enviada').classList.add('show');
+      document.getElementById('of-enviada').innerHTML = '<div class="oferta-enviada-ico">❌</div><div class="oferta-enviada-titulo">Tarea cancelada</div><div class="oferta-enviada-txt">Esta tarea ya no acepta ofertas.</div>';
+    }
+  }
+}
+
+async function cargarPerfilAutor(uid) {
+  const avEl = document.getElementById('h-autor-av');
+  const nomEl = document.getElementById('h-autor-nombre');
+  try {
+    const { data } = await db.from('profiles').select('nombre,avatar_url').eq('id', uid).maybeSingle();
+    const nombre = data?.nombre || (esAutor ? (currentUser?.user_metadata?.nombre||currentUser?.user_metadata?.full_name||currentUser?.email?.split('@')[0]||'Vos') : 'Usuario');
+    const foto = data?.avatar_url || (esAutor ? currentUser?.user_metadata?.avatar_url : null);
+    nomEl.textContent = esAutor ? 'Vos' : nombre;
+    if (foto) { avEl.innerHTML = `<img src="${foto}" alt="${nombre}">`; }
+    else { avEl.textContent = nombre.charAt(0).toUpperCase(); }
+  } catch(e) {
+    const nombre = esAutor ? 'Vos' : 'Usuario';
+    nomEl.textContent = nombre;
+    avEl.textContent = nombre.charAt(0).toUpperCase();
+  }
+}
+
+// ══ OFERTAS (autor) ══
+async function cargarOfertas() {
+  try {
+    const { data, count } = await db.from('ofertas').select('*',{count:'exact'}).eq('tarea_id',TAREA_ID).order('created_at',{ascending:false});
+    document.getElementById('stat-ofertas').textContent = count||0;
+    if (!data||!data.length) return;
+    const lista = document.getElementById('ofertas-lista');
+    lista.innerHTML = '';
+    data.forEach(o => {
+      const monto = o.monto > 0 ? '$'+Number(o.monto).toLocaleString('es-AR') : '—';
+      const coment = o.comentario || 'Sin comentario';
+      const ini = 'T';
+      const div = document.createElement('a');
+      div.className = 'oferta-item';
+      div.href = 'perfil.html?id=' + (o.tasker_id||'');
+      div.innerHTML = `<div class="oferta-av">${ini}</div><div class="oferta-info"><div class="oferta-nombre">Tasker</div><div class="oferta-coment">${escH(coment)}</div></div><div class="oferta-monto">${monto}</div>`;
+      lista.appendChild(div);
+    });
+    // Cargar nombres de taskers
+    cargarNombresTaskers(data);
+  } catch(e) { console.warn(e); }
+}
+
+async function cargarNombresTaskers(ofertas) {
+  const ids = ofertas.map(o => o.tasker_id).filter(Boolean);
+  if (!ids.length) return;
+  try {
+    const { data } = await db.from('profiles').select('id,nombre,avatar_url').in('id', ids);
+    if (!data) return;
+    const map = {};
+    data.forEach(p => map[p.id] = p);
+    const items = document.querySelectorAll('.oferta-item');
+    ofertas.forEach((o, i) => {
+      const p = map[o.tasker_id];
+      if (p && items[i]) {
+        items[i].querySelector('.oferta-nombre').textContent = p.nombre || 'Tasker';
+        items[i].querySelector('.oferta-av').textContent = (p.nombre||'T').charAt(0).toUpperCase();
+        items[i].href = 'perfil.html?id=' + o.tasker_id;
+      }
+    });
+  } catch(e) {}
+}
+
+// ══ PREGUNTAS ══
+async function cargarPreguntas() {
+  try {
+    const { data: pregs } = await db.from('comentarios')
+      .select('*').eq('tarea_id', TAREA_ID).eq('es_respuesta', false)
+      .order('created_at', { ascending: true }).limit(50);
+
+    if (!pregs || !pregs.length) return;
+    document.getElementById('qa-empty').style.display = 'none';
+    document.getElementById('stat-preguntas').textContent = pregs.length;
+
+    // Cargar respuestas en batch
+    const { data: resps } = await db.from('comentarios')
+      .select('*').eq('tarea_id', TAREA_ID).eq('es_respuesta', true)
+      .in('parent_id', pregs.map(p => p.id));
+
+    const respsMap = {};
+    (resps||[]).forEach(r => respsMap[r.parent_id] = r);
+
+    // Cargar nombres de quienes preguntaron
+    const userIds = [...new Set(pregs.map(p => p.user_id))];
+    const { data: profs } = await db.from('profiles').select('id,nombre,avatar_url').in('id', userIds);
+    const profsMap = {};
+    (profs||[]).forEach(p => profsMap[p.id] = p);
+
+    pregs.forEach(preg => {
+      const resp = respsMap[preg.id] || null;
+      agregarPreguntaDOM(preg, resp, profsMap[preg.user_id]);
+    });
+  } catch(e) { console.warn('Error preguntas:', e); }
+}
+
+function agregarPreguntaDOM(preg, resp, perfil) {
+  const lista = document.getElementById('qa-lista');
+  document.getElementById('qa-empty').style.display = 'none';
+
+  const esPropia = miUserId && preg.user_id === miUserId;
+  const nombre = perfil?.nombre || (esPropia ? 'Vos' : 'Usuario');
+  const foto = perfil?.avatar_url || null;
+  const ini = nombre.charAt(0).toUpperCase();
+  const hora = new Date(preg.created_at).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+  const fecha = new Date(preg.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short'});
+
+  const div = document.createElement('div');
+  div.className = 'qa-item';
+  div.id = 'qa-item-' + preg.id;
+
+  const avHtml = foto
+    ? `<a class="qa-av" href="perfil.html?id=${preg.user_id}"><img src="${foto}" alt="${nombre}"></a>`
+    : `<a class="qa-av" href="perfil.html?id=${preg.user_id}">${ini}</a>`;
+
+  let respHTML = '';
+  if (resp) {
+    const rHora = new Date(resp.created_at).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+    respHTML = `
+      <div class="qa-resp-wrap" id="resp-wrap-${preg.id}">
+        <div class="qa-resp-row">
+          <div class="qa-resp-av">${ini.toUpperCase()}</div>
+          <div class="qa-resp-body">
+            <div class="qa-resp-etiqueta">Propietario respondió</div>
+            <div class="qa-resp-burbuja">${escH(resp.mensaje)}</div>
+            <div class="qa-resp-hora">${rHora}</div>
+          </div>
+        </div>
+      </div>`;
+  } else if (esAutor) {
+    respHTML = `
+      <div class="qa-resp-form" id="respform-${preg.id}">
+        <textarea class="qa-resp-input" id="respinput-${preg.id}" placeholder="Escribí tu respuesta..." rows="2" maxlength="300"
+          onkeydown="onRespKey(event,'${preg.id}')"></textarea>
+        <div class="qa-resp-btns">
+          <button class="btn-resp" onclick="enviarRespuesta('${preg.id}')">Responder</button>
+          <button class="btn-resp-cancel" onclick="document.getElementById('respinput-${preg.id}').value=''">Limpiar</button>
+        </div>
+      </div>`;
+  } else {
+    respHTML = `<div class="qa-pendiente">El propietario aún no respondió...</div>`;
+  }
+
+  div.innerHTML = `
+    <div class="qa-pregunta-row">
+      ${avHtml}
+      <div class="qa-burbuja-wrap">
+        <div class="qa-nombre" onclick="window.location.href='perfil.html?id=${preg.user_id}'">${nombre}</div>
+        <div class="qa-burbuja">${escH(preg.mensaje)}</div>
+        <div class="qa-hora">${fecha} · ${hora}</div>
+      </div>
+    </div>
+    ${respHTML}`;
+
+  lista.appendChild(div);
+  preguntasMap[preg.id] = div;
+}
+
+// ══ ENVIAR PREGUNTA ══
+async function enviarPregunta() {
+  if (!currentUser) { showToast('Iniciá sesión para preguntar'); return; }
+  if (esAutor) { showToast('No podés preguntarte a vos mismo'); return; }
+  const inp = document.getElementById('qa-input');
+  const texto = inp.value.trim();
+  if (!texto || texto.length < 2) return;
+
+  if (TELEFONO_RE.test(texto)) {
+    document.getElementById('qa-alerta').classList.add('show');
+    setTimeout(() => document.getElementById('qa-alerta').classList.remove('show'), 4000);
+    TELEFONO_RE.lastIndex = 0; return;
+  }
+  TELEFONO_RE.lastIndex = 0;
+
+  const btn = document.getElementById('qa-send');
+  btn.disabled = true;
+
+  try {
+    const { data, error } = await db.from('comentarios').insert({
+      tarea_id: TAREA_ID, user_id: currentUser.id,
+      mensaje: texto, es_respuesta: false
+    }).select().single();
+    if (error) throw error;
+    inp.value = ''; inp.style.height = '';
+
+    // Agregar al DOM con perfil del usuario actual
+    const perfil = { nombre: currentUser.user_metadata?.nombre || currentUser.user_metadata?.full_name || 'Vos', avatar_url: currentUser.user_metadata?.avatar_url || null };
+    agregarPreguntaDOM(data, null, perfil);
+
+    // Notificar al autor
+    crearNotificacion(autorId, 'pregunta', 'Nueva pregunta en tu tarea', texto, currentUser.user_metadata?.nombre || 'Un usuario');
+
+    const prev = parseInt(document.getElementById('stat-preguntas').textContent)||0;
+    document.getElementById('stat-preguntas').textContent = prev+1;
+  } catch(e) {
+    showToast('Error al enviar: ' + e.message);
+  } finally { btn.disabled = false; inp.focus(); }
+}
+
+// ══ ENVIAR RESPUESTA (solo autor) ══
+async function enviarRespuesta(pregId) {
+  if (!esAutor) return;
+  const inp = document.getElementById('respinput-' + pregId);
+  const texto = inp?.value.trim();
+  if (!texto) { showToast('Escribí una respuesta'); return; }
+
+  const btn = inp?.parentElement?.querySelector('.btn-resp');
+  if (btn) { btn.textContent = '...'; btn.disabled = true; }
+
+  try {
+    const { data, error } = await db.from('comentarios').insert({
+      tarea_id: TAREA_ID, user_id: currentUser.id,
+      mensaje: texto, es_respuesta: true, parent_id: pregId
+    }).select().single();
+    if (error) throw error;
+
+    // Reemplazar form con la respuesta renderizada
+    const formEl = document.getElementById('respform-' + pregId);
+    if (formEl) {
+      const hora = new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+      const autorIni = (currentUser.user_metadata?.nombre||'A').charAt(0).toUpperCase();
+      formEl.outerHTML = `
+        <div class="qa-resp-wrap" id="resp-wrap-${pregId}">
+          <div class="qa-resp-row">
+            <div class="qa-resp-av">${autorIni}</div>
+            <div class="qa-resp-body">
+              <div class="qa-resp-etiqueta">Propietario respondió</div>
+              <div class="qa-resp-burbuja">${escH(texto)}</div>
+              <div class="qa-resp-hora">${hora}</div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    // Buscar user_id de la pregunta para notificar
+    const item = document.getElementById('qa-item-' + pregId);
+    const link = item?.querySelector('.qa-av');
+    const href = link?.getAttribute('href') || '';
+    const uid = href.replace('perfil.html?id=','');
+    if (uid && uid !== miUserId) {
+      crearNotificacion(uid, 'respuesta', 'El dueño respondió tu pregunta', texto, currentUser.user_metadata?.nombre||'El propietario');
+    }
+  } catch(e) {
+    showToast('Error: ' + e.message);
+    if (btn) { btn.textContent = 'Responder'; btn.disabled = false; }
+  }
+}
+
+// ══ OFERTA ══
+async function enviarOferta() {
+  if (!currentUser) { showToast('Iniciá sesión para ofertar'); return; }
+  if (esAutor) { showToast('No podés ofertar en tu propia tarea'); return; }
+  const monto = parseFloat(document.getElementById('of-input').value)||0;
+  if (monto <= 0) { showToast('Ingresá un monto mayor a 0'); return; }
+  const coment = document.getElementById('of-coment').value.trim();
+  const btn = document.getElementById('btn-ofertar');
+  btn.textContent = '⏳ Enviando...'; btn.disabled = true;
+  try {
+    const { error } = await db.from('ofertas').upsert({
+      tarea_id: TAREA_ID, tasker_id: currentUser.id, monto, comentario: coment
+    },{ onConflict:'tarea_id,tasker_id' });
+    if (error) throw error;
+    document.getElementById('of-form').style.display = 'none';
+    document.getElementById('of-enviada').classList.add('show');
+    crearNotificacion(autorId, 'oferta', 'Nueva oferta en tu tarea', '$'+Number(monto).toLocaleString('es-AR') + (coment?' — '+coment:''), currentUser.user_metadata?.nombre||'Un tasker');
+  } catch(e) {
+    showToast('Error: ' + e.message);
+    btn.textContent = '📩 Enviar oferta privada'; btn.disabled = false;
+  }
+}
+
+// ══ NOTIFICACIONES ══
+async function crearNotificacion(userId, tipo, titulo, mensaje, actorNombre) {
+  if (!userId) return;
+  try {
+    await db.from('notificaciones').insert({
+      user_id: userId, tipo, titulo, mensaje,
+      tarea_id: TAREA_ID,
+      actor_id: currentUser?.id || null,
+      actor_nombre: actorNombre
+    });
+  } catch(e) { console.warn('Notif error:', e.message); }
+}
+
+// ══ CANCELAR TAREA ══
+function abrirModalCancelar() { document.getElementById('modal-cancelar').classList.add('show'); }
+function cerrarModal() { document.getElementById('modal-cancelar').classList.remove('show'); }
+
+async function confirmarCancelar() {
+  const btn = document.getElementById('btn-confirmar');
+  btn.textContent = 'Cancelando...'; btn.disabled = true;
+  try {
+    const { error } = await db.from('tareas').update({ estado:'cancelada', cancelada_at: new Date().toISOString() }).eq('id', TAREA_ID);
+    if (error) throw error;
+    cerrarModal();
+    document.getElementById('h-estado').className = 'estado-chip ep-cancelada';
+    document.getElementById('h-estado').textContent = '❌ Cancelada';
+    document.getElementById('banner-cancelada').style.display = 'block';
+    document.getElementById('bc-fecha-cancel').textContent = 'Cancelada hoy';
+    document.getElementById('btn-cancelar-wrap').style.display = 'none';
+    showToast('Tarea cancelada');
+  } catch(e) {
+    showToast('Error: '+e.message);
+    btn.textContent = 'Sí, cancelar'; btn.disabled = false;
+  }
+}
+
+// ══ REALTIME ══
+function iniciarRealtime() {
+  db.channel('qa-rt-' + TAREA_ID)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'comentarios',filter:'tarea_id=eq.'+TAREA_ID}, payload => {
+      const msg = payload.new;
+      if (!msg) return;
+      if (!msg.es_respuesta) {
+        // Nueva pregunta — solo mostrar si no es la nuestra (ya la mostramos localmente)
+        if (msg.user_id !== miUserId) {
+          agregarPreguntaDOM(msg, null, null);
+          const prev = parseInt(document.getElementById('stat-preguntas').textContent)||0;
+          document.getElementById('stat-preguntas').textContent = prev+1;
+        }
+      } else if (msg.es_respuesta && msg.parent_id) {
+        // Nueva respuesta — mostrar si no soy el autor (ya la mostramos localmente)
+        if (msg.user_id !== miUserId) {
+          const formEl = document.getElementById('respform-' + msg.parent_id);
+          const pendEl = document.querySelector('#qa-item-' + msg.parent_id + ' .qa-pendiente');
+          const hora = new Date(msg.created_at).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+          const newHTML = `
+            <div class="qa-resp-wrap" id="resp-wrap-${msg.parent_id}">
+              <div class="qa-resp-row">
+                <div class="qa-resp-av">P</div>
+                <div class="qa-resp-body">
+                  <div class="qa-resp-etiqueta">Propietario respondió</div>
+                  <div class="qa-resp-burbuja">${escH(msg.mensaje)}</div>
+                  <div class="qa-resp-hora">${hora}</div>
+                </div>
+              </div>
+            </div>`;
+          if (formEl) formEl.outerHTML = newHTML;
+          else if (pendEl) pendEl.outerHTML = newHTML;
+        }
+      }
+    })
+    .subscribe();
+}
+
+// ══ UTILS ══
+function escH(t) { if(!t)return''; const d=document.createElement('div'); d.textContent=String(t); return d.innerHTML; }
+function autoH(el) { el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px'; }
+function onQAKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();enviarPregunta();} }
+function onRespKey(e,id) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();enviarRespuesta(id);} }
+document.addEventListener('keydown', e => { if(e.key==='Escape') cerrarModal(); });
+</script>
+</body>
+</html>
