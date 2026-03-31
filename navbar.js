@@ -1,7 +1,7 @@
 /* ══════════════════════════════════════════════════════
    navbar.js — ChambaYa
    Script compartido por todas las páginas logueadas.
-   Incluilo con: <script src="../navbar.js"></script>
+   Incluilo con: <script src="navbar.js"></script>
    ANTES de este script tiene que estar cargado Supabase.
 ══════════════════════════════════════════════════════ */
 
@@ -15,7 +15,6 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 async function initNavbar() {
   const { data: { session } } = await db.auth.getSession();
   if (!session) {
-    // login.html está en /pages/ igual que las otras páginas
     window.location.replace('login.html');
     return;
   }
@@ -42,8 +41,9 @@ async function initNavbar() {
   // Exponemos el user globalmente por si la página lo necesita
   window.chambaUser = user;
 
-  // Chequear notificaciones no leídas
-  checkNotifBadge(session.user.id);
+  // Chequear badges de notificaciones y mensajes
+  checkNavBadges(user.id);
+  setInterval(() => checkNavBadges(user.id), 45000);
 }
 
 // Abre/cierra el dropdown al clickear el avatar
@@ -74,43 +74,71 @@ function showToast(msg) {
   _toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
 }
 
-// ── BADGE DE NOTIFICACIONES ──
-// Pone un punto rojo animado en el link de Notificaciones del navbar
-async function checkNotifBadge(userId) {
+// ── BADGES DE NOTIFICACIONES Y MENSAJES ──
+// Inyecta un punto rojo en el navbar cuando hay items sin leer.
+// Funciona en CUALQUIER página que tenga navbar.js cargado,
+// siempre que el link tenga id="nav-notif-link" o id="nav-mensajes-link".
+
+function inyectarPunto(elementId, mostrar) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  el.style.position = 'relative';
+  el.querySelector('.nav-badge-dot')?.remove();
+  if (mostrar) {
+    el.insertAdjacentHTML('beforeend',
+      `<span class="nav-badge-dot" style="
+        position:absolute;top:3px;right:0px;
+        width:8px;height:8px;border-radius:50%;
+        background:#EF4444;border:2px solid #fff;
+        display:block;pointer-events:none;
+      "></span>`
+    );
+  }
+}
+
+async function checkNavBadges(userId) {
   try {
-    const { count } = await db.from('notificaciones')
+    // Notificaciones no leídas
+    const { count: notifCount } = await db.from('notificaciones')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId)
       .eq('leida', false);
+    inyectarPunto('nav-notif-link', notifCount > 0);
 
-    const link = document.getElementById('nav-notif-link');
-    if (!link) return;
+    // Mensajes no leídos: buscar en conversaciones donde participo
+    // Primero buscar mis conv_ids (ofertas aceptadas donde soy parte)
+    const { data: comoTasker } = await db.from('ofertas')
+      .select('id').eq('estado', 'aceptada').eq('tasker_id', userId);
 
-    // Remover badge existente para re-evaluar
-    link.querySelector('.nav-notif-dot')?.remove();
+    const { data: tareasComoDueno } = await db.from('tareas')
+      .select('ofertas!inner(id)')
+      .eq('user_id', userId)
+      .eq('ofertas.estado', 'aceptada');
 
-    if (count > 0) {
-      link.style.position = 'relative';
-      link.insertAdjacentHTML('beforeend',
-        `<span class="nav-notif-dot" style="
-          position:absolute;top:4px;right:2px;
-          width:8px;height:8px;border-radius:50%;
-          background:#EF4444;border:2px solid #fff;
-          display:block;
-        "></span>`
-      );
-      // Actualizar el title del tab del navegador también
+    const convIds = [
+      ...(comoTasker || []).map(o => o.id),
+      ...(tareasComoDueno || []).flatMap(t => (t.ofertas || []).map(o => o.id))
+    ];
+
+    if (convIds.length) {
+      const { count: msgCount } = await db.from('mensajes')
+        .select('id', { count: 'exact', head: true })
+        .in('conv_id', convIds)
+        .eq('leido', false)
+        .neq('user_id', userId);
+      inyectarPunto('nav-mensajes-link', msgCount > 0);
+    } else {
+      inyectarPunto('nav-mensajes-link', false);
+    }
+
+    // Actualizar título del tab con total no leído
+    const total = (notifCount || 0);
+    if (total > 0) {
       const base = document.title.replace(/^\(\d+\)\s/, '');
-      document.title = `(${count}) ${base}`;
+      document.title = `(${total}) ${base}`;
     }
   } catch(e) { /* silencioso */ }
 }
 
 // Arranca todo al cargar
 initNavbar();
-
-// Re-chequear badge cada 45 segundos sin recargar
-setInterval(async () => {
-  const { data: { session } } = await db.auth.getSession();
-  if (session) checkNotifBadge(session.user.id);
-}, 45000);
