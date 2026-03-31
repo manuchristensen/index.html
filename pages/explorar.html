@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChambaYa — Explorar tareas</title>
+<link rel="stylesheet" href="../fonts.css">
+<link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*{box-sizing:border-box}
+body{overflow:hidden}
+
+/* ══ LAYOUT ══ */
+.exp-page{display:flex;flex-direction:column;height:calc(100vh - 66px)}
+
+/* FILTROS */
+.exp-filtros{
+  background:var(--blanco);border-bottom:1.5px solid var(--borde);
+  padding:10px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.05);z-index:100;
+}
+.exp-search-wrap{position:relative;flex-shrink:0}
+.exp-search-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--suave);font-size:.9rem;pointer-events:none}
+.exp-search{
+  background:var(--fondo);border:1.5px solid var(--borde);border-radius:var(--radio-pill);
+  padding:8px 12px 8px 32px;font-family:'Nunito',sans-serif;font-size:.85rem;
+  font-weight:700;color:var(--texto);outline:none;transition:border-color .2s;width:220px;
+}
+.exp-search:focus{border-color:var(--verde);background:var(--blanco)}
+.exp-search::placeholder{color:#CBD5E1}
+.filtro-btn{
+  display:inline-flex;align-items:center;gap:5px;padding:7px 14px;
+  border:1.5px solid var(--borde);border-radius:var(--radio-pill);background:var(--blanco);
+  font-family:'Nunito',sans-serif;font-size:.8rem;font-weight:800;color:var(--suave);
+  cursor:pointer;transition:all .2s;white-space:nowrap;
+}
+.filtro-btn:hover{border-color:var(--verde);color:var(--verde-o);background:var(--verde-c)}
+.filtro-btn.activo{border-color:var(--verde);color:var(--verde-o);background:var(--verde-c)}
+
+/* ══ CONTENIDO PRINCIPAL ══ */
+.exp-contenido{display:grid;grid-template-columns:380px 1fr;flex:1;overflow:hidden}
+
+/* LISTA */
+.exp-lista-wrap{display:flex;flex-direction:column;overflow:hidden;border-right:1.5px solid var(--borde);background:var(--fondo)}
+
+/* Burbuja nuevas tareas */
+.nuevas-burbuja{
+  display:none;align-items:center;justify-content:space-between;
+  background:var(--verde);color:#fff;padding:10px 18px;
+  cursor:pointer;transition:background .2s;flex-shrink:0;
+  animation:slideDown .3s ease;
+}
+.nuevas-burbuja.show{display:flex}
+.nuevas-burbuja:hover{background:var(--verde-o)}
+.nuevas-burbuja-txt{font-size:.85rem;font-weight:900;display:flex;align-items:center;gap:8px}
+.nuevas-burbuja-ver{font-size:.78rem;font-weight:900;opacity:.85;text-decoration:underline}
+@keyframes slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+
+.exp-lista-header{padding:12px 16px;background:var(--blanco);border-bottom:1.5px solid var(--borde);flex-shrink:0}
+.exp-lista-titulo{font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--suave)}
+.exp-lista-sub{font-size:.9rem;font-weight:900;color:var(--texto);margin-top:2px}
+
+.exp-lista{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px}
+.exp-lista::-webkit-scrollbar{width:3px}
+.exp-lista::-webkit-scrollbar-thumb{background:var(--borde);border-radius:4px}
+
+/* Card */
+.exp-card{
+  background:var(--blanco);border-radius:var(--radio-lg);border:1.5px solid var(--borde);
+  padding:14px 16px;cursor:pointer;transition:all .2s;text-decoration:none;color:inherit;display:block;
+}
+.exp-card:hover{border-color:var(--verde);box-shadow:var(--sombra);transform:translateY(-1px)}
+.exp-card.hover-mapa{border-color:var(--verde);box-shadow:0 0 0 3px rgba(0,201,107,.15);transform:translateY(-1px)}
+
+.exp-card-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.exp-card-icon{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1.15rem;flex-shrink:0}
+.exp-card-info{flex:1;min-width:0}
+.exp-card-titulo{font-size:.9rem;font-weight:900;color:var(--texto);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
+.exp-card-precio{font-size:.88rem;font-weight:900;color:var(--verde-o)}
+.exp-card-meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.exp-meta{display:flex;align-items:center;gap:3px;font-size:.72rem;font-weight:800;color:var(--suave)}
+.exp-new-tag{
+  position:absolute;top:10px;right:10px;background:var(--naranja);color:#fff;
+  font-size:.62rem;font-weight:900;padding:2px 7px;border-radius:var(--radio-pill);
+  text-transform:uppercase;letter-spacing:.5px;
+}
+.exp-card{position:relative}
+
+/* Empty */
+.exp-empty{text-align:center;padding:48px 20px}
+.exp-empty-ico{font-size:2.5rem;margin-bottom:10px}
+.exp-empty-txt{font-size:.88rem;font-weight:800;color:var(--suave)}
+
+/* Skeleton */
+.skel-card{background:var(--blanco);border-radius:var(--radio-lg);padding:14px;display:flex;gap:10px}
+.sk{background:linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:7px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* ══ NAVBAR SOBRE EL MAPA ══ */
+.nav { z-index: 1001 !important; }
+.nav-dropdown { z-index: 1002 !important; }
+.nav-av-wrap { z-index: 1002 !important; }
+
+/* ══ MAPA ══ */
+.exp-mapa{position:relative}
+#mapa{width:100%;height:100%}
+
+/* Boton mi ubicacion */
+.btn-ubicacion{
+  position:absolute;bottom:80px;right:12px;z-index:500;
+  background:var(--blanco);border:1.5px solid var(--borde);border-radius:50%;
+  width:40px;height:40px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:1.1rem;box-shadow:var(--sombra);transition:all .2s;
+}
+.btn-ubicacion:hover{border-color:var(--verde);background:var(--verde-c)}
+
+/* Info cargando ubicacion */
+.loc-loading{
+  position:absolute;top:12px;left:50%;transform:translateX(-50%);
+  background:var(--blanco);border:1.5px solid var(--borde);border-radius:var(--radio-pill);
+  padding:8px 18px;font-size:.82rem;font-weight:800;color:var(--suave);
+  box-shadow:var(--sombra);z-index:500;display:none;align-items:center;gap:8px;
+}
+.loc-loading.show{display:flex}
+.loc-dot{width:8px;height:8px;border-radius:50%;background:var(--verde);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+
+/* Popup mapa */
+.leaflet-popup-content-wrapper{border-radius:12px!important;box-shadow:0 8px 32px rgba(0,0,0,.15)!important;border:1.5px solid var(--borde)!important;padding:0!important}
+.leaflet-popup-content{margin:0!important}
+.map-popup{padding:14px;min-width:190px;font-family:'Nunito',sans-serif}
+.map-popup-titulo{font-size:.9rem;font-weight:900;color:var(--texto);margin-bottom:4px;line-height:1.3}
+.map-popup-precio{font-size:.85rem;font-weight:900;color:var(--verde-o);margin-bottom:4px}
+.map-popup-zona{font-size:.75rem;font-weight:700;color:var(--suave);margin-bottom:10px}
+.map-popup-btn{display:block;background:var(--verde);color:#fff;text-align:center;padding:8px;border-radius:8px;text-decoration:none;font-size:.8rem;font-weight:900;transition:background .2s}
+.map-popup-btn:hover{background:var(--verde-o)}
+
+@media(max-width:820px){
+  body{overflow:auto}
+  .exp-contenido{grid-template-columns:1fr}
+  .exp-lista-wrap{height:55vh}
+  .exp-mapa{height:45vh}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="home.html" class="nav-logo">Chamba<em>Ya</em></a>
+  <a href="publicar.html" class="nav-publicar" style="margin-left:32px">Publicar tarea</a>
+  <div class="nav-links">
+    <a href="explorar.html" class="nav-link activa">Explorar tareas</a>
+    <a href="mistareas.html" class="nav-link">Mis tareas</a>
+  </div>
+  <div class="nav-right">
+    <a href="ayuda.html" class="nav-right-link">Ayuda</a>
+    <a href="notificaciones.html" class="nav-right-link">Notificaciones</a>
+    <a href="mensajes.html" class="nav-right-link">Mensajes</a>
+    <div class="nav-av-wrap">
+      <div class="nav-av" id="nav-av" onclick="toggleDropdown(event)"><span class="nav-av-inicial" id="nav-av-inicial">?</span></div>
+      <div class="nav-dropdown" id="nav-dropdown">
+        <div class="dd-header"><div class="dd-nombre" id="dd-nombre">Cargando...</div><div class="dd-sub" onclick="window.location.href='perfil.html'">Ver perfil publico</div></div>
+        <a href="mistareas.html" class="dd-item">Mis tareas <span class="dd-arrow">›</span></a>
+        <div class="dd-sep"></div>
+        <a href="configuracion.html" class="dd-item">Configuracion <span class="dd-arrow">›</span></a>
+        <div class="dd-sep"></div>
+        <div class="dd-item rojo" onclick="cerrarSesion()">Cerrar sesion</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="exp-page">
+
+  <!-- FILTROS -->
+  <div class="exp-filtros">
+    <div class="exp-search-wrap">
+      <span class="exp-search-ico">&#128269;</span>
+      <input type="text" class="exp-search" id="exp-search" placeholder="Buscar tareas..." oninput="filtrar()">
+    </div>
+    <button class="filtro-btn activo" id="f-todas" onclick="setFiltro('todas',this)">&#127775; Todas</button>
+    <button class="filtro-btn" onclick="setFiltro('limpieza',this)">&#129529; Limpieza</button>
+    <button class="filtro-btn" onclick="setFiltro('plomeria',this)">&#128295; Plomeria</button>
+    <button class="filtro-btn" onclick="setFiltro('pintura',this)">&#127912; Pintura</button>
+    <button class="filtro-btn" onclick="setFiltro('electricidad',this)">&#9889; Electricidad</button>
+    <button class="filtro-btn" onclick="setFiltro('jardin',this)">&#127807; Jardin</button>
+    <button class="filtro-btn" onclick="setFiltro('mudanza',this)">&#128230; Mudanza</button>
+  </div>
+
+  <!-- CONTENIDO -->
+  <div class="exp-contenido">
+
+    <!-- LISTA -->
+    <div class="exp-lista-wrap">
+      <div class="nuevas-burbuja" id="nuevas-burbuja" onclick="mostrarNuevas()">
+        <div class="nuevas-burbuja-txt">&#8593; <span id="nuevas-txt">3 tareas nuevas</span></div>
+        <div class="nuevas-burbuja-ver">Ver ahora</div>
+      </div>
+      <div class="exp-lista-header">
+        <div class="exp-lista-titulo">Tareas disponibles</div>
+        <div class="exp-lista-sub" id="lista-sub">Cargando...</div>
+      </div>
+      <div class="exp-lista" id="exp-lista">
+        <div class="skel-card"><div class="sk" style="width:38px;height:38px;border-radius:9px;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:7px"><div class="sk" style="height:14px;width:65%"></div><div class="sk" style="height:12px;width:40%"></div><div class="sk" style="height:11px;width:55%"></div></div></div>
+        <div class="skel-card"><div class="sk" style="width:38px;height:38px;border-radius:9px;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:7px"><div class="sk" style="height:14px;width:70%"></div><div class="sk" style="height:12px;width:35%"></div><div class="sk" style="height:11px;width:50%"></div></div></div>
+        <div class="skel-card"><div class="sk" style="width:38px;height:38px;border-radius:9px;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:7px"><div class="sk" style="height:14px;width:55%"></div><div class="sk" style="height:12px;width:45%"></div><div class="sk" style="height:11px;width:30%"></div></div></div>
+        <div class="skel-card"><div class="sk" style="width:38px;height:38px;border-radius:9px;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:7px"><div class="sk" style="height:14px;width:60%"></div><div class="sk" style="height:12px;width:50%"></div><div class="sk" style="height:11px;width:40%"></div></div></div>
+      </div>
+    </div>
+
+    <!-- MAPA -->
+    <div class="exp-mapa">
+      <div id="mapa"></div>
+      <div class="loc-loading" id="loc-loading">
+        <div class="loc-dot"></div>
+        Detectando tu ubicacion...
+      </div>
+      <div class="btn-ubicacion" onclick="centrarEnMiUbicacion()" title="Mi ubicacion">&#128205;</div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../navbar.js"></script>
+<script>
+// db disponible desde navbar.js
+
+let todasTareas = [];
+let filtradas = [];
+let filtroActual = 'todas';
+let markers = {};
+let miUbicacion = null;
+let nuevasPendientes = [];
+let miUserId = null;
+let mapaListo = false;
+
+const CAT_ICONS = {limpieza:'🧹',plomeria:'🔧',pintura:'🎨',electricidad:'⚡',jardin:'🌿',mudanza:'📦',carpinteria:'🔨',tecnologia:'🖥️',mandados:'🛵',generico:'📋'};
+const CAT_BG = {limpieza:'#D1FAE5',plomeria:'#E0F2FE',pintura:'#FCE7F3',electricidad:'#FEF9C3',jardin:'#D1FAE5',mudanza:'#E0E7FF',carpinteria:'#FEF3C7',tecnologia:'#EFF6FF',mandados:'#FFE4E6',generico:'#F1F5F9'};
+
+// ══ MAPA ══
+// Iniciar mapa en Buenos Aires por defecto, se moverá apenas llegue la ubicación
+const mapa = L.map('mapa', { zoomControl: false, attributionControl: true })
+  .setView([-34.603, -58.381], 11);
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org">OpenStreetMap</a> &copy; <a href="https://carto.com">CARTO</a>',
+  subdomains: 'abcd', maxZoom: 19
+}).addTo(mapa);
+
+L.control.zoom({ position: 'bottomright' }).addTo(mapa);
+mapaListo = true;
+
+// ══ INIT ══
+(async () => {
+  // 1. Pedir ubicacion PRIMERO - antes de cualquier otra cosa
+  // Esto asegura que el mapa se centre en la ubicacion real del usuario
+  pedirUbicacion();
+
+  // 2. Obtener user actual para filtrar sus propias tareas (en paralelo)
+  const { data: { session } } = await db.auth.getSession();
+  miUserId = session?.user?.id || null;
+
+  // 3. Cargar tareas
+  await cargarTareas();
+
+  // 4. Iniciar realtime
+  iniciarRealtime();
+})();
+
+// ══ UBICACION ══
+function pedirUbicacion() {
+  if (!navigator.geolocation) { showToast('Tu navegador no soporta geolocalización'); return; }
+  document.getElementById('loc-loading').classList.add('show');
+  if (navigator.permissions) {
+    navigator.permissions.query({ name: 'geolocation' }).then(r => {
+      if (r.state === 'denied') {
+        document.getElementById('loc-loading').classList.remove('show');
+        showToast('📍 Permiso denegado. Hacé clic en el candado de la barra del navegador → Ubicación → Permitir, y recargá la página.');
+        return;
+      }
+      solicitarGPS();
+    }).catch(() => solicitarGPS());
+  } else { solicitarGPS(); }
+}
+
+function solicitarGPS() {
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      document.getElementById('loc-loading').classList.remove('show');
+      miUbicacion = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      mapa.setView([miUbicacion.lat, miUbicacion.lng], 14);
+      if (window._markerUsuario) mapa.removeLayer(window._markerUsuario);
+      const iconUser = L.divIcon({
+        html: `<div style="width:18px;height:18px;background:#3B82F6;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 10px rgba(59,130,246,.5)"></div>`,
+        className:'', iconSize:[18,18], iconAnchor:[9,9]
+      });
+      window._markerUsuario = L.marker([miUbicacion.lat, miUbicacion.lng], { icon: iconUser, zIndexOffset: 1000 })
+        .addTo(mapa)
+        .bindPopup('<div class="map-popup"><div class="map-popup-titulo">&#128205; Tu ubicacion actual</div></div>');
+      if (todasTareas.length > 0) filtrar();
+    },
+    err => {
+      document.getElementById('loc-loading').classList.remove('show');
+      const msgs = { 1:'📍 Permiso denegado. Hacé clic en el candado → Ubicación → Permitir y recargá.', 2:'📍 No se pudo obtener tu ubicación. Verificá tu conexión.', 3:'📍 Tiempo de espera agotado. Intentá de nuevo.' };
+      showToast(msgs[err.code] || '📍 Error de geolocalización');
+      console.warn('Geoloc error:', err.code, err.message);
+    },
+    { timeout: 12000, maximumAge: 30000, enableHighAccuracy: true }
+  );
+}
+
+function centrarEnMiUbicacion() {
+  if (miUbicacion) { mapa.setView([miUbicacion.lat, miUbicacion.lng], 14); }
+  else { pedirUbicacion(); }
+}
+
+// ══ CARGAR TAREAS ══
+async function cargarTareas() {
+  try {
+    let query = db.from('tareas').select('*').eq('estado', 'activa').order('created_at', { ascending: false }).limit(100);
+
+    // FILTRO CRITICO: excluir las tareas del usuario actual
+    if (miUserId) {
+      query = query.neq('user_id', miUserId);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    todasTareas = data || [];
+    limpiarMarkers();
+    todasTareas.forEach(t => agregarMarker(t));
+    filtrar();
+
+  } catch(e) {
+    console.error('Error cargando tareas:', e);
+    // No mostrar demo si el usuario esta logueado, para no confundir
+    document.getElementById('lista-sub').textContent = 'Error cargando tareas';
+    document.getElementById('exp-lista').innerHTML = `<div class="exp-empty"><div class="exp-empty-ico">&#9888;&#65039;</div><div class="exp-empty-txt">No se pudieron cargar las tareas.<br>Verifica tu conexion.</div></div>`;
+  }
+}
+
+// ══ MARKERS ══
+function crearIconoMarker(cat, esNueva) {
+  const icon = CAT_ICONS[cat] || '📋';
+  const color = esNueva ? '#FF6B2B' : '#00C96B';
+  return L.divIcon({
+    html: `<div style="background:${color};color:#fff;width:38px;height:38px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(0,0,0,.25);border:2px solid #fff;cursor:pointer"><span style="transform:rotate(45deg);font-size:1.1rem;line-height:1">${icon}</span></div>`,
+    className:'', iconSize:[38,38], iconAnchor:[19,38], popupAnchor:[0,-40]
+  });
+}
+
+function agregarMarker(tarea) {
+  // Solo poner marker si tiene coordenadas reales (lat/lng guardados en DB)
+  if (tarea.lat == null || tarea.lng == null) return;
+
+  const lat = parseFloat(tarea.lat);
+  const lng = parseFloat(tarea.lng);
+
+  // Validar que sean coordenadas argentinas validas
+  if (isNaN(lat) || isNaN(lng)) return;
+  if (lat > -21 || lat < -56 || lng < -74 || lng > -52) return; // fuera de Argentina
+
+  const esNueva = (Date.now() - new Date(tarea.created_at).getTime()) < 3600000;
+  const precio = tarea.presupuesto > 0 ? '$' + Number(tarea.presupuesto).toLocaleString('es-AR') : 'A convenir';
+  const zona = tarea.direccion || '—';
+
+  const marker = L.marker([lat, lng], { icon: crearIconoMarker(tarea.categoria, esNueva) }).addTo(mapa);
+  marker.bindPopup(`
+    <div class="map-popup">
+      <div class="map-popup-titulo">${escHTML(tarea.titulo)}</div>
+      <div class="map-popup-precio">${precio}</div>
+      <div class="map-popup-zona">&#128205; ${escHTML(zona)}</div>
+      <a href="tarea.html?id=${tarea.id}" class="map-popup-btn">Ver tarea &#8594;</a>
+    </div>
+  `, { maxWidth: 240 });
+
+  marker.on('click', () => {
+    resaltarCard(tarea.id);
+  });
+
+  markers[tarea.id] = marker;
+}
+
+function limpiarMarkers() {
+  Object.values(markers).forEach(m => mapa.removeLayer(m));
+  markers = {};
+}
+
+function resaltarCard(id) {
+  document.querySelectorAll('.exp-card').forEach(c => c.classList.remove('hover-mapa'));
+  const card = document.getElementById('card-' + id);
+  if (card) {
+    card.classList.add('hover-mapa');
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+// ══ FILTRAR Y RENDERIZAR ══
+function filtrar() {
+  const q = document.getElementById('exp-search').value.toLowerCase().trim();
+
+  filtradas = todasTareas.filter(t => {
+    const matchCat = filtroActual === 'todas' || t.categoria === filtroActual;
+    const matchQ = !q || t.titulo.toLowerCase().includes(q) || (t.descripcion || '').toLowerCase().includes(q) || (t.direccion || '').toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+
+  // Ordenar por distancia si tenemos ubicacion
+  if (miUbicacion) {
+    filtradas.sort((a, b) => {
+      const dA = distancia(a.lat, a.lng, miUbicacion.lat, miUbicacion.lng);
+      const dB = distancia(b.lat, b.lng, miUbicacion.lat, miUbicacion.lng);
+      // Tareas sin coords al final
+      if (isNaN(dA)) return 1;
+      if (isNaN(dB)) return -1;
+      return dA - dB;
+    });
+  }
+
+  renderLista();
+  actualizarVisibilidadMarkers();
+}
+
+function setFiltro(cat, el) {
+  filtroActual = cat;
+  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('activo'));
+  el.classList.add('activo');
+  filtrar();
+}
+
+function distancia(lat1, lng1, lat2, lng2) {
+  if (lat1 == null || lng1 == null || lat2 == null || lng2 == null) return NaN;
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function renderLista() {
+  const lista = document.getElementById('exp-lista');
+  const sub = document.getElementById('lista-sub');
+  sub.textContent = filtradas.length + ' tarea' + (filtradas.length !== 1 ? 's' : '') + ' disponibles';
+
+  if (!filtradas.length) {
+    lista.innerHTML = `<div class="exp-empty"><div class="exp-empty-ico">&#128269;</div><div class="exp-empty-txt">No hay tareas con estos filtros</div></div>`;
+    return;
+  }
+
+  const ahora = Date.now();
+  lista.innerHTML = filtradas.map(t => {
+    const icon = t.cat_icon || CAT_ICONS[t.categoria] || '📋';
+    const bg = CAT_BG[t.categoria] || '#F1F5F9';
+    const precio = t.presupuesto > 0 ? '$' + Number(t.presupuesto).toLocaleString('es-AR') : 'A convenir';
+    const esNueva = (ahora - new Date(t.created_at).getTime()) < 3600000;
+    const hace = tiempoRelativo(new Date(t.created_at));
+    const tieneCoords = t.lat != null && t.lng != null;
+    let distTxt = '';
+    if (tieneCoords && miUbicacion) {
+      const km = distancia(t.lat, t.lng, miUbicacion.lat, miUbicacion.lng);
+      if (!isNaN(km)) distTxt = km < 1 ? 'A menos de 1km' : `A ${km.toFixed(0)}km`;
+    }
+
+    return `<a href="tarea.html?id=${t.id}" class="exp-card" id="card-${t.id}"
+      onmouseenter="abrirPopup('${t.id}')" onmouseleave="cerrarPopup('${t.id}')">
+      ${esNueva ? '<div class="exp-new-tag">Nueva</div>' : ''}
+      <div class="exp-card-top">
+        <div class="exp-card-icon" style="background:${bg}">${icon}</div>
+        <div class="exp-card-info">
+          <div class="exp-card-titulo">${escHTML(t.titulo)}</div>
+          <div class="exp-card-precio">${precio}</div>
+        </div>
+      </div>
+      <div class="exp-card-meta">
+        <span class="exp-meta">&#128197; ${escHTML(t.fecha || t.cuando || 'Flexible')}</span>
+        <span class="exp-meta">&#128205; ${escHTML((t.direccion || '').split(',').slice(0,2).join(',') || '—')}</span>
+        ${distTxt ? `<span class="exp-meta" style="color:var(--verde-o);font-weight:900">&#127919; ${distTxt}</span>` : ''}
+        <span class="exp-meta">&#128336; ${hace}</span>
+      </div>
+    </a>`;
+  }).join('');
+}
+
+function actualizarVisibilidadMarkers() {
+  const filtradosIds = new Set(filtradas.map(t => t.id));
+  Object.entries(markers).forEach(([id, marker]) => {
+    if (filtradosIds.has(id)) {
+      if (!mapa.hasLayer(marker)) mapa.addLayer(marker);
+    } else {
+      if (mapa.hasLayer(marker)) mapa.removeLayer(marker);
+    }
+  });
+}
+
+function abrirPopup(id) {
+  if (markers[id]) markers[id].openPopup();
+}
+function cerrarPopup(id) {
+  if (markers[id]) markers[id].closePopup();
+}
+
+function tiempoRelativo(fecha) {
+  const diff = Date.now() - fecha.getTime();
+  const mins = Math.floor(diff / 60000);
+  const horas = Math.floor(diff / 3600000);
+  const dias = Math.floor(diff / 86400000);
+  if (mins < 2) return 'Ahora mismo';
+  if (mins < 60) return `${mins} min`;
+  if (horas < 24) return `${horas}h`;
+  return `${dias}d`;
+}
+
+// ══ REALTIME ══
+function iniciarRealtime() {
+  db.channel('explorar-realtime')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tareas' }, payload => {
+      const nueva = payload.new;
+      // No mostrar tareas propias
+      if (!nueva || nueva.estado !== 'activa' || nueva.user_id === miUserId) return;
+      nuevasPendientes.push(nueva);
+      actualizarBurbujaNew();
+    })
+    .subscribe();
+}
+
+function actualizarBurbujaNew() {
+  const n = nuevasPendientes.length;
+  if (n === 0) return;
+  document.getElementById('nuevas-txt').textContent = n + ' tarea' + (n !== 1 ? 's' : '') + ' nueva' + (n !== 1 ? 's' : '');
+  document.getElementById('nuevas-burbuja').classList.add('show');
+}
+
+function mostrarNuevas() {
+  nuevasPendientes.forEach(t => {
+    todasTareas.unshift(t);
+    agregarMarker(t);
+  });
+  nuevasPendientes = [];
+  document.getElementById('nuevas-burbuja').classList.remove('show');
+  filtrar();
+  document.getElementById('exp-lista').scrollTop = 0;
+}
+
+function escHTML(t) {
+  if (!t) return '—';
+  const div = document.createElement('div');
+  div.textContent = String(t);
+  return div.innerHTML;
+}
+</script>
+</body>
+</html>

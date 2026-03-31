@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChambaYa — Notificaciones</title>
+<link rel="stylesheet" href="../fonts.css">
+<link rel="stylesheet" href="../styles.css">
+<style>
+.page-wrap {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 36px 20px 80px;
+}
+
+/* ── HEADER ── */
+.page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 12px;
+}
+.page-titulo {
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: -.3px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.notif-unread-badge {
+  font-size: .72rem;
+  font-weight: 900;
+  background: var(--rojo);
+  color: #fff;
+  border-radius: 99px;
+  padding: 2px 8px;
+  display: none;
+}
+.btn-markall {
+  padding: 8px 16px;
+  border: 1.5px solid var(--borde);
+  border-radius: var(--radio-pill);
+  background: transparent;
+  font-family: 'Nunito', sans-serif;
+  font-size: .8rem;
+  font-weight: 800;
+  color: var(--suave);
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.btn-markall:hover { border-color: var(--verde); color: var(--verde-o); }
+
+/* ── TABS ── */
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--fondo);
+  padding: 4px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  width: fit-content;
+}
+.tab {
+  padding: 7px 16px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  font-family: 'Nunito', sans-serif;
+  font-size: .84rem;
+  font-weight: 800;
+  color: var(--suave);
+  cursor: pointer;
+  transition: all .18s;
+  position: relative;
+}
+.tab.on {
+  background: var(--blanco);
+  color: var(--texto);
+  box-shadow: 0 1px 6px rgba(0,0,0,.09);
+}
+.tab-pip {
+  position: absolute;
+  top: 4px; right: 5px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--rojo);
+  display: none;
+}
+.tab-pip.show { display: block; }
+
+/* ── SECCIÓN FECHA ── */
+.fecha-label {
+  font-size: .67rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--suave);
+  padding: 20px 0 8px;
+}
+.fecha-label:first-child { padding-top: 4px; }
+
+/* ── ITEM ── */
+.notif-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  padding: 13px 16px;
+  border-radius: 14px;
+  margin-bottom: 3px;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  transition: background .15s;
+  position: relative;
+}
+.notif-row:hover { background: var(--fondo); }
+.notif-row.nueva { background: #F0FDF9; }
+.notif-row.nueva:hover { background: #E6FAF1; }
+
+/* Barra verde izquierda para nuevas */
+.notif-row.nueva::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 8px; bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--verde);
+}
+
+/* Avatar con badge de tipo */
+.nav-av-box {
+  position: relative;
+  flex-shrink: 0;
+}
+.nav-av-img {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+.nav-av-ini {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 900;
+  color: #fff;
+}
+.tipo-ico {
+  position: absolute;
+  bottom: -2px; right: -2px;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--blanco);
+  border: 2px solid var(--borde);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .62rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,.1);
+}
+
+/* Texto */
+.notif-body { flex: 1; min-width: 0; }
+.notif-line {
+  font-size: .88rem;
+  font-weight: 700;
+  color: var(--suave);
+  line-height: 1.45;
+  margin-bottom: 4px;
+}
+.notif-line strong {
+  font-weight: 900;
+  color: var(--texto);
+}
+.notif-line a.actor {
+  font-weight: 900;
+  color: var(--texto);
+  text-decoration: none;
+}
+.notif-line a.actor:hover { color: var(--verde-o); text-decoration: underline; }
+.notif-tarea-link {
+  color: var(--verde-o);
+  font-weight: 900;
+  text-decoration: none;
+}
+.notif-tarea-link:hover { text-decoration: underline; }
+
+/* Preview del mensaje */
+.notif-preview {
+  font-size: .78rem;
+  color: var(--suave);
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 440px;
+  margin-bottom: 3px;
+}
+
+.notif-tiempo {
+  font-size: .7rem;
+  font-weight: 800;
+  color: #94A3B8;
+}
+.notif-tiempo.verde { color: var(--verde-o); }
+
+/* Punto no leído a la derecha */
+.notif-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--verde);
+  flex-shrink: 0;
+  margin-top: 5px;
+  opacity: 0;
+  transition: opacity .3s;
+}
+.notif-row.nueva .notif-dot { opacity: 1; }
+
+/* ── EMPTY ── */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+.empty-ico { font-size: 2.8rem; opacity: .5; margin-bottom: 12px; }
+.empty-titulo { font-size: .95rem; font-weight: 900; margin-bottom: 6px; }
+.empty-sub { font-size: .84rem; font-weight: 700; color: var(--suave); }
+
+/* ── SKELETON ── */
+.skel-row { display: flex; gap: 13px; padding: 13px 16px; }
+.sk {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: sh 1.3s infinite;
+  border-radius: 8px;
+}
+@keyframes sh { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+@media (max-width: 600px) {
+  .page-wrap { padding: 20px 12px 60px; }
+  .tabs { width: 100%; overflow-x: auto; }
+  .notif-preview { max-width: 260px; }
+}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="home.html" class="nav-logo">Chamba<em>Ya</em></a>
+  <a href="publicar.html" class="nav-publicar" style="margin-left:32px">Publicar tarea</a>
+  <div class="nav-links">
+    <a href="explorar.html" class="nav-link">Explorar tareas</a>
+    <a href="mistareas.html" class="nav-link">Mis tareas</a>
+  </div>
+  <div class="nav-right">
+    <a href="ayuda.html" class="nav-right-link">Ayuda</a>
+    <a href="notificaciones.html" class="nav-right-link activa" id="nav-notif-link" style="position:relative">Notificaciones</a>
+    <a href="mensajes.html" class="nav-right-link">Mensajes</a>
+    <div class="nav-av-wrap">
+      <div class="nav-av" id="nav-av" onclick="toggleDropdown(event)">
+        <span class="nav-av-inicial" id="nav-av-inicial">?</span>
+      </div>
+      <div class="nav-dropdown" id="nav-dropdown">
+        <div class="dd-header">
+          <div class="dd-nombre" id="dd-nombre">Cargando...</div>
+          <div class="dd-sub" onclick="irPerfil()">Ver perfil público</div>
+        </div>
+        <a href="mistareas.html" class="dd-item">Mis tareas <span class="dd-arrow">›</span></a>
+        <div class="dd-sep"></div>
+        <a href="configuracion.html" class="dd-item">Configuración <span class="dd-arrow">›</span></a>
+        <div class="dd-sep"></div>
+        <div class="dd-item rojo" onclick="cerrarSesion()">Cerrar sesión</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <div class="page-head">
+    <div class="page-titulo">
+      🔔 Notificaciones
+      <span class="notif-unread-badge" id="badge-n">0</span>
+    </div>
+    <button class="btn-markall" onclick="marcarTodas()">Marcar todas como leídas</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" onclick="setTab('todas',this)">
+      Todas <span class="tab-pip" id="pip-todas"></span>
+    </button>
+    <button class="tab" onclick="setTab('oferta',this)">
+      💰 Ofertas <span class="tab-pip" id="pip-oferta"></span>
+    </button>
+    <button class="tab" onclick="setTab('pregunta',this)">
+      💬 Preguntas <span class="tab-pip" id="pip-pregunta"></span>
+    </button>
+    <button class="tab" onclick="setTab('respuesta',this)">
+      ↩️ Respuestas <span class="tab-pip" id="pip-respuesta"></span>
+    </button>
+  </div>
+
+  <div id="feed">
+    <!-- skeleton -->
+    <div class="skel-row"><div class="sk" style="width:46px;height:46px;border-radius:50%;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:9px;padding-top:6px"><div class="sk" style="height:13px;width:72%"></div><div class="sk" style="height:11px;width:50%"></div><div class="sk" style="height:10px;width:22%"></div></div></div>
+    <div class="skel-row"><div class="sk" style="width:46px;height:46px;border-radius:50%;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:9px;padding-top:6px"><div class="sk" style="height:13px;width:60%"></div><div class="sk" style="height:11px;width:40%"></div><div class="sk" style="height:10px;width:18%"></div></div></div>
+    <div class="skel-row"><div class="sk" style="width:46px;height:46px;border-radius:50%;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:9px;padding-top:6px"><div class="sk" style="height:13px;width:78%"></div><div class="sk" style="height:11px;width:55%"></div><div class="sk" style="height:10px;width:25%"></div></div></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../navbar.js"></script>
+<script>
+let miUserId = null;
+let allNotifs = [];
+let tabActual = 'todas';
+
+// Config por tipo: color del avatar, ícono badge, texto de acción
+const T = {
+  oferta:           { bg:'#059669', ico:'💰', accion: (n) => `hizo una oferta en` },
+  pregunta:         { bg:'#2563EB', ico:'💬', accion: (n) => `preguntó en` },
+  respuesta:        { bg:'#0891B2', ico:'↩️', accion: (n) => `respondió tu pregunta en` },
+  oferta_aceptada:  { bg:'#D97706', ico:'🎉', accion: (n) => `¡Tu oferta fue aceptada!` },
+  oferta_rechazada: { bg:'#DC2626', ico:'❌', accion: (n) => `tu oferta no fue seleccionada en` },
+  sistema:          { bg:'#6B7280', ico:'📬', accion: (n) => n.titulo || '' },
+};
+
+(async () => {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) { window.location.replace('login.html'); return; }
+  miUserId = session.user.id;
+  await cargar();
+  realtime();
+})();
+
+function irPerfil() { if (miUserId) window.location.href = 'perfil.html?id=' + miUserId; }
+
+async function cargar() {
+  try {
+    const { data, error } = await db
+      .from('notificaciones')
+      .select('*')
+      .eq('user_id', miUserId)
+      .order('created_at', { ascending: false })
+      .limit(80);
+    if (error) throw error;
+    allNotifs = data || [];
+
+    // Cargar perfiles de actores en batch
+    const actorIds = [...new Set(allNotifs.map(n => n.actor_id).filter(Boolean))];
+    if (actorIds.length) {
+      const { data: profs } = await db.from('profiles').select('id,nombre,avatar_url').in('id', actorIds);
+      (profs || []).forEach(p => {
+        allNotifs.filter(n => n.actor_id === p.id).forEach(n => { n._perfil = p; });
+      });
+    }
+
+    // Cargar títulos de tareas en batch
+    const tareaIds = [...new Set(allNotifs.map(n => n.tarea_id).filter(Boolean))];
+    if (tareaIds.length) {
+      const { data: tareas } = await db.from('tareas').select('id,titulo').in('id', tareaIds);
+      (tareas || []).forEach(t => {
+        allNotifs.filter(n => n.tarea_id === t.id).forEach(n => { n._tarea_titulo = t.titulo; });
+      });
+    }
+
+    badges();
+    render();
+  } catch(e) {
+    console.error(e);
+    document.getElementById('feed').innerHTML = `<div class="empty-state"><div class="empty-ico">⚠️</div><div class="empty-titulo">Error al cargar</div><div class="empty-sub">Intentá recargar la página</div></div>`;
+  }
+}
+
+function badges() {
+  const noLeidas = allNotifs.filter(n => !n.leida);
+  const total = noLeidas.length;
+
+  // Badge en título
+  const b = document.getElementById('badge-n');
+  if (total > 0) { b.textContent = total; b.style.display = 'inline'; }
+  else b.style.display = 'none';
+
+  // Pips en tabs
+  ['oferta','pregunta','respuesta'].forEach(tipo => {
+    const pip = document.getElementById('pip-' + tipo);
+    if (!pip) return;
+    const hayNoLeidas = noLeidas.some(n =>
+      tipo === 'oferta'
+        ? ['oferta','oferta_aceptada','oferta_rechazada'].includes(n.tipo)
+        : n.tipo === tipo
+    );
+    pip.classList.toggle('show', hayNoLeidas);
+  });
+  document.getElementById('pip-todas')?.classList.toggle('show', total > 0);
+}
+
+function render() {
+  const feed = document.getElementById('feed');
+  const lista = tabActual === 'todas'
+    ? allNotifs
+    : allNotifs.filter(n =>
+        tabActual === 'oferta'
+          ? ['oferta','oferta_aceptada','oferta_rechazada'].includes(n.tipo)
+          : n.tipo === tabActual
+      );
+
+  if (!lista.length) {
+    const msgs = { todas:'Todavía no tenés notificaciones', oferta:'Sin ofertas aún', pregunta:'Sin preguntas aún', respuesta:'Sin respuestas aún' };
+    feed.innerHTML = `<div class="empty-state"><div class="empty-ico">🔔</div><div class="empty-titulo">${msgs[tabActual]||'Sin notificaciones'}</div><div class="empty-sub">Cuando alguien interactúe con tus tareas, va a aparecer acá.</div></div>`;
+    return;
+  }
+
+  // Agrupar por fecha
+  const hoy = new Date(); hoy.setHours(0,0,0,0);
+  const ayer = new Date(hoy); ayer.setDate(ayer.getDate()-1);
+  const grupos = new Map();
+  lista.forEach(n => {
+    const d = new Date(n.created_at); d.setHours(0,0,0,0);
+    let lbl;
+    if (d >= hoy) lbl = 'Hoy';
+    else if (d >= ayer) lbl = 'Ayer';
+    else if (Date.now() - d < 7*864e5) lbl = d.toLocaleDateString('es-AR',{weekday:'long'});
+    else lbl = d.toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
+    if (!grupos.has(lbl)) grupos.set(lbl, []);
+    grupos.get(lbl).push(n);
+  });
+
+  let html = '';
+  for (const [lbl, items] of grupos) {
+    html += `<div class="fecha-label">${lbl}</div>`;
+    items.forEach(n => { html += itemHTML(n); });
+  }
+  feed.innerHTML = html;
+
+  // Marcar leídas después de 1.5s
+  setTimeout(() => {
+    const ids = lista.filter(n => !n.leida).map(n => n.id);
+    if (ids.length) leer(ids);
+  }, 1500);
+}
+
+function itemHTML(n) {
+  const cfg = T[n.tipo] || T.sistema;
+  const perfil = n._perfil;
+  const actor = perfil?.nombre || n.actor_nombre || 'Un usuario';
+  const ini = actor.charAt(0).toUpperCase();
+  const hace = relativo(new Date(n.created_at));
+  const nueva = !n.leida;
+  const link = n.tarea_id ? `tarea.html?id=${n.tarea_id}` : '#';
+  const tituloTarea = n._tarea_titulo
+    ? (n._tarea_titulo.charAt(0).toUpperCase() + n._tarea_titulo.slice(1))
+    : null;
+
+  // Avatar
+  const avHTML = (perfil?.avatar_url)
+    ? `<img class="nav-av-img" src="${escH(perfil.avatar_url)}" alt="${escH(actor)}">`
+    : `<div class="nav-av-ini" style="background:${cfg.bg}">${ini}</div>`;
+
+  // Construcción del texto principal
+  let lineaHTML = '';
+  const actorLink = n.actor_id
+    ? `<a class="actor" href="perfil.html?id=${escH(n.actor_id)}" onclick="event.stopPropagation()">${escH(actor)}</a>`
+    : `<strong>${escH(actor)}</strong>`;
+
+  if (n.tipo === 'oferta') {
+    lineaHTML = `${actorLink} hizo una oferta en ${tituloTarea ? `<a class="notif-tarea-link" href="${link}" onclick="event.stopPropagation()">${escH(tituloTarea)}</a>` : 'tu tarea'}`;
+  } else if (n.tipo === 'pregunta') {
+    lineaHTML = `${actorLink} preguntó en ${tituloTarea ? `<a class="notif-tarea-link" href="${link}" onclick="event.stopPropagation()">${escH(tituloTarea)}</a>` : 'tu tarea'}`;
+  } else if (n.tipo === 'respuesta') {
+    lineaHTML = `${actorLink} respondió tu pregunta${tituloTarea ? ` en <a class="notif-tarea-link" href="${link}" onclick="event.stopPropagation()">${escH(tituloTarea)}</a>` : ''}`;
+  } else if (n.tipo === 'oferta_aceptada') {
+    lineaHTML = `<strong>🎉 ¡Tu oferta fue aceptada!</strong>${tituloTarea ? ` — <a class="notif-tarea-link" href="${link}" onclick="event.stopPropagation()">${escH(tituloTarea)}</a>` : ''}`;
+  } else if (n.tipo === 'oferta_rechazada') {
+    lineaHTML = `Tu oferta no fue seleccionada${tituloTarea ? ` en <a class="notif-tarea-link" href="${link}" onclick="event.stopPropagation()">${escH(tituloTarea)}</a>` : ''}`;
+  } else {
+    lineaHTML = escH(n.titulo || 'Notificación');
+    if (tituloTarea) lineaHTML += ` — <a class="notif-tarea-link" href="${link}" onclick="event.stopPropagation()">${escH(tituloTarea)}</a>`;
+  }
+
+  // Preview del mensaje
+  const preview = n.mensaje
+    ? `<div class="notif-preview">${escH(n.mensaje.substring(0,90))}${n.mensaje.length>90?'…':''}</div>`
+    : '';
+
+  return `
+    <a class="notif-row${nueva?' nueva':''}" href="${link}" onclick="leerUna('${n.id}')">
+      <div class="nav-av-box">
+        ${avHTML}
+        <div class="tipo-ico">${cfg.ico}</div>
+      </div>
+      <div class="notif-body">
+        <div class="notif-line">${lineaHTML}</div>
+        ${preview}
+        <div class="notif-tiempo${nueva?' verde':''}">${hace}</div>
+      </div>
+      <div class="notif-dot"></div>
+    </a>`;
+}
+
+function setTab(tipo, el) {
+  tabActual = tipo;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+  render();
+}
+
+async function leer(ids) {
+  if (!ids.length) return;
+  try {
+    await db.from('notificaciones').update({ leida: true }).in('id', ids);
+    ids.forEach(id => { const n = allNotifs.find(n => n.id === id); if (n) n.leida = true; });
+    badges();
+    // Apagar visualmente sin re-renderizar
+    ids.forEach(id => {
+      document.querySelectorAll(`a[onclick*="${id}"]`).forEach(el => {
+        el.classList.remove('nueva');
+        el.querySelector('.notif-dot')?.style && (el.querySelector('.notif-dot').style.opacity = '0');
+        const t = el.querySelector('.notif-tiempo');
+        if (t) t.classList.remove('verde');
+      });
+    });
+  } catch(e) { console.warn(e); }
+}
+
+function leerUna(id) {
+  const n = allNotifs.find(n => n.id === id);
+  if (n && !n.leida) leer([id]);
+}
+
+async function marcarTodas() {
+  const ids = allNotifs.filter(n => !n.leida).map(n => n.id);
+  if (!ids.length) { showToast('Ya están todas leídas ✓'); return; }
+  await leer(ids);
+  render();
+  showToast('Todas marcadas como leídas ✓');
+}
+
+function realtime() {
+  db.channel('notifs-' + miUserId)
+    .on('postgres_changes', {
+      event: 'INSERT', schema: 'public', table: 'notificaciones',
+      filter: `user_id=eq.${miUserId}`
+    }, async payload => {
+      const n = payload.new;
+      if (!n) return;
+      // Cargar perfil del actor
+      if (n.actor_id) {
+        const { data: p } = await db.from('profiles').select('id,nombre,avatar_url').eq('id', n.actor_id).maybeSingle();
+        if (p) n._perfil = p;
+      }
+      // Cargar título de la tarea
+      if (n.tarea_id) {
+        const { data: t } = await db.from('tareas').select('id,titulo').eq('id', n.tarea_id).maybeSingle();
+        if (t) n._tarea_titulo = t.titulo;
+      }
+      allNotifs.unshift(n);
+      badges();
+      render();
+      showToast(n.titulo || 'Nueva notificación 🔔');
+    })
+    .subscribe();
+}
+
+function relativo(d) {
+  const diff = Date.now() - d;
+  const m = Math.floor(diff/60000), h = Math.floor(diff/3600000), dias = Math.floor(diff/864e5);
+  if (m < 2) return 'Ahora mismo';
+  if (m < 60) return `Hace ${m} min`;
+  if (h < 24) return `Hace ${h}h`;
+  if (dias === 1) return 'Ayer';
+  if (dias < 7) return `Hace ${dias} días`;
+  return d.toLocaleDateString('es-AR', { day:'numeric', month:'short' });
+}
+
+function escH(t) {
+  if (!t) return '';
+  const d = document.createElement('div');
+  d.textContent = String(t);
+  return d.innerHTML;
+}
+</script>
+</body>
+</html>
