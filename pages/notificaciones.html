@@ -7,283 +7,102 @@
 <link rel="stylesheet" href="../fonts.css">
 <link rel="stylesheet" href="../styles.css">
 <style>
-/* ── LAYOUT CON SIDEBAR ── */
-.pg-wrap {
-  display: grid;
-  grid-template-columns: 260px 1fr;
-  min-height: calc(100vh - 66px);
-}
+.pg-wrap{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 66px)}
 
-/* ── SIDEBAR ── */
-.sidebar {
-  border-right: 1.5px solid var(--borde);
-  background: var(--blanco);
-  padding: 28px 0;
-  position: sticky;
-  top: 66px;
-  height: calc(100vh - 66px);
-  overflow-y: auto;
-}
-.sb-user {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0 24px 24px;
-  border-bottom: 1.5px solid var(--borde);
-  margin-bottom: 8px;
-  text-align: center;
-}
-.sb-av {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  object-fit: cover;
-  background: var(--fondo);
-  border: 3px solid var(--borde);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.6rem;
-  font-weight: 900;
-  color: var(--suave);
-  margin-bottom: 12px;
-  overflow: hidden;
-}
-.sb-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-.sb-nombre { font-size: 1rem; font-weight: 900; color: var(--texto); margin-bottom: 2px; }
-.sb-email  { font-size: .75rem; font-weight: 700; color: var(--suave); }
+/* SIDEBAR */
+.sidebar{border-right:1.5px solid var(--borde);background:var(--blanco);padding:28px 0;position:sticky;top:66px;height:calc(100vh - 66px);overflow-y:auto}
+.sb-user{display:flex;flex-direction:column;align-items:center;padding:0 24px 22px;border-bottom:1.5px solid var(--borde);margin-bottom:8px;text-align:center}
+.sb-av{width:68px;height:68px;border-radius:50%;background:var(--verde);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:900;margin-bottom:10px;overflow:hidden;border:3px solid var(--borde)}
+.sb-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.sb-nombre{font-size:.95rem;font-weight:900;color:var(--texto);margin-bottom:2px}
+.sb-email{font-size:.72rem;font-weight:700;color:var(--suave)}
+.sb-nav{padding:6px 0}
+.sb-item{display:flex;align-items:center;gap:11px;padding:10px 22px;font-size:.88rem;font-weight:800;color:var(--suave);text-decoration:none;cursor:pointer;transition:all .15s;border-left:3px solid transparent;white-space:nowrap}
+.sb-item:hover{background:var(--fondo);color:var(--texto)}
+.sb-item.on{color:var(--verde-o);background:var(--verde-c);border-left-color:var(--verde);font-weight:900}
+.sb-ico{font-size:.95rem;width:20px;text-align:center;flex-shrink:0}
+.sb-sep{height:1px;background:var(--borde);margin:6px 22px}
 
-.sb-nav { padding: 8px 0; }
-.sb-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 24px;
-  font-size: .9rem;
-  font-weight: 800;
-  color: var(--suave);
-  text-decoration: none;
-  cursor: pointer;
-  transition: all .15s;
-  border-left: 3px solid transparent;
-}
-.sb-item:hover { background: var(--fondo); color: var(--texto); }
-.sb-item.activo { color: var(--verde-o); background: var(--verde-c); border-left-color: var(--verde); font-weight: 900; }
-.sb-item.rojo { color: var(--rojo); }
-.sb-item.rojo:hover { background: var(--rojo-c); }
-.sb-ico { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
-.sb-sep { height: 1px; background: var(--borde); margin: 8px 24px; }
+/* MAIN */
+.pg-main{padding:32px 40px 80px;max-width:740px}
+.pg-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;gap:12px}
+.pg-titulo{font-size:1.25rem;font-weight:900;letter-spacing:-.2px;display:flex;align-items:center;gap:10px}
+.unread-b{background:var(--rojo);color:#fff;font-size:.65rem;font-weight:900;border-radius:99px;padding:2px 7px;display:none}
+.btn-markall{padding:7px 14px;border:1.5px solid var(--borde);border-radius:var(--radio-pill);background:transparent;font-family:'Nunito',sans-serif;font-size:.78rem;font-weight:800;color:var(--suave);cursor:pointer;transition:all .2s;white-space:nowrap}
+.btn-markall:hover{border-color:var(--verde);color:var(--verde-o)}
 
-/* ── CONTENIDO PRINCIPAL ── */
-.pg-main {
-  padding: 32px 40px 80px;
-  max-width: 720px;
-}
-.pg-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-}
-.pg-titulo {
-  font-size: 1.3rem;
-  font-weight: 900;
-  letter-spacing: -.2px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.unread-badge {
-  background: var(--rojo);
-  color: #fff;
-  font-size: .68rem;
-  font-weight: 900;
-  border-radius: 99px;
-  padding: 2px 7px;
-  display: none;
-}
-.btn-markall {
-  padding: 7px 15px;
-  border: 1.5px solid var(--borde);
-  border-radius: var(--radio-pill);
-  background: transparent;
-  font-family: 'Nunito', sans-serif;
-  font-size: .8rem;
-  font-weight: 800;
-  color: var(--suave);
-  cursor: pointer;
-  transition: all .2s;
-  white-space: nowrap;
-}
-.btn-markall:hover { border-color: var(--verde); color: var(--verde-o); }
+/* TABS */
+.tabs{display:flex;border-bottom:1.5px solid var(--borde);margin-bottom:6px}
+.tab{padding:9px 16px;border:none;border-bottom:2.5px solid transparent;background:transparent;font-family:'Nunito',sans-serif;font-size:.83rem;font-weight:800;color:var(--suave);cursor:pointer;transition:all .15s;margin-bottom:-1.5px;position:relative}
+.tab:hover{color:var(--texto)}
+.tab.on{color:var(--texto);border-bottom-color:var(--verde);font-weight:900}
+.tab-pip{position:absolute;top:5px;right:3px;width:6px;height:6px;border-radius:50%;background:var(--rojo);display:none}
+.tab-pip.show{display:block}
 
-/* ── TABS ── */
-.tabs {
-  display: flex;
-  gap: 0;
-  border-bottom: 1.5px solid var(--borde);
-  margin-bottom: 4px;
-}
-.tab {
-  padding: 10px 18px;
-  border: none;
-  border-bottom: 2.5px solid transparent;
-  background: transparent;
-  font-family: 'Nunito', sans-serif;
-  font-size: .85rem;
-  font-weight: 800;
-  color: var(--suave);
-  cursor: pointer;
-  transition: all .18s;
-  margin-bottom: -1.5px;
-  position: relative;
-}
-.tab:hover { color: var(--texto); }
-.tab.on { color: var(--texto); border-bottom-color: var(--verde); font-weight: 900; }
-.tab-pip {
-  position: absolute;
-  top: 6px; right: 4px;
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--rojo);
-  display: none;
-}
-.tab-pip.show { display: block; }
+/* FECHA */
+.fecha-lbl{font-size:.65rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--suave);padding:16px 0 6px}
 
-/* ── GRUPO FECHA ── */
-.fecha-lbl {
-  font-size: .68rem;
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--suave);
-  padding: 18px 0 6px;
-}
+/* CARD agrupador */
+.notif-card{background:var(--blanco);border:1.5px solid var(--borde);border-radius:12px;overflow:hidden;margin-bottom:8px}
 
-/* ── ITEM estilo Airtasker ── */
-.notif-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 12px;
-  border-radius: 10px;
-  cursor: pointer;
-  text-decoration: none;
-  color: inherit;
-  transition: background .12s;
-  position: relative;
-  border-bottom: 1px solid var(--borde);
+/* ── ITEM — una sola fila como Airtasker ── */
+.ni{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 16px;
+  text-decoration:none;
+  color:inherit;
+  border-bottom:1px solid var(--borde);
+  transition:background .12s;
+  /* CRÍTICO: sin esto el overflow:hidden no funciona en flex */
+  min-width:0;
+  overflow:hidden;
 }
-.notif-item:last-child { border-bottom: none; }
-.notif-item:hover { background: var(--fondo); }
-.notif-item.nueva { background: #F0FDF9; }
-.notif-item.nueva:hover { background: #E6FAF1; }
+.ni:last-child{border-bottom:none}
+.ni:hover{background:#F8FAFC}
+.ni.nueva{background:#F0FDF9}
+.ni.nueva:hover{background:#E8FAF2}
 
-/* Foto de perfil */
-.ni-av {
-  position: relative;
-  flex-shrink: 0;
-}
-.ni-av-img {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  display: block;
-}
-.ni-av-ini {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: .9rem;
-  font-weight: 900;
-  color: #fff;
-  flex-shrink: 0;
-}
-.ni-tipo {
-  position: absolute;
-  bottom: -2px; right: -2px;
-  width: 16px; height: 16px;
-  border-radius: 50%;
-  background: var(--blanco);
-  border: 1.5px solid var(--borde);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: .5rem;
-}
+/* Avatar 40px fijo */
+.ni-av{position:relative;flex-shrink:0;width:40px;height:40px}
+.ni-img{width:40px;height:40px;border-radius:50%;object-fit:cover;display:block}
+.ni-ini{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.88rem;font-weight:900;color:#fff}
+.ni-badge{position:absolute;bottom:-2px;right:-2px;width:16px;height:16px;border-radius:50%;background:var(--blanco);border:1.5px solid var(--borde);display:flex;align-items:center;justify-content:center;font-size:.48rem;line-height:1}
 
-/* Texto — una sola línea como Airtasker */
-.ni-body {
-  flex: 1;
-  min-width: 0;
+/* Texto — TODA la fila en una línea, ellipsis si no entra */
+.ni-txt{
+  flex:1;
+  min-width:0; /* CRÍTICO para que ellipsis funcione */
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  font-size:.86rem;
+  font-weight:700;
+  color:var(--suave);
+  line-height:1.35;
 }
-.ni-line {
-  font-size: .86rem;
-  color: var(--suave);
-  font-weight: 700;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.3;
-}
-.ni-line .actor { font-weight: 900; color: var(--texto); text-decoration: none; }
-.ni-line .actor:hover { color: var(--verde-o); }
-.ni-line .tarea { font-weight: 900; color: var(--verde-o); text-decoration: none; }
-.ni-line .tarea:hover { text-decoration: underline; }
-.ni-tiempo {
-  font-size: .7rem;
-  color: #94A3B8;
-  font-weight: 700;
-  margin-top: 2px;
-  white-space: nowrap;
-}
-.ni-tiempo.nueva-t { color: var(--verde-o); }
+.ni-txt .actor{font-weight:900;color:var(--texto);text-decoration:none}
+.ni-txt .actor:hover{color:var(--verde-o)}
+.ni-txt .tarea{font-weight:900;color:var(--verde-o);text-decoration:none}
+.ni-txt .tarea:hover{text-decoration:underline}
 
-/* Punto no leído */
-.ni-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--verde);
-  flex-shrink: 0;
-  opacity: 0;
-  transition: opacity .3s;
-}
-.notif-item.nueva .ni-dot { opacity: 1; }
+/* Tiempo — fijo a la derecha, no se encoge */
+.ni-meta{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;margin-left:8px}
+.ni-hora{font-size:.68rem;font-weight:700;color:#94A3B8;white-space:nowrap}
+.ni-dot{width:8px;height:8px;border-radius:50%;background:var(--verde);opacity:0;transition:opacity .3s}
+.ni.nueva .ni-dot{opacity:1}
+.ni.nueva .ni-hora{color:var(--verde-o)}
 
-/* Empty */
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  color: var(--suave);
-}
-.empty-ico { font-size: 2.5rem; opacity: .4; margin-bottom: 12px; }
-.empty-txt { font-size: .9rem; font-weight: 800; }
+/* Empty / skeleton */
+.empty-state{text-align:center;padding:60px 20px;color:var(--suave)}
+.empty-ico{font-size:2.4rem;opacity:.4;margin-bottom:10px}
+.empty-txt{font-size:.88rem;font-weight:800}
+.sk-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--borde)}
+.sk{background:linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);background-size:200% 100%;animation:sh 1.3s infinite;border-radius:8px}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
-/* Skeleton */
-.skel-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 12px;
-  border-bottom: 1px solid var(--borde);
-}
-.sk {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: sh 1.3s infinite;
-  border-radius: 8px;
-}
-@keyframes sh { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-
-@media (max-width: 760px) {
-  .pg-wrap { grid-template-columns: 1fr; }
-  .sidebar { display: none; }
-  .pg-main { padding: 20px 16px 60px; }
-}
+@media(max-width:760px){.pg-wrap{grid-template-columns:1fr}.sidebar{display:none}.pg-main{padding:20px 16px 60px}}
 </style>
 </head>
 <body>
@@ -299,14 +118,9 @@
     <a href="notificaciones.html" class="nav-right-link activa" id="nav-notif-link" style="position:relative">Notificaciones</a>
     <a href="mensajes.html" class="nav-right-link" id="nav-mensajes-link" style="position:relative">Mensajes</a>
     <div class="nav-av-wrap">
-      <div class="nav-av" id="nav-av" onclick="toggleDropdown(event)">
-        <span class="nav-av-inicial" id="nav-av-inicial">?</span>
-      </div>
+      <div class="nav-av" id="nav-av" onclick="toggleDropdown(event)"><span class="nav-av-inicial" id="nav-av-inicial">?</span></div>
       <div class="nav-dropdown" id="nav-dropdown">
-        <div class="dd-header">
-          <div class="dd-nombre" id="dd-nombre">Cargando...</div>
-          <div class="dd-sub" onclick="irPerfil()">Ver perfil público</div>
-        </div>
+        <div class="dd-header"><div class="dd-nombre" id="dd-nombre">Cargando...</div><div class="dd-sub" onclick="irPerfil()">Ver perfil público</div></div>
         <a href="mistareas.html" class="dd-item">Mis tareas <span class="dd-arrow">›</span></a>
         <div class="dd-sep"></div>
         <a href="configuracion.html" class="dd-item">Configuración <span class="dd-arrow">›</span></a>
@@ -318,50 +132,44 @@
 </nav>
 
 <div class="pg-wrap">
-
-  <!-- ── SIDEBAR ── -->
+  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sb-user">
-      <div class="sb-av" id="sb-av"><span id="sb-ini">?</span></div>
+      <div class="sb-av" id="sb-av"><span id="sb-ini">M</span></div>
       <div class="sb-nombre" id="sb-nombre">Cargando...</div>
       <div class="sb-email"  id="sb-email"></div>
     </div>
     <nav class="sb-nav">
-      <a href="home.html"             class="sb-item"><span class="sb-ico">🏠</span> Inicio</a>
-      <a href="mistareas.html"        class="sb-item"><span class="sb-ico">📋</span> Mis tareas</a>
-      <a href="mensajes.html"         class="sb-item"><span class="sb-ico">💬</span> Mensajes</a>
-      <a href="notificaciones.html"   class="sb-item activo"><span class="sb-ico">🔔</span> Notificaciones</a>
-      <div class="sb-sep"></div>
-      <a href="perfil.html"           class="sb-item"><span class="sb-ico">👤</span> Mi perfil</a>
-      <a href="configuracion.html"    class="sb-item"><span class="sb-ico">⚙️</span> Configuración</a>
-      <a href="ayuda.html"            class="sb-item"><span class="sb-ico">❓</span> Ayuda</a>
-      <div class="sb-sep"></div>
-      <div class="sb-item rojo" onclick="cerrarSesion()"><span class="sb-ico">🚪</span> Cerrar sesión</div>
+      <a href="mistareas.html"       class="sb-item"><span class="sb-ico">📋</span>Mis tareas</a>
+      <a href="historial-pagos.html" class="sb-item"><span class="sb-ico">💳</span>Historial de pagos</a>
+      <a href="metodos-pago.html"    class="sb-item"><span class="sb-ico">💰</span>Métodos de pago</a>
+      <a href="notificaciones.html"  class="sb-item on"><span class="sb-ico">🔔</span>Notificaciones</a>
+      <a href="perfil.html"          class="sb-item"><span class="sb-ico">👤</span>Perfil</a>
+      <a href="habilidades.html"     class="sb-item"><span class="sb-ico">🛠️</span>Habilidades</a>
+      <a href="medallas.html"        class="sb-item"><span class="sb-ico">🏅</span>Medallas</a>
     </nav>
   </aside>
 
-  <!-- ── CONTENIDO ── -->
+  <!-- MAIN -->
   <main class="pg-main">
     <div class="pg-head">
-      <div class="pg-titulo">
-        Notificaciones
-        <span class="unread-badge" id="badge-n">0</span>
-      </div>
+      <div class="pg-titulo">Notificaciones <span class="unread-b" id="badge-n">0</span></div>
       <button class="btn-markall" onclick="marcarTodas()">Marcar todas como leídas</button>
     </div>
 
     <div class="tabs">
-      <button class="tab on" onclick="setTab('todas',this)">Todas <span class="tab-pip" id="pip-todas"></span></button>
-      <button class="tab" onclick="setTab('oferta',this)">Ofertas <span class="tab-pip" id="pip-oferta"></span></button>
-      <button class="tab" onclick="setTab('pregunta',this)">Preguntas <span class="tab-pip" id="pip-pregunta"></span></button>
-      <button class="tab" onclick="setTab('respuesta',this)">Respuestas <span class="tab-pip" id="pip-respuesta"></span></button>
+      <button class="tab on" onclick="setTab('todas',this)">Todas<span class="tab-pip" id="pip-todas"></span></button>
+      <button class="tab" onclick="setTab('oferta',this)">Ofertas<span class="tab-pip" id="pip-oferta"></span></button>
+      <button class="tab" onclick="setTab('pregunta',this)">Preguntas<span class="tab-pip" id="pip-pregunta"></span></button>
+      <button class="tab" onclick="setTab('respuesta',this)">Respuestas<span class="tab-pip" id="pip-respuesta"></span></button>
     </div>
 
     <div id="feed">
-      <!-- skeleton -->
-      <div class="skel-item"><div class="sk" style="width:40px;height:40px;border-radius:50%;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:7px"><div class="sk" style="height:12px;width:70%"></div><div class="sk" style="height:10px;width:25%"></div></div></div>
-      <div class="skel-item"><div class="sk" style="width:40px;height:40px;border-radius:50%;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:7px"><div class="sk" style="height:12px;width:55%"></div><div class="sk" style="height:10px;width:20%"></div></div></div>
-      <div class="skel-item"><div class="sk" style="width:40px;height:40px;border-radius:50%;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:7px"><div class="sk" style="height:12px;width:65%"></div><div class="sk" style="height:10px;width:22%"></div></div></div>
+      <div class="notif-card">
+        <div class="sk-item"><div class="sk" style="width:40px;height:40px;border-radius:50%;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:7px"><div class="sk" style="height:12px;width:75%"></div></div><div class="sk" style="width:50px;height:10px;flex-shrink:0"></div></div>
+        <div class="sk-item"><div class="sk" style="width:40px;height:40px;border-radius:50%;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:7px"><div class="sk" style="height:12px;width:60%"></div></div><div class="sk" style="width:40px;height:10px;flex-shrink:0"></div></div>
+        <div class="sk-item" style="border-bottom:none"><div class="sk" style="width:40px;height:40px;border-radius:50%;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:7px"><div class="sk" style="height:12px;width:68%"></div></div><div class="sk" style="width:45px;height:10px;flex-shrink:0"></div></div>
+      </div>
     </div>
   </main>
 </div>
@@ -371,267 +179,214 @@
 <script src="../navbar.js"></script>
 <script>
 let miUserId = null;
-let miPerfil = null;
 let allNotifs = [];
 let tabActual = 'todas';
 
 const TIPOS = {
-  oferta:           { ico:'💰', bg:'#059669' },
-  pregunta:         { ico:'💬', bg:'#2563EB' },
-  respuesta:        { ico:'↩️', bg:'#0891B2' },
-  oferta_aceptada:  { ico:'🎉', bg:'#D97706' },
-  oferta_rechazada: { ico:'❌', bg:'#DC2626' },
-  sistema:          { ico:'📬', bg:'#6B7280' },
+  oferta:           {ico:'💰', bg:'#059669'},
+  pregunta:         {ico:'💬', bg:'#2563EB'},
+  respuesta:        {ico:'↩️', bg:'#0891B2'},
+  oferta_aceptada:  {ico:'🎉', bg:'#D97706'},
+  oferta_rechazada: {ico:'❌', bg:'#DC2626'},
+  sistema:          {ico:'📬', bg:'#6B7280'},
 };
 
 (async () => {
   const { data: { session } } = await db.auth.getSession();
   if (!session) { window.location.replace('login.html'); return; }
   miUserId = session.user.id;
-
-  // Cargar perfil para el sidebar
-  const { data: p } = await db.from('profiles').select('nombre,avatar_url,email').eq('id', miUserId).maybeSingle();
-  miPerfil = p || {};
   renderSidebar(session.user);
-
   await cargar();
   realtime();
 })();
 
 function irPerfil() { if (miUserId) window.location.href = 'perfil.html?id=' + miUserId; }
 
-function renderSidebar(user) {
-  const nombre = miPerfil.nombre || user.user_metadata?.nombre || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuario';
-  const email  = user.email || '';
-  const foto   = miPerfil.avatar_url || user.user_metadata?.avatar_url || null;
-  const ini    = nombre.charAt(0).toUpperCase();
-
+async function renderSidebar(user) {
+  const { data: p } = await db.from('profiles').select('nombre,avatar_url').eq('id', user.id).maybeSingle();
+  const nombre = p?.nombre || user.user_metadata?.nombre || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuario';
+  const foto   = p?.avatar_url || user.user_metadata?.avatar_url || null;
   document.getElementById('sb-nombre').textContent = nombre;
-  document.getElementById('sb-email').textContent  = email;
-
-  const avEl = document.getElementById('sb-av');
-  if (foto) {
-    avEl.innerHTML = `<img src="${escH(foto)}" alt="${escH(nombre)}">`;
-  } else {
-    avEl.innerHTML = `<span style="font-size:1.6rem;font-weight:900;color:var(--suave)">${ini}</span>`;
-  }
+  document.getElementById('sb-email').textContent  = user.email || '';
+  const av = document.getElementById('sb-av');
+  if (foto) { av.innerHTML = `<img src="${escH(foto)}" alt="${escH(nombre)}"`+`>`; }
+  else { av.innerHTML = `<span style="font-size:1.4rem;font-weight:900">${nombre.charAt(0).toUpperCase()}</span>`; }
 }
 
 async function cargar() {
   try {
     const { data, error } = await db.from('notificaciones')
       .select('*').eq('user_id', miUserId)
-      .order('created_at', { ascending: false }).limit(80);
+      .order('created_at', {ascending:false}).limit(80);
     if (error) throw error;
     allNotifs = data || [];
 
-    // Cargar perfiles de actores en batch
+    // Perfiles en batch
     const actorIds = [...new Set(allNotifs.map(n => n.actor_id).filter(Boolean))];
     if (actorIds.length) {
       const { data: profs } = await db.from('profiles').select('id,nombre,avatar_url').in('id', actorIds);
-      (profs || []).forEach(p => {
-        allNotifs.filter(n => n.actor_id === p.id).forEach(n => { n._perfil = p; });
-      });
+      (profs||[]).forEach(p => allNotifs.filter(n => n.actor_id===p.id).forEach(n => n._p=p));
     }
-
-    // Cargar títulos de tareas en batch
+    // Títulos de tareas en batch
     const tareaIds = [...new Set(allNotifs.map(n => n.tarea_id).filter(Boolean))];
     if (tareaIds.length) {
-      const { data: tareas } = await db.from('tareas').select('id,titulo').in('id', tareaIds);
-      (tareas || []).forEach(t => {
-        allNotifs.filter(n => n.tarea_id === t.id).forEach(n => {
-          n._tarea_titulo = t.titulo.charAt(0).toUpperCase() + t.titulo.slice(1);
-        });
-      });
+      const { data: ts } = await db.from('tareas').select('id,titulo').in('id', tareaIds);
+      (ts||[]).forEach(t => allNotifs.filter(n => n.tarea_id===t.id).forEach(n => {
+        n._titulo = t.titulo.charAt(0).toUpperCase() + t.titulo.slice(1);
+      }));
     }
-
-    badges();
-    render();
+    badges(); render();
   } catch(e) {
-    console.error(e);
     document.getElementById('feed').innerHTML = `<div class="empty-state"><div class="empty-ico">⚠️</div><div class="empty-txt">Error al cargar. Recargá la página.</div></div>`;
   }
 }
 
 function badges() {
-  const noLeidas = allNotifs.filter(n => !n.leida);
-  const total = noLeidas.length;
+  const nl = allNotifs.filter(n => !n.leida);
+  const tot = nl.length;
   const b = document.getElementById('badge-n');
-  if (total > 0) { b.textContent = total; b.style.display = 'inline'; }
-  else b.style.display = 'none';
-
+  if (tot>0){b.textContent=tot;b.style.display='inline';}else b.style.display='none';
   ['oferta','pregunta','respuesta'].forEach(tipo => {
-    const pip = document.getElementById('pip-' + tipo);
-    if (!pip) return;
-    pip.classList.toggle('show', noLeidas.some(n =>
-      tipo === 'oferta' ? ['oferta','oferta_aceptada','oferta_rechazada'].includes(n.tipo) : n.tipo === tipo
+    const pip = document.getElementById('pip-'+tipo);
+    if (pip) pip.classList.toggle('show', nl.some(n =>
+      tipo==='oferta' ? ['oferta','oferta_aceptada','oferta_rechazada'].includes(n.tipo) : n.tipo===tipo
     ));
   });
-  document.getElementById('pip-todas')?.classList.toggle('show', total > 0);
+  document.getElementById('pip-todas')?.classList.toggle('show', tot>0);
 }
 
 function render() {
   const feed = document.getElementById('feed');
-  const lista = tabActual === 'todas'
-    ? allNotifs
-    : allNotifs.filter(n =>
-        tabActual === 'oferta'
-          ? ['oferta','oferta_aceptada','oferta_rechazada'].includes(n.tipo)
-          : n.tipo === tabActual
-      );
+  const lista = tabActual==='todas' ? allNotifs
+    : allNotifs.filter(n => tabActual==='oferta'
+        ? ['oferta','oferta_aceptada','oferta_rechazada'].includes(n.tipo)
+        : n.tipo===tabActual);
 
   if (!lista.length) {
-    const msgs = { todas:'No tenés notificaciones todavía', oferta:'Sin ofertas nuevas', pregunta:'Sin preguntas', respuesta:'Sin respuestas' };
-    feed.innerHTML = `<div class="empty-state"><div class="empty-ico">🔔</div><div class="empty-txt">${msgs[tabActual]||'Sin notificaciones'}</div></div>`;
+    const msgs={todas:'No tenés notificaciones todavía',oferta:'Sin ofertas nuevas',pregunta:'Sin preguntas',respuesta:'Sin respuestas'};
+    feed.innerHTML=`<div class="empty-state"><div class="empty-ico">🔔</div><div class="empty-txt">${msgs[tabActual]||'Sin notificaciones'}</div></div>`;
     return;
   }
 
   // Agrupar por fecha
-  const hoy  = new Date(); hoy.setHours(0,0,0,0);
-  const ayer = new Date(hoy); ayer.setDate(ayer.getDate()-1);
-  const grupos = new Map();
-  lista.forEach(n => {
-    const d = new Date(n.created_at); d.setHours(0,0,0,0);
-    let lbl = d >= hoy ? 'Hoy' : d >= ayer ? 'Ayer'
-      : Date.now()-d < 7*864e5
-        ? d.toLocaleDateString('es-AR',{weekday:'long'})
-        : d.toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
-    if (!grupos.has(lbl)) grupos.set(lbl,[]);
-    grupos.get(lbl).push(n);
+  const hoy=new Date();hoy.setHours(0,0,0,0);
+  const ayer=new Date(hoy);ayer.setDate(ayer.getDate()-1);
+  const grupos=new Map();
+  lista.forEach(n=>{
+    const d=new Date(n.created_at);d.setHours(0,0,0,0);
+    const lbl=d>=hoy?'Hoy':d>=ayer?'Ayer':Date.now()-d<7*864e5?d.toLocaleDateString('es-AR',{weekday:'long'}):d.toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'});
+    if(!grupos.has(lbl))grupos.set(lbl,[]);grupos.get(lbl).push(n);
   });
 
-  let html = '';
-  for (const [lbl, items] of grupos) {
-    html += `<div class="fecha-lbl">${lbl}</div>`;
-    // Card con borde por grupo de fecha
-    html += `<div style="background:var(--blanco);border:1.5px solid var(--borde);border-radius:12px;overflow:hidden;margin-bottom:4px">`;
-    items.forEach((n, i) => { html += itemHTML(n, i === items.length - 1); });
-    html += `</div>`;
+  let html='';
+  for(const [lbl,items] of grupos){
+    html+=`<div class="fecha-lbl">${lbl}</div><div class="notif-card">`;
+    items.forEach(n=>{html+=itemHTML(n);});
+    html+=`</div>`;
   }
-  feed.innerHTML = html;
+  feed.innerHTML=html;
 
-  // Marcar leídas tras 1.5s
-  setTimeout(() => {
-    const ids = lista.filter(n => !n.leida).map(n => n.id);
-    if (ids.length) leer(ids);
-  }, 1500);
+  setTimeout(()=>{
+    const ids=lista.filter(n=>!n.leida).map(n=>n.id);
+    if(ids.length)leer(ids);
+  },1500);
 }
 
-function itemHTML(n, isLast) {
-  const cfg    = TIPOS[n.tipo] || TIPOS.sistema;
-  const perfil = n._perfil;
-  const actor  = perfil?.nombre || n.actor_nombre || 'Un usuario';
-  const ini    = actor.charAt(0).toUpperCase();
-  const hace   = relativo(new Date(n.created_at));
-  const nueva  = !n.leida;
-  const link   = n.tarea_id ? `tarea.html?id=${n.tarea_id}` : '#';
-  const titulo = n._tarea_titulo || null;
+function itemHTML(n) {
+  const cfg  = TIPOS[n.tipo]||TIPOS.sistema;
+  const p    = n._p;
+  const actor= p?.nombre||n.actor_nombre||'Un usuario';
+  const ini  = actor.charAt(0).toUpperCase();
+  const hace = relativo(new Date(n.created_at));
+  const nueva= !n.leida;
+  const link = n.tarea_id?`tarea.html?id=${n.tarea_id}`:'#';
+  const titulo=n._titulo||null;
 
-  // Avatar
-  const avHTML = perfil?.avatar_url
-    ? `<img class="ni-av-img" src="${escH(perfil.avatar_url)}" alt="${escH(actor)}">`
-    : `<div class="ni-av-ini" style="background:${cfg.bg}">${ini}</div>`;
+  const avHTML = p?.avatar_url
+    ? `<img class="ni-img" src="${escH(p.avatar_url)}" alt="${escH(actor)}">`
+    : `<div class="ni-ini" style="background:${cfg.bg}">${ini}</div>`;
 
-  // Texto en UNA LÍNEA: "Actor acción en Tarea · tiempo"
-  let accion = '';
-  const actorLink  = n.actor_id ? `<a class="actor" href="perfil.html?id=${escH(n.actor_id)}" onclick="event.stopPropagation()">${escH(actor)}</a>` : `<strong>${escH(actor)}</strong>`;
-  const tareaLink  = titulo    ? `<a class="tarea" href="${link}" onclick="event.stopPropagation()">${escH(titulo)}</a>` : '';
+  // Actor link
+  const aLink = n.actor_id
+    ? `<a class="actor" href="perfil.html?id=${escH(n.actor_id)}" onclick="event.stopPropagation()">${escH(actor)}</a>`
+    : `<strong>${escH(actor)}</strong>`;
+  // Tarea link
+  const tLink = titulo
+    ? `<a class="tarea" href="${link}" onclick="event.stopPropagation()">${escH(titulo)}</a>`
+    : '';
 
-  if      (n.tipo === 'oferta')           accion = `${actorLink} hizo una oferta en ${tareaLink}`;
-  else if (n.tipo === 'pregunta')         accion = `${actorLink} preguntó en ${tareaLink}`;
-  else if (n.tipo === 'respuesta')        accion = `${actorLink} respondió tu pregunta${tareaLink ? ` en ${tareaLink}` : ''}`;
-  else if (n.tipo === 'oferta_aceptada')  accion = `🎉 Tu oferta fue aceptada${tareaLink ? ` — ${tareaLink}` : ''}`;
-  else if (n.tipo === 'oferta_rechazada') accion = `Tu oferta no fue seleccionada${tareaLink ? ` en ${tareaLink}` : ''}`;
-  else                                    accion = escH(n.titulo || 'Notificación') + (tareaLink ? ` — ${tareaLink}` : '');
+  // Texto en una sola línea
+  let txt='';
+  if      (n.tipo==='oferta')           txt=`${aLink} hizo una oferta en ${tLink}`;
+  else if (n.tipo==='pregunta')         txt=`${aLink} preguntó en ${tLink}`;
+  else if (n.tipo==='respuesta')        txt=`${aLink} respondió tu pregunta${tLink?` en ${tLink}`:''}`;
+  else if (n.tipo==='oferta_aceptada')  txt=`🎉 Tu oferta fue aceptada${tLink?` — ${tLink}`:''}`;
+  else if (n.tipo==='oferta_rechazada') txt=`Tu oferta no fue seleccionada${tLink?` en ${tLink}`:''}`;
+  else                                  txt=escH(n.titulo||'Notificación')+(tLink?` — ${tLink}`:'');
 
   return `
-    <a class="notif-item${nueva?' nueva':''}" href="${link}" onclick="leerUna('${n.id}')" style="${isLast?'border-bottom:none':''}">
+    <a class="ni${nueva?' nueva':''}" href="${link}" onclick="leerUna('${n.id}')">
       <div class="ni-av">
         ${avHTML}
-        <div class="ni-tipo">${cfg.ico}</div>
+        <div class="ni-badge">${cfg.ico}</div>
       </div>
-      <div class="ni-body">
-        <div class="ni-line">${accion}</div>
-        <div class="ni-tiempo${nueva?' nueva-t':''}">${hace}</div>
+      <div class="ni-txt">${txt}</div>
+      <div class="ni-meta">
+        <div class="ni-hora">${hace}</div>
+        <div class="ni-dot"></div>
       </div>
-      <div class="ni-dot"></div>
     </a>`;
 }
 
-function setTab(tipo, el) {
-  tabActual = tipo;
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
-  el.classList.add('on');
-  render();
+function setTab(tipo,el){
+  tabActual=tipo;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');render();
 }
 
-async function leer(ids) {
-  if (!ids.length) return;
-  try {
-    await db.from('notificaciones').update({ leida: true }).in('id', ids);
-    ids.forEach(id => { const n = allNotifs.find(n => n.id === id); if (n) n.leida = true; });
+async function leer(ids){
+  if(!ids.length)return;
+  try{
+    await db.from('notificaciones').update({leida:true}).in('id',ids);
+    ids.forEach(id=>{const n=allNotifs.find(n=>n.id===id);if(n)n.leida=true;});
     badges();
-    ids.forEach(id => {
-      document.querySelectorAll(`a[onclick*="${id}"]`).forEach(el => {
+    ids.forEach(id=>{
+      document.querySelectorAll(`a[onclick*="${id}"]`).forEach(el=>{
         el.classList.remove('nueva');
-        el.querySelector('.ni-dot')  && (el.querySelector('.ni-dot').style.opacity  = '0');
-        el.querySelector('.ni-tiempo')?.classList.remove('nueva-t');
+        el.querySelector('.ni-dot')&&(el.querySelector('.ni-dot').style.opacity='0');
+        el.querySelector('.ni-hora')?.classList.remove('nueva');
       });
     });
-  } catch(e) { console.warn(e); }
+  }catch(e){console.warn(e);}
+}
+function leerUna(id){const n=allNotifs.find(n=>n.id===id);if(n&&!n.leida)leer([id]);}
+async function marcarTodas(){
+  const ids=allNotifs.filter(n=>!n.leida).map(n=>n.id);
+  if(!ids.length){showToast('Ya están todas leídas ✓');return;}
+  await leer(ids);render();showToast('Todas marcadas como leídas ✓');
 }
 
-function leerUna(id) {
-  const n = allNotifs.find(n => n.id === id);
-  if (n && !n.leida) leer([id]);
-}
-
-async function marcarTodas() {
-  const ids = allNotifs.filter(n => !n.leida).map(n => n.id);
-  if (!ids.length) { showToast('Ya están todas leídas ✓'); return; }
-  await leer(ids);
-  render();
-  showToast('Todas marcadas como leídas ✓');
-}
-
-function realtime() {
-  db.channel('notifs-' + miUserId)
-    .on('postgres_changes', { event:'INSERT', schema:'public', table:'notificaciones', filter:`user_id=eq.${miUserId}` },
-    async payload => {
-      const n = payload.new;
-      if (!n) return;
-      if (n.actor_id) {
-        const { data: p } = await db.from('profiles').select('id,nombre,avatar_url').eq('id', n.actor_id).maybeSingle();
-        if (p) n._perfil = p;
-      }
-      if (n.tarea_id) {
-        const { data: t } = await db.from('tareas').select('id,titulo').eq('id', n.tarea_id).maybeSingle();
-        if (t) n._tarea_titulo = t.titulo.charAt(0).toUpperCase() + t.titulo.slice(1);
-      }
-      allNotifs.unshift(n);
-      badges();
-      render();
-      showToast(n.titulo || '🔔 Nueva notificación');
+function realtime(){
+  db.channel('notifs-'+miUserId)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'notificaciones',filter:`user_id=eq.${miUserId}`},
+    async payload=>{
+      const n=payload.new;if(!n)return;
+      if(n.actor_id){const{data:p}=await db.from('profiles').select('id,nombre,avatar_url').eq('id',n.actor_id).maybeSingle();if(p)n._p=p;}
+      if(n.tarea_id){const{data:t}=await db.from('tareas').select('id,titulo').eq('id',n.tarea_id).maybeSingle();if(t)n._titulo=t.titulo.charAt(0).toUpperCase()+t.titulo.slice(1);}
+      allNotifs.unshift(n);badges();render();
+      showToast(n.titulo||'🔔 Nueva notificación');
     }).subscribe();
 }
 
-function relativo(d) {
-  const diff = Date.now() - d;
-  const m = Math.floor(diff/60000), h = Math.floor(diff/3600000), dias = Math.floor(diff/864e5);
-  if (m < 2)  return 'Ahora mismo';
-  if (m < 60) return `Hace ${m} min`;
-  if (h < 24) return `Hace ${h}h`;
-  if (dias === 1) return 'Ayer';
-  if (dias < 7)   return `Hace ${dias} días`;
-  return d.toLocaleDateString('es-AR', { day:'numeric', month:'short' });
+function relativo(d){
+  const diff=Date.now()-d;
+  const m=Math.floor(diff/60000),h=Math.floor(diff/3600000),dias=Math.floor(diff/864e5);
+  if(m<2)return'Ahora mismo';if(m<60)return`Hace ${m}min`;
+  if(h<24)return`Hace ${h}h`;if(dias===1)return'Ayer';
+  if(dias<7)return`Hace ${dias}d`;
+  return d.toLocaleDateString('es-AR',{day:'numeric',month:'short'});
 }
-
-function escH(t) {
-  if (!t) return '';
-  const d = document.createElement('div');
-  d.textContent = String(t);
-  return d.innerHTML;
-}
+function escH(t){if(!t)return'';const d=document.createElement('div');d.textContent=String(t);return d.innerHTML;}
 </script>
 </body>
 </html>

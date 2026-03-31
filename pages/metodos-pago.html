@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChambaYa — Métodos de pago</title>
+<link rel="stylesheet" href="../fonts.css">
+<link rel="stylesheet" href="../styles.css">
+<style>
+.pg-wrap{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 66px)}
+.sidebar{border-right:1.5px solid var(--borde);background:var(--blanco);padding:28px 0;position:sticky;top:66px;height:calc(100vh - 66px);overflow-y:auto}
+.sb-user{display:flex;flex-direction:column;align-items:center;padding:0 24px 22px;border-bottom:1.5px solid var(--borde);margin-bottom:8px;text-align:center}
+.sb-av{width:68px;height:68px;border-radius:50%;background:var(--verde);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:900;margin-bottom:10px;overflow:hidden;border:3px solid var(--borde)}
+.sb-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.sb-nombre{font-size:.95rem;font-weight:900;color:var(--texto);margin-bottom:2px}
+.sb-email{font-size:.72rem;font-weight:700;color:var(--suave)}
+.sb-nav{padding:6px 0}
+.sb-item{display:flex;align-items:center;gap:11px;padding:10px 22px;font-size:.88rem;font-weight:800;color:var(--suave);text-decoration:none;cursor:pointer;transition:all .15s;border-left:3px solid transparent;white-space:nowrap}
+.sb-item:hover{background:var(--fondo);color:var(--texto)}
+.sb-item.on{color:var(--verde-o);background:var(--verde-c);border-left-color:var(--verde);font-weight:900}
+.sb-ico{font-size:.95rem;width:20px;text-align:center;flex-shrink:0}
+.sb-sep{height:1px;background:var(--borde);margin:6px 22px}
+.pg-main{padding:32px 40px 80px;max-width:680px}
+.pg-titulo{font-size:1.25rem;font-weight:900;margin-bottom:6px}
+.pg-sub{font-size:.88rem;font-weight:700;color:var(--suave);margin-bottom:28px}
+/* Opciones de pago */
+.metodos-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:32px}
+.metodo-card{background:var(--blanco);border:2px solid var(--borde);border-radius:var(--radio-lg);padding:20px;cursor:pointer;transition:all .2s;text-align:center;position:relative}
+.metodo-card:hover{border-color:var(--verde);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,201,107,.12)}
+.metodo-card.pronto{opacity:.6;cursor:default}
+.metodo-card.pronto:hover{border-color:var(--borde);transform:none;box-shadow:none}
+.metodo-ico{font-size:2rem;margin-bottom:10px}
+.metodo-nombre{font-size:.92rem;font-weight:900;color:var(--texto);margin-bottom:4px}
+.metodo-desc{font-size:.75rem;font-weight:700;color:var(--suave)}
+.pronto-badge{position:absolute;top:10px;right:10px;background:var(--naranja-c);color:var(--naranja);font-size:.62rem;font-weight:900;padding:2px 7px;border-radius:var(--radio-pill)}
+/* Form tarjeta */
+.form-card{background:var(--blanco);border:1.5px solid var(--borde);border-radius:var(--radio-lg);padding:28px;display:none}
+.form-card.show{display:block}
+.form-titulo{font-size:1rem;font-weight:900;margin-bottom:20px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{margin-bottom:16px}
+.form-label{display:block;font-size:.82rem;font-weight:900;margin-bottom:6px;color:var(--texto)}
+.form-input{width:100%;background:var(--blanco);border:2px solid var(--borde);border-radius:var(--radio);padding:11px 14px;font-family:'Nunito',sans-serif;font-size:.92rem;font-weight:700;color:var(--texto);outline:none;transition:border-color .2s}
+.form-input:focus{border-color:var(--verde);box-shadow:0 0 0 3px rgba(0,201,107,.1)}
+.form-input::placeholder{color:#CBD5E1}
+.aviso-seg{display:flex;align-items:center;gap:8px;background:var(--verde-c);border-radius:var(--radio);padding:10px 14px;font-size:.78rem;font-weight:800;color:var(--verde-o);margin-bottom:16px}
+.btn-guardar{width:100%;padding:13px;border:none;border-radius:var(--radio-pill);background:var(--verde);font-family:'Nunito',sans-serif;font-weight:900;font-size:.92rem;cursor:pointer;color:#fff;transition:all .2s}
+.btn-guardar:hover{background:var(--verde-o)}
+@media(max-width:760px){.pg-wrap{grid-template-columns:1fr}.sidebar{display:none}.pg-main{padding:20px 16px 60px}.metodos-grid{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <a href="home.html" class="nav-logo">Chamba<em>Ya</em></a>
+  <a href="publicar.html" class="nav-publicar" style="margin-left:32px">Publicar tarea</a>
+  <div class="nav-links">
+    <a href="explorar.html" class="nav-link">Explorar tareas</a>
+    <a href="mistareas.html" class="nav-link">Mis tareas</a>
+  </div>
+  <div class="nav-right">
+    <a href="ayuda.html" class="nav-right-link">Ayuda</a>
+    <a href="notificaciones.html" class="nav-right-link" id="nav-notif-link" style="position:relative">Notificaciones</a>
+    <a href="mensajes.html" class="nav-right-link" id="nav-mensajes-link" style="position:relative">Mensajes</a>
+    <div class="nav-av-wrap">
+      <div class="nav-av" id="nav-av" onclick="toggleDropdown(event)"><span class="nav-av-inicial" id="nav-av-inicial">?</span></div>
+      <div class="nav-dropdown" id="nav-dropdown">
+        <div class="dd-header"><div class="dd-nombre" id="dd-nombre">Cargando...</div><div class="dd-sub" onclick="window.location.href='perfil.html'">Ver perfil público</div></div>
+        <a href="mistareas.html" class="dd-item">Mis tareas <span class="dd-arrow">›</span></a>
+        <div class="dd-sep"></div>
+        <div class="dd-item rojo" onclick="cerrarSesion()">Cerrar sesión</div>
+      </div>
+    </div>
+  </div>
+</nav>
+<div class="pg-wrap">
+  <aside class="sidebar">
+    <div class="sb-user">
+      <div class="sb-av" id="sb-av"><span>M</span></div>
+      <div class="sb-nombre" id="sb-nombre">Cargando...</div>
+      <div class="sb-email" id="sb-email"></div>
+    </div>
+    <nav class="sb-nav">
+      <a href="mistareas.html"       class="sb-item"><span class="sb-ico">📋</span>Mis tareas</a>
+      <a href="historial-pagos.html" class="sb-item"><span class="sb-ico">💳</span>Historial de pagos</a>
+      <a href="metodos-pago.html"    class="sb-item on"><span class="sb-ico">💰</span>Métodos de pago</a>
+      <a href="notificaciones.html"  class="sb-item"><span class="sb-ico">🔔</span>Notificaciones</a>
+      <a href="perfil.html"          class="sb-item"><span class="sb-ico">👤</span>Perfil</a>
+      <a href="habilidades.html"     class="sb-item"><span class="sb-ico">🛠️</span>Habilidades</a>
+      <a href="medallas.html"        class="sb-item"><span class="sb-ico">🏅</span>Medallas</a>
+    </nav>
+  </aside>
+  <main class="pg-main">
+    <div class="pg-titulo">💰 Métodos de pago</div>
+    <div class="pg-sub">Elegí cómo querés pagar o recibir tus pagos</div>
+
+    <div class="metodos-grid">
+      <div class="metodo-card" onclick="mostrarForm('tarjeta')">
+        <div class="metodo-ico">💳</div>
+        <div class="metodo-nombre">Tarjeta de débito</div>
+        <div class="metodo-desc">Visa, Mastercard, Maestro</div>
+      </div>
+      <div class="metodo-card" onclick="mostrarForm('tarjeta-credito')">
+        <div class="metodo-ico">🏦</div>
+        <div class="metodo-nombre">Tarjeta de crédito</div>
+        <div class="metodo-desc">Visa, Mastercard, Naranja</div>
+      </div>
+      <div class="metodo-card pronto">
+        <span class="pronto-badge">Próximamente</span>
+        <div class="metodo-ico">🟢</div>
+        <div class="metodo-nombre">Mercado Pago</div>
+        <div class="metodo-desc">Integracion pendiente</div>
+      </div>
+      <div class="metodo-card pronto">
+        <span class="pronto-badge">Próximamente</span>
+        <div class="metodo-ico">🔵</div>
+        <div class="metodo-nombre">Banco digital (CVU)</div>
+        <div class="metodo-desc">Ualá, Naranja X, Brubank</div>
+      </div>
+    </div>
+
+    <div class="form-card" id="form-tarjeta">
+      <div class="form-titulo">💳 Agregar tarjeta</div>
+      <div class="aviso-seg">🔒 Tus datos están protegidos con encriptación SSL. No almacenamos el número completo.</div>
+      <div class="form-group">
+        <label class="form-label">Número de tarjeta</label>
+        <input class="form-input" type="text" placeholder="1234 5678 9012 3456" maxlength="19" oninput="formatCard(this)">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Vencimiento</label>
+          <input class="form-input" type="text" placeholder="MM/AA" maxlength="5" oninput="formatExp(this)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">CVV</label>
+          <input class="form-input" type="password" placeholder="•••" maxlength="4">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nombre en la tarjeta</label>
+        <input class="form-input" type="text" placeholder="Como figura en la tarjeta">
+      </div>
+      <button class="btn-guardar" onclick="showToast('⚠️ Integración de pagos próximamente disponible')">Guardar tarjeta</button>
+    </div>
+  </main>
+</div>
+<div id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../navbar.js"></script>
+<script>
+function mostrarForm(tipo) {
+  document.getElementById('form-tarjeta').classList.add('show');
+  document.getElementById('form-tarjeta').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function formatCard(el) {
+  let v = el.value.replace(/\D/g,'').substring(0,16);
+  el.value = v.replace(/(.{4})/g,'$1 ').trim();
+}
+function formatExp(el) {
+  let v = el.value.replace(/\D/g,'');
+  if (v.length >= 2) v = v.substring(0,2) + '/' + v.substring(2,4);
+  el.value = v;
+}
+(async () => {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) return;
+  const { data: p } = await db.from('profiles').select('nombre,avatar_url').eq('id',session.user.id).maybeSingle();
+  const nombre = p?.nombre || session.user.email?.split('@')[0] || 'Usuario';
+  document.getElementById('sb-nombre').textContent = nombre;
+  document.getElementById('sb-email').textContent = session.user.email||'';
+  const av = document.getElementById('sb-av');
+  if (p?.avatar_url) av.innerHTML=`<img src="${p.avatar_url}" alt="${nombre}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+  else av.innerHTML=`<span style="font-size:1.4rem;font-weight:900">${nombre.charAt(0).toUpperCase()}</span>`;
+})();
+</script>
+</body>
+</html>
