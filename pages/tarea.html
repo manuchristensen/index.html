@@ -415,6 +415,8 @@ let autorId = null;
 let preguntasMap = {};
 // Guardamos user_id por pregunta para poder notificar al responder
 const preguntaAutores = {};
+// Cache del perfil propio (nombre real desde la tabla profiles)
+window._miPerfil = null;
 
 const CAT_ICONS = {limpieza:'🧹',plomeria:'🔧',pintura:'🎨',electricidad:'⚡',jardin:'🌿',mudanza:'📦',carpinteria:'🔨',tecnologia:'🖥️',mandados:'🛵',generico:'📋'};
 const TELEFONO_RE = /(\+?54\s?)?(\(?\d{2,4}\)?[\s\-]?)?\d{3,4}[\s\-]?\d{4}|\d{10,11}|cel[^\s]*\s*:?\s*\d|\btel[^\s]*\s*:?\s*\d|whatsapp|wsp|[0-9]{7,}/gi;
@@ -425,6 +427,15 @@ const TELEFONO_RE = /(\+?54\s?)?(\(?\d{2,4}\)?[\s\-]?)?\d{3,4}[\s\-]?\d{4}|\d{10
   const { data: { session } } = await db.auth.getSession();
   currentUser = session?.user || null;
   miUserId = currentUser?.id || null;
+
+  // Cargar el perfil del usuario logueado (nombre real desde profiles)
+  if (miUserId) {
+    try {
+      const { data: mp } = await db.from('profiles').select('nombre,avatar_url').eq('id', miUserId).maybeSingle();
+      window._miPerfil = mp || null;
+    } catch(e) { /* silencioso */ }
+  }
+
   await cargarTarea();
   await cargarPreguntas();
   iniciarRealtime();
@@ -444,6 +455,8 @@ async function cargarTarea() {
     autorId = data.user_id;
     esAutor = miUserId && miUserId === data.user_id;
     renderTarea(data);
+    // Esperar el perfil del autor antes de que cargarPreguntas lo necesite
+    await cargarPerfilAutor(data.user_id);
   } catch(e) { console.error(e); }
 }
 
@@ -466,7 +479,7 @@ function renderTarea(t) {
   eEl.className = 'estado-chip ' + ei.cls;
   eEl.textContent = ei.txt;
 
-  cargarPerfilAutor(t.user_id);
+  // El perfil del autor se carga con await desde cargarTarea()
 
   // Detalles — separar pills estructurados del comentario libre
   let dets = {};
@@ -925,11 +938,11 @@ function agregarPreguntaDOM(preg, resp, perfil, replicas, profsMap) {
   document.getElementById('qa-empty').style.display = 'none';
 
   const esPropia = miUserId && preg.user_id === miUserId;
-  // Nombre real siempre — nunca "Vos" genérico
+  // Nombre real siempre — primero el perfil pasado, luego _miPerfil si es propia, nunca "Vos"
   const nombre = perfil?.nombre
-    || (esPropia ? (currentUser?.user_metadata?.nombre || currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Usuario') : 'Usuario');
+    || (esPropia ? (window._miPerfil?.nombre || currentUser?.user_metadata?.nombre || currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Usuario') : 'Usuario');
   const foto = perfil?.avatar_url
-    || (esPropia ? (currentUser?.user_metadata?.avatar_url || currentUser?.user_metadata?.picture || null) : null);
+    || (esPropia ? (window._miPerfil?.avatar_url || currentUser?.user_metadata?.avatar_url || currentUser?.user_metadata?.picture || null) : null);
   const ini = nombre.charAt(0).toUpperCase();
   const hora = new Date(preg.created_at).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
   const fecha = new Date(preg.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short'});
@@ -1087,8 +1100,8 @@ async function enviarPregunta() {
 
     // Agregar al DOM con nombre real del perfil
     const perfil = {
-      nombre: currentUser.user_metadata?.nombre || currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'Usuario',
-      avatar_url: currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture || null
+      nombre: window._miPerfil?.nombre || currentUser.user_metadata?.nombre || currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'Usuario',
+      avatar_url: window._miPerfil?.avatar_url || currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture || null
     };
     agregarPreguntaDOM(data, null, perfil);
 
@@ -1137,8 +1150,8 @@ async function enviarReplica(pregId) {
     const replicasEl = document.getElementById('replicas-' + pregId);
     if (replicasEl) {
       const hora = new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-      const miNombre = currentUser?.user_metadata?.nombre || currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Usuario';
-      const miFoto = currentUser?.user_metadata?.avatar_url || currentUser?.user_metadata?.picture || null;
+      const miNombre = window._miPerfil?.nombre || currentUser?.user_metadata?.nombre || currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Usuario';
+      const miFoto = window._miPerfil?.avatar_url || currentUser?.user_metadata?.avatar_url || currentUser?.user_metadata?.picture || null;
       const miIni = miNombre.charAt(0).toUpperCase();
       const replicaAvHtml = miFoto
         ? `<a href="perfil.html?id=${miUserId}" style="width:28px;height:28px;border-radius:50%;overflow:hidden;border:2px solid var(--azul);flex-shrink:0;display:block"><img src="${escH(miFoto)}" style="width:100%;height:100%;object-fit:cover"></a>`
@@ -1355,6 +1368,8 @@ async function enviarOferta() {
 let _miNombreReal = null;
 async function getMiNombreReal() {
   if (_miNombreReal) return _miNombreReal;
+  // Usar el perfil ya cargado en el init si está disponible
+  if (window._miPerfil?.nombre) { _miNombreReal = window._miPerfil.nombre; return _miNombreReal; }
   try {
     const { data } = await db.from('profiles').select('nombre').eq('id', currentUser.id).maybeSingle();
     _miNombreReal = data?.nombre
