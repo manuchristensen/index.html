@@ -44,23 +44,21 @@
 
 /* CARD agrupador */
 .notif-card{background:var(--blanco);border:1.5px solid var(--borde);border-radius:12px;overflow:hidden;margin-bottom:8px}
-.ni{display:table;width:100%;text-decoration:none;color:inherit;border-bottom:1px solid var(--borde);transition:background .12s;box-sizing:border-box}
+.ni{display:flex;align-items:center;gap:12px;padding:11px 16px;text-decoration:none;color:inherit;border-bottom:1px solid var(--borde);transition:background .12s}
 .ni:last-child{border-bottom:none}
 .ni:hover{background:#F8FAFC}
 .ni.nueva{background:#F0FDF9}
-.ni-av{display:table-cell;vertical-align:middle;width:56px;padding:12px 0 12px 16px}
+.ni-av{flex-shrink:0;position:relative;width:44px;height:44px}
 .ni-img{width:44px;height:44px;border-radius:50%;object-fit:cover;display:block}
-.ni-ini{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:900;color:#fff}
+.ni-ini{width:44px;height:44px;border-radius:50%;background:#059669;color:#fff;font-size:.9rem;font-weight:900;display:flex;align-items:center;justify-content:center}
 .ni-badge{display:none}
-.ni-txt{display:table-cell;vertical-align:middle;padding:12px 8px;font-size:.875rem;font-weight:700;color:var(--suave);line-height:1.45;width:auto}
+.ni-txt{flex:1;min-width:0;font-size:.875rem;font-weight:700;color:var(--suave);line-height:1.4}
 .ni-txt .actor{font-weight:900;color:var(--texto);text-decoration:none}
 .ni-txt .actor:hover{color:var(--verde-o);text-decoration:underline}
 .ni-txt .tarea{font-weight:900;color:var(--verde-o);text-decoration:none}
 .ni-txt .tarea:hover{text-decoration:underline}
-.ni-meta{display:table-cell;vertical-align:middle;width:70px;padding:12px 16px 12px 0;text-align:right;white-space:nowrap}
-.ni-hora{font-size:.68rem;font-weight:700;color:#94A3B8;display:block}
+.ni-hora{flex-shrink:0;font-size:.68rem;font-weight:700;color:#94A3B8;white-space:nowrap;margin-left:8px}
 .ni.nueva .ni-hora{color:var(--verde-o)}
-.ni-dot{display:none}
 
 /* Empty / skeleton */
 .empty-state{text-align:center;padding:60px 20px;color:var(--suave)}
@@ -296,15 +294,9 @@ function itemHTML(n) {
 
   return `
     <a class="ni${nueva?' nueva':''}" href="${link}" onclick="leerUna('${n.id}')">
-      <div class="ni-av">
-        ${avHTML}
-        <div class="ni-badge">${cfg.ico}</div>
-      </div>
-      <div class="ni-txt">${txt}</div>
-      <div class="ni-meta">
-        <div class="ni-hora">${hace}</div>
-        <div class="ni-dot"></div>
-      </div>
+      <span class="ni-av">${avHTML}</span>
+      <span class="ni-txt">${txt}</span>
+      <span class="ni-hora">${hace}</span>
     </a>`;
 }
 
