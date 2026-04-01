@@ -215,8 +215,8 @@ body{overflow:hidden}
   </div>
   <!-- Filtros avanzados: distancia y precio -->
   <div class="filtros-avanzados">
-    <button class="filtro-adv-btn" id="btn-distancia" onclick="abrirModalDistancia()">
-      &#128205; <span id="lbl-distancia">Distancia</span>
+    <button class="filtro-adv-btn activo" id="btn-distancia" onclick="abrirModalDistancia()">
+      &#128205; <span id="lbl-distancia">10 km</span>
     </button>
     <div class="filtro-adv-sep"></div>
     <button class="filtro-adv-btn" id="btn-precio" onclick="abrirModalPrecio()">
@@ -271,7 +271,7 @@ body{overflow:hidden}
 
 let todasTareas = [];
 // Filtros avanzados
-let filtroDistancia = null;  // null = sin límite, número = km máximo
+let filtroDistancia = 10;  // 10km por defecto
 let filtroPrecioMin = -1;    // -1 = sin filtro
 let filtroPrecioMax = -1;    // -1 = sin filtro  
 let filtroPrecioLabel = 'Precio';
@@ -316,18 +316,40 @@ mapaListo = true;
 
 // ══ INIT ══
 (async () => {
-  // 1. Pedir ubicacion PRIMERO - antes de cualquier otra cosa
-  // Esto asegura que el mapa se centre en la ubicacion real del usuario
-  pedirUbicacion();
-
-  // 2. Obtener user actual para filtrar sus propias tareas (en paralelo)
   const { data: { session } } = await db.auth.getSession();
   miUserId = session?.user?.id || null;
 
-  // 3. Cargar tareas
+  // 1. Intentar obtener ubicación GPS real
+  pedirUbicacion();
+
+  // 2. Mientras el GPS responde, cargar ubicación del perfil como fallback
+  if (session?.user?.id) {
+    try {
+      const { data: perfil } = await db.from('profiles')
+        .select('lat,lng,zona,cp')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      // Si todavía no tenemos GPS y el perfil tiene coords, usarlas
+      if (!miUbicacion && perfil?.lat && perfil?.lng) {
+        miUbicacion = { lat: parseFloat(perfil.lat), lng: parseFloat(perfil.lng) };
+        mapa.setView([miUbicacion.lat, miUbicacion.lng], 13);
+        // Marcar posición del perfil con estilo diferente (cuadrado = aproximado)
+        const iconPerfil = L.divIcon({
+          html: `<div style="width:14px;height:14px;background:#8B5CF6;border:3px solid #fff;border-radius:3px;box-shadow:0 2px 8px rgba(139,92,246,.4)" title="Ubicación de tu perfil"></div>`,
+          className:'', iconSize:[14,14], iconAnchor:[7,7]
+        });
+        L.marker([miUbicacion.lat, miUbicacion.lng], { icon: iconPerfil })
+          .addTo(mapa)
+          .bindPopup('<div class="map-popup"><div class="map-popup-titulo">📍 Tu zona (perfil)</div></div>');
+      }
+    } catch(e) { /* silencioso */ }
+  }
+
+  // 3. Cargar tareas (ya con filtroDistancia = 10 activo)
   await cargarTareas();
 
-  // 4. Iniciar realtime
+  // 4. Realtime
   iniciarRealtime();
 })();
 
@@ -538,8 +560,8 @@ function abrirModalDistancia() {
     return;
   }
   document.getElementById('modal-distancia').classList.add('show');
-  if (filtroDistancia) document.getElementById('dist-slider').value = filtroDistancia;
-  document.getElementById('dist-valor').textContent = document.getElementById('dist-slider').value;
+  document.getElementById('dist-slider').value = filtroDistancia || 10;
+  document.getElementById('dist-valor').textContent = filtroDistancia || 10;
 }
 
 function abrirModalPrecio() {

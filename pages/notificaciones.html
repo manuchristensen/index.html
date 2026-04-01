@@ -46,55 +46,52 @@
 .notif-card{background:var(--blanco);border:1.5px solid var(--borde);border-radius:12px;overflow:hidden;margin-bottom:8px}
 
 /* ── ITEM — una sola fila como Airtasker ── */
-/* display:block en el <a> + flex en el inner div evita el problema de overflow en anchor tags */
 .ni{
-  display:block;
-  width:100%;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 16px;
   text-decoration:none;
   color:inherit;
   border-bottom:1px solid var(--borde);
   transition:background .12s;
+  /* CRÍTICO: sin esto el overflow:hidden no funciona en flex */
+  min-width:0;
+  overflow:hidden;
 }
 .ni:last-child{border-bottom:none}
 .ni:hover{background:#F8FAFC}
 .ni.nueva{background:#F0FDF9}
 .ni.nueva:hover{background:#E8FAF2}
-.ni-inner{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:12px 16px;
-  width:100%;
-  box-sizing:border-box;
-  min-width:0;
-}
 
-/* Avatar 40px fijo — sin position:relative para no afectar el flex */
-.ni-av{flex-shrink:0;width:46px;height:46px;position:relative}
-.ni-img{width:46px;height:46px;border-radius:50%;object-fit:cover;display:block}
-.ni-ini{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.92rem;font-weight:900;color:#fff}
-.ni-badge{position:absolute;bottom:-2px;right:-2px;width:17px;height:17px;border-radius:50%;background:var(--blanco);border:1.5px solid var(--borde);display:flex;align-items:center;justify-content:center;font-size:.5rem;line-height:1;z-index:1}
+/* Avatar 40px fijo */
+.ni-av{position:relative;flex-shrink:0;width:40px;height:40px}
+.ni-img{width:40px;height:40px;border-radius:50%;object-fit:cover;display:block}
+.ni-ini{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.88rem;font-weight:900;color:#fff}
+.ni-badge{position:absolute;bottom:-2px;right:-2px;width:16px;height:16px;border-radius:50%;background:var(--blanco);border:1.5px solid var(--borde);display:flex;align-items:center;justify-content:center;font-size:.48rem;line-height:1}
 
-/* Texto — una línea, ellipsis. El truco: NO anidar más flex aquí */
+/* Texto — TODA la fila en una línea, ellipsis si no entra */
 .ni-txt{
   flex:1;
   min-width:0;
-  overflow:hidden;
-  white-space:nowrap;
-  text-overflow:ellipsis;
   font-size:.87rem;
   font-weight:700;
   color:var(--suave);
   line-height:1.4;
+  /* NO white-space:nowrap — dejamos que el texto fluya naturalmente en una línea */
+  /* El padding compacto del item hace que quede de una sola línea en pantallas normales */
+  overflow:hidden;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
 }
-/* Los links dentro del texto son inline — NO cambiar a block */
 .ni-txt .actor{font-weight:900;color:var(--texto);text-decoration:none;display:inline}
 .ni-txt .actor:hover{color:var(--verde-o)}
 .ni-txt .tarea{font-weight:900;color:var(--verde-o);text-decoration:none;display:inline}
 .ni-txt .tarea:hover{text-decoration:underline}
 
-/* Tiempo — fijo a la derecha */
-.ni-meta{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:3px;margin-left:8px}
+/* Tiempo — fijo a la derecha, no se encoge */
+.ni-meta{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;margin-left:8px}
 .ni-hora{font-size:.68rem;font-weight:700;color:#94A3B8;white-space:nowrap}
 .ni-dot{width:8px;height:8px;border-radius:50%;background:var(--verde);opacity:0;transition:opacity .3s}
 .ni.nueva .ni-dot{opacity:1}
@@ -332,16 +329,14 @@ function itemHTML(n) {
 
   return `
     <a class="ni${nueva?' nueva':''}" href="${link}" onclick="leerUna('${n.id}')">
-      <div class="ni-inner">
-        <div class="ni-av">
-          ${avHTML}
-          <div class="ni-badge">${cfg.ico}</div>
-        </div>
-        <div class="ni-txt">${txt}</div>
-        <div class="ni-meta">
-          <div class="ni-hora">${hace}</div>
-          <div class="ni-dot"></div>
-        </div>
+      <div class="ni-av">
+        ${avHTML}
+        <div class="ni-badge">${cfg.ico}</div>
+      </div>
+      <div class="ni-txt">${txt}</div>
+      <div class="ni-meta">
+        <div class="ni-hora">${hace}</div>
+        <div class="ni-dot"></div>
       </div>
     </a>`;
 }
