@@ -44,19 +44,55 @@
 
 /* CARD agrupador */
 .notif-card{background:var(--blanco);border:1.5px solid var(--borde);border-radius:12px;overflow:hidden;margin-bottom:8px}
-.ni{display:flex;align-items:center;gap:12px;padding:11px 16px;text-decoration:none;color:inherit;border-bottom:1px solid var(--borde);transition:background .12s}
+
+/* ── ITEM — una sola fila como Airtasker ── */
+.ni{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 16px;
+  text-decoration:none;
+  color:inherit;
+  border-bottom:1px solid var(--borde);
+  transition:background .12s;
+  /* CRÍTICO: sin esto el overflow:hidden no funciona en flex */
+  min-width:0;
+  overflow:hidden;
+}
 .ni:last-child{border-bottom:none}
 .ni:hover{background:#F8FAFC}
 .ni.nueva{background:#F0FDF9}
-.ni-av{flex-shrink:0;width:44px;height:44px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.ni-img{width:44px;height:44px;border-radius:50%;object-fit:cover;display:block}
-.ni-ini{width:44px;height:44px;border-radius:50%;color:#fff;font-size:.9rem;font-weight:900;display:flex;align-items:center;justify-content:center}
-.ni-txt{flex:1;min-width:0;font-size:.875rem;font-weight:700;color:var(--suave);line-height:1.4}
-.ni-txt .actor{font-weight:900;color:var(--texto);text-decoration:none}
-.ni-txt .actor:hover{color:var(--verde-o);text-decoration:underline}
-.ni-txt .tarea{font-weight:900;color:var(--verde-o);text-decoration:none}
+.ni.nueva:hover{background:#E8FAF2}
+
+/* Avatar 40px fijo */
+.ni-av{flex-shrink:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center}
+.ni-img{width:44px;height:44px;border-radius:50%;object-fit:cover;display:inline-block!important;vertical-align:middle}
+.ni-ini{width:44px;height:44px;border-radius:50%;display:inline-flex!important;align-items:center;justify-content:center;font-size:.9rem;font-weight:900;color:#fff;vertical-align:middle}
+.ni-badge{position:absolute;bottom:-2px;right:-2px;width:16px;height:16px;border-radius:50%;background:var(--blanco);border:1.5px solid var(--borde);display:flex;align-items:center;justify-content:center;font-size:.48rem;line-height:1}
+
+/* Texto — TODA la fila en una línea, ellipsis si no entra */
+.ni-txt{
+  flex:1;
+  min-width:0;
+  font-size:.87rem;
+  font-weight:700;
+  color:var(--suave);
+  line-height:1.4;
+  overflow:hidden;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+}
+.ni-txt .actor{font-weight:900;color:var(--texto);text-decoration:none;display:inline}
+.ni-txt .actor:hover{color:var(--verde-o)}
+.ni-txt .tarea{font-weight:900;color:var(--verde-o);text-decoration:none;display:inline}
 .ni-txt .tarea:hover{text-decoration:underline}
-.ni-hora{flex-shrink:0;font-size:.68rem;font-weight:700;color:#94A3B8;white-space:nowrap;margin-left:8px}
+
+/* Tiempo — fijo a la derecha, no se encoge */
+.ni-meta{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;margin-left:8px}
+.ni-hora{font-size:.68rem;font-weight:700;color:#94A3B8;white-space:nowrap}
+.ni-dot{width:8px;height:8px;border-radius:50%;background:var(--verde);opacity:0;transition:opacity .3s}
+.ni.nueva .ni-dot{opacity:1}
 .ni.nueva .ni-hora{color:var(--verde-o)}
 
 /* Empty / skeleton */
@@ -282,16 +318,27 @@ function itemHTML(n) {
     ? `<a class="tarea" href="${link}" onclick="event.stopPropagation()">${escH(titulo)}</a>`
     : (n.tarea_id ? `<a class="tarea" href="${link}" onclick="event.stopPropagation()">esta tarea</a>` : '');
 
-  // Accion en texto plano (no clickeable)
-  let accion = '';
-  if      (n.tipo==='oferta')           accion = 'hizo una oferta en';
-  else if (n.tipo==='pregunta')         accion = 'preguntó en';
-  else if (n.tipo==='respuesta')        accion = 'respondió tu pregunta en';
-  else if (n.tipo==='oferta_aceptada')  accion = '🎉 Tu oferta fue aceptada —';
-  else if (n.tipo==='oferta_rechazada') accion = 'Tu oferta no fue seleccionada en';
-  else                                  accion = escH(n.titulo || '');
+  // Texto en una sola línea
+  let txt='';
+  if      (n.tipo==='oferta')           txt=`${aLink} hizo una oferta en ${tLink}`;
+  else if (n.tipo==='pregunta')         txt=`${aLink} preguntó en ${tLink}`;
+  else if (n.tipo==='respuesta')        txt=`${aLink} respondió tu pregunta${tLink?` en ${tLink}`:''}`;
+  else if (n.tipo==='oferta_aceptada')  txt=`🎉 Tu oferta fue aceptada${tLink?` — ${tLink}`:''}`;
+  else if (n.tipo==='oferta_rechazada') txt=`Tu oferta no fue seleccionada${tLink?` en ${tLink}`:''}`;
+  else                                  txt=escH(n.titulo||'Notificación')+(tLink?` — ${tLink}`:'');
 
-  return `<a class="ni${nueva?' nueva':''}" href="${link}" onclick="leerUna('${n.id}')"><div class="ni-av">${avHTML}</div><div class="ni-txt">${aLink} ${accion} ${tLink}</div><span class="ni-hora">${hace}</span></a>`;
+  return `
+    <a class="ni${nueva?' nueva':''}" href="${link}" onclick="leerUna('${n.id}')">
+      <div class="ni-av">
+        ${avHTML}
+        <div class="ni-badge">${cfg.ico}</div>
+      </div>
+      <div class="ni-txt">${txt}</div>
+      <div class="ni-meta">
+        <div class="ni-hora">${hace}</div>
+        <div class="ni-dot"></div>
+      </div>
+    </a>`;
 }
 
 function setTab(tipo,el){
