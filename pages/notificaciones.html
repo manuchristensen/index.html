@@ -48,10 +48,9 @@
 .ni:last-child{border-bottom:none}
 .ni:hover{background:#F8FAFC}
 .ni.nueva{background:#F0FDF9}
-.ni-av{flex-shrink:0;position:relative;width:44px;height:44px}
+.ni-av{flex-shrink:0;width:44px;height:44px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center}
 .ni-img{width:44px;height:44px;border-radius:50%;object-fit:cover;display:block}
-.ni-ini{width:44px;height:44px;border-radius:50%;background:#059669;color:#fff;font-size:.9rem;font-weight:900;display:flex;align-items:center;justify-content:center}
-.ni-badge{display:none}
+.ni-ini{width:44px;height:44px;border-radius:50%;color:#fff;font-size:.9rem;font-weight:900;display:flex;align-items:center;justify-content:center}
 .ni-txt{flex:1;min-width:0;font-size:.875rem;font-weight:700;color:var(--suave);line-height:1.4}
 .ni-txt .actor{font-weight:900;color:var(--texto);text-decoration:none}
 .ni-txt .actor:hover{color:var(--verde-o);text-decoration:underline}
@@ -283,21 +282,16 @@ function itemHTML(n) {
     ? `<a class="tarea" href="${link}" onclick="event.stopPropagation()">${escH(titulo)}</a>`
     : (n.tarea_id ? `<a class="tarea" href="${link}" onclick="event.stopPropagation()">esta tarea</a>` : '');
 
-  // Texto en una sola línea
-  let txt='';
-  if      (n.tipo==='oferta')           txt=`${aLink} hizo una oferta en ${tLink}`;
-  else if (n.tipo==='pregunta')         txt=`${aLink} preguntó en ${tLink}`;
-  else if (n.tipo==='respuesta')        txt=`${aLink} respondió tu pregunta${tLink?` en ${tLink}`:''}`;
-  else if (n.tipo==='oferta_aceptada')  txt=`🎉 Tu oferta fue aceptada${tLink?` — ${tLink}`:''}`;
-  else if (n.tipo==='oferta_rechazada') txt=`Tu oferta no fue seleccionada${tLink?` en ${tLink}`:''}`;
-  else                                  txt=escH(n.titulo||'Notificación')+(tLink?` — ${tLink}`:'');
+  // Accion en texto plano (no clickeable)
+  let accion = '';
+  if      (n.tipo==='oferta')           accion = 'hizo una oferta en';
+  else if (n.tipo==='pregunta')         accion = 'preguntó en';
+  else if (n.tipo==='respuesta')        accion = 'respondió tu pregunta en';
+  else if (n.tipo==='oferta_aceptada')  accion = '🎉 Tu oferta fue aceptada —';
+  else if (n.tipo==='oferta_rechazada') accion = 'Tu oferta no fue seleccionada en';
+  else                                  accion = escH(n.titulo || '');
 
-  return `
-    <a class="ni${nueva?' nueva':''}" href="${link}" onclick="leerUna('${n.id}')">
-      <span class="ni-av">${avHTML}</span>
-      <span class="ni-txt">${txt}</span>
-      <span class="ni-hora">${hace}</span>
-    </a>`;
+  return `<a class="ni${nueva?' nueva':''}" href="${link}" onclick="leerUna('${n.id}')"><div class="ni-av">${avHTML}</div><div class="ni-txt">${aLink} ${accion} ${tLink}</div><span class="ni-hora">${hace}</span></a>`;
 }
 
 function setTab(tipo,el){
