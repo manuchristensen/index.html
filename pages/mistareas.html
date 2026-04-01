@@ -497,24 +497,42 @@ const DEMO_TAREAS = [
 
 async function cargarTareas(userId) {
   try {
-    const { data, error } = await db
+    // Tareas que YO publiqué
+    const { data: misPublicadas } = await db
       .from('tareas')
       .select('*, ofertas(count)')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
+    // Tareas en curso/terminadas donde YO soy el tasker asignado
+    const { data: misAsignadas } = await db
+      .from('ofertas')
+      .select('tarea_id, tareas!inner(*, ofertas(count))')
+      .eq('tasker_id', userId)
+      .eq('estado', 'aceptada');
+
     quitarSkeletons();
 
-    if (error || !data || data.length === 0) {
-      // Sin tareas reales: mostrar estado vacío
-      todasTareas = [];
-    } else {
-      // Enriquecer con conteo de ofertas
-      todasTareas = data.map(t => ({
+    // Tareas publicadas por mí
+    const publicadas = (misPublicadas || []).map(t => ({
+      ...t,
+      _rol: 'autor',
+      ofertas_count: t.ofertas?.[0]?.count || 0
+    }));
+
+    // Tareas asignadas a mí como tasker (que no sean mías también)
+    const asignadas = (misAsignadas || [])
+      .map(o => o.tareas)
+      .filter(t => t && t.user_id !== userId) // evitar duplicados
+      .map(t => ({
         ...t,
+        _rol: 'tasker',
         ofertas_count: t.ofertas?.[0]?.count || 0
       }));
-    }
+
+    // Unir sin duplicados
+    const ids = new Set(publicadas.map(t => t.id));
+    todasTareas = [...publicadas, ...asignadas.filter(t => !ids.has(t.id))];
 
     actualizarBadges();
     renderLista();
@@ -672,41 +690,56 @@ async function cargarMisOfertas(userId) {
 function cambiarTabOfertas() {
   tabActual = 'ofertas';
   document.querySelectorAll('.mt-tab').forEach(t => t.classList.remove('activo'));
-  const tabEl = document.getElementById('tab-ofertas');
-  if (tabEl) tabEl.classList.add('activo');
+  document.getElementById('tab-ofertas')?.classList.add('activo');
   document.getElementById('main-titulo').textContent = 'Mis ofertas enviadas';
-  const cont = document.getElementById('tareas-grid');
-  const sub  = document.getElementById('lista-sub');
+
+  // IDs correctos del HTML real
+  const lista = document.getElementById('mt-lista');
   const ofertas = window._misOfertas || [];
-  if (sub) sub.textContent = ofertas.length + ' oferta' + (ofertas.length !== 1 ? 's' : '');
+  document.getElementById('main-sub').textContent = ofertas.length + ' oferta' + (ofertas.length !== 1 ? 's' : '');
+
   if (!ofertas.length) {
-    cont.innerHTML = `<div class="mt-empty"><div class="mt-empty-ico">📩</div><div class="mt-empty-titulo">No enviaste ofertas todavía</div><div class="mt-empty-sub">Cuando ofertés en una tarea, va a aparecer acá.</div></div>`;
+    lista.innerHTML = `<div class="mt-empty">
+      <div class="mt-empty-ico">📩</div>
+      <div class="mt-empty-titulo">No enviaste ofertas todavía</div>
+      <div class="mt-empty-sub">Explorá tareas y enviá tu primera oferta.</div>
+    </div>`;
     return;
   }
+
   const catBg = { limpieza:'#D1FAE5', plomeria:'#E0F2FE', pintura:'#FCE7F3', electricidad:'#FEF9C3', jardin:'#D1FAE5', mudanza:'#E0E7FF' };
-  const estadoMap = {
-    pendiente: { cls:'ep-activa',    txt:'⏳ Pendiente' },
-    aceptada:  { cls:'ep-en-curso',  txt:'✅ Aceptada'  },
-    rechazada: { cls:'ep-cancelada', txt:'❌ Rechazada' }
+  const estadoOferta = {
+    pendiente: { cls:'ep-activa',    txt:'⏳ Pendiente', desc:'Esperando respuesta del cliente' },
+    aceptada:  { cls:'ep-en-curso',  txt:'✅ Aceptada',  desc:'¡El cliente aceptó tu oferta!' },
+    rechazada: { cls:'ep-cancelada', txt:'❌ No seleccionada', desc:'El cliente eligió otra opción' }
   };
-  cont.innerHTML = ofertas.map(o => {
+
+  lista.innerHTML = ofertas.map(o => {
     const t      = o.tareas || {};
-    const titulo = t.titulo ? t.titulo.charAt(0).toUpperCase() + t.titulo.slice(1) : 'Tarea';
+    const titulo = t.titulo ? t.titulo.charAt(0).toUpperCase() + t.titulo.slice(1) : 'Tarea eliminada';
     const icon   = t.cat_icon || '📋';
     const bg     = catBg[t.categoria] || '#F1F5F9';
     const monto  = o.monto > 0 ? '$' + Number(o.monto).toLocaleString('es-AR') : 'A convenir';
-    const est    = estadoMap[o.estado] || estadoMap.pendiente;
+    const est    = estadoOferta[o.estado || 'pendiente'] || estadoOferta.pendiente;
     const fecha  = new Date(o.created_at).toLocaleDateString('es-AR', { day:'numeric', month:'short', year:'numeric' });
-    return `<a href="tarea.html?id=${t.id}" class="mt-card">
-      <div class="mt-card-icon" style="background:${bg}">${icon}</div>
-      <div class="mt-card-body">
-        <div class="mt-card-titulo">${escHTML(titulo)}</div>
-        <div class="mt-card-meta">
-          <span>💰 Tu oferta: <strong style="color:var(--verde-o)">${monto}</strong></span>
-          ${o.comentario ? `<span style="color:var(--suave);font-size:.78rem">${escHTML(o.comentario.substring(0,60))}${o.comentario.length>60?'…':''}</span>` : ''}
-          <span>📅 ${fecha}</span>
+
+    return `<a href="tarea.html?id=${t.id}" class="mt-card ${o.estado === 'aceptada' ? 'en-curso' : o.estado === 'rechazada' ? 'cancelada' : 'activa'}">
+      <div class="mt-card-inner">
+        <div class="mt-card-icon" style="background:${bg}">${icon}</div>
+        <div class="mt-card-body">
+          <div class="mt-card-top">
+            <div class="mt-card-titulo">${escHTML(titulo)}</div>
+            <div class="mt-card-precio" style="color:var(--verde-o)">${monto}</div>
+          </div>
+          <div class="mt-card-meta">
+            <span>📅 Ofertado el ${fecha}</span>
+            ${o.comentario ? `<span>💬 "${escHTML(o.comentario.substring(0,50))}${o.comentario.length>50?'…':''}"</span>` : ''}
+          </div>
+          <div class="mt-card-footer">
+            <span class="mt-estado ${est.cls}">${est.txt}</span>
+            <span style="font-size:.75rem;color:var(--suave)">${est.desc}</span>
+          </div>
         </div>
-        <span class="mt-estado ${est.cls}">${est.txt}</span>
       </div>
     </a>`;
   }).join('');
