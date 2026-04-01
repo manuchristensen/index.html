@@ -44,20 +44,22 @@
 
 /* CARD agrupador */
 .notif-card{background:var(--blanco);border:1.5px solid var(--borde);border-radius:12px;overflow:hidden;margin-bottom:8px}
-.ni{display:flex;align-items:center;gap:12px;padding:11px 16px;text-decoration:none;color:inherit;border-bottom:1px solid var(--borde);transition:background .12s}
+
+/* ── ITEM — una sola fila como Airtasker ── */
+.ni{display:flex;align-items:center;gap:10px;padding:10px 16px;text-decoration:none;color:inherit;border-bottom:1px solid var(--borde);transition:background .12s}
 .ni:last-child{border-bottom:none}
 .ni:hover{background:#F8FAFC}
 .ni.nueva{background:#F0FDF9}
-.ni-av{flex-shrink:0;width:44px;height:44px;border-radius:50%;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle}
-.ni-img{width:44px;height:44px;border-radius:50%;object-fit:cover;display:inline-block!important;vertical-align:middle}
-.ni-ini{width:44px;height:44px;border-radius:50%;color:#fff;font-size:.9rem;font-weight:900;display:flex;align-items:center;justify-content:center}
-.ni-txt{flex:1;min-width:0;font-size:.875rem;font-weight:700;color:var(--suave);line-height:1.4;padding:0 4px}
-.ni-txt .actor{font-weight:900;color:var(--texto);text-decoration:none}
-.ni-txt .actor:hover{color:var(--verde-o);text-decoration:underline}
-.ni-txt .tarea{font-weight:900;color:var(--verde-o);text-decoration:none}
-.ni-txt .tarea:hover{text-decoration:underline}
-.ni-hora{flex-shrink:0;font-size:.68rem;font-weight:700;color:#94A3B8;white-space:nowrap}
-.ni.nueva .ni-hora{color:var(--verde-o)}
+.ni-foto{flex-shrink:0;width:40px;height:40px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.ni-foto img{width:40px;height:40px;border-radius:50%;object-fit:cover;display:block!important}
+.ni-foto-ini{width:40px;height:40px;border-radius:50%;color:#fff;font-size:.88rem;font-weight:900;display:flex;align-items:center;justify-content:center}
+.ni-body{flex:1;min-width:0;font-size:.875rem;color:var(--suave);font-weight:700;line-height:1.3}
+.ni-body .actor{font-weight:900;color:var(--texto);text-decoration:none}
+.ni-body .actor:hover{color:var(--verde-o);text-decoration:underline}
+.ni-body .tarea{font-weight:900;color:var(--verde-o);text-decoration:none}
+.ni-body .tarea:hover{text-decoration:underline}
+.ni-time{flex-shrink:0;font-size:.68rem;font-weight:700;color:#94A3B8;white-space:nowrap;margin-left:8px}
+.ni.nueva .ni-time{color:var(--verde-o)}
 
 /* Empty / skeleton */
 .empty-state{text-align:center;padding:60px 20px;color:var(--suave)}
@@ -269,10 +271,7 @@ function itemHTML(n) {
   const link = n.tarea_id?`tarea.html?id=${n.tarea_id}`:'#';
   const titulo=n._titulo||null;
 
-  // La foto NO es clickeable — el href está solo en el nombre del actor
-  const avHTML = p?.avatar_url
-    ? `<img class="ni-img" src="${escH(p.avatar_url)}" alt="${escH(actor)}">`
-    : `<div class="ni-ini" style="background:${cfg.bg}">${ini}</div>`;
+  // avHTML movido a fotoHTML abajo
 
   // Actor link
   const aLink = n.actor_id
@@ -283,18 +282,21 @@ function itemHTML(n) {
     ? `<a class="tarea" href="${link}" onclick="event.stopPropagation()">${escH(titulo)}</a>`
     : (n.tarea_id ? `<a class="tarea" href="${link}" onclick="event.stopPropagation()">esta tarea</a>` : '');
 
-  // Accion (texto plano, no clickeable)
-  let accion = '';
-  if      (n.tipo==='oferta')           accion = 'hizo una oferta en';
-  else if (n.tipo==='pregunta')         accion = 'preguntó en';
-  else if (n.tipo==='respuesta')        accion = 'respondió tu pregunta en';
-  else if (n.tipo==='oferta_aceptada')  accion = '🎉 oferta aceptada —';
-  else if (n.tipo==='oferta_rechazada') accion = 'oferta no seleccionada en';
-  else                                  accion = escH(n.titulo || '');
+  // Acción (texto plano, no clickeable)
+  let accion='';
+  if      (n.tipo==='oferta')           accion='hizo una oferta en';
+  else if (n.tipo==='pregunta')         accion='preguntó en';
+  else if (n.tipo==='respuesta')        accion='respondió tu pregunta en';
+  else if (n.tipo==='oferta_aceptada')  accion='🎉 oferta aceptada —';
+  else if (n.tipo==='oferta_rechazada') accion='oferta no seleccionada en';
+  else                                  accion = escH(n.titulo||'');
 
-  // Estructura: [foto][nombre clickeable] accion [tarea clickeable]   hora
-  // La foto NO es clickeable. El <a> principal lleva a la tarea.
-  return `<a class="ni${nueva?' nueva':''}" href="${link}" onclick="leerUna('${n.id}')"><span class="ni-av" onclick="event.stopPropagation()">${avHTML}</span><span class="ni-txt">${aLink} ${accion} ${tLink}</span><span class="ni-hora">${hace}</span></a>`;
+  // Foto NO clickeable
+  const fotoHTML = p?.avatar_url
+    ? `<div class="ni-foto"><img src="${escH(p.avatar_url)}" alt="${escH(actor)}"></div>`
+    : `<div class="ni-foto"><div class="ni-foto-ini" style="background:${cfg.bg}">${ini}</div></div>`;
+
+  return `<a class="ni${nueva?' nueva':''}" href="${link}" onclick="leerUna('${n.id}')">${fotoHTML}<span class="ni-body">${aLink} ${accion} ${tLink}</span><span class="ni-time">${hace}</span></a>`;
 }
 
 function setTab(tipo,el){
