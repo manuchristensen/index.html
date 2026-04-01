@@ -556,15 +556,16 @@ function renderTarea(t) {
       document.getElementById('of-enviada').classList.add('show');
       document.getElementById('of-enviada').innerHTML = '<div class="oferta-enviada-ico">❌</div><div class="oferta-enviada-titulo">Tarea cancelada</div><div class="oferta-enviada-txt">Esta tarea ya no acepta ofertas.</div>';
     } else if (estado === 'en-curso' || estado === 'terminada') {
-      // Tarea ya asignada — mostrar quién la tiene y si es el tasker asignado, link al chat
       document.getElementById('of-form').style.display = 'none';
       document.getElementById('of-enviada').classList.add('show');
       document.getElementById('of-enviada').innerHTML = `
         <div class="oferta-enviada-ico">🔒</div>
         <div class="oferta-enviada-titulo">Tarea ya asignada</div>
         <div class="oferta-enviada-txt" id="asignada-info">Esta tarea ya tiene un tasker seleccionado.</div>`;
-      // Chequear si este usuario es el tasker asignado
       cargarInfoAsignado(t.id, miUserId);
+    } else {
+      // Tarea activa: chequear si el tasker ya hizo una oferta
+      chequearOfertaPrevia();
     }
   }
 }
@@ -1079,6 +1080,66 @@ async function enviarRespuesta(pregId) {
 }
 
 // ══ OFERTA ══
+
+// Chequea si el tasker ya ofertó y muestra editar/cancelar en lugar del form
+async function chequearOfertaPrevia() {
+  try {
+    const { data: oferta } = await db.from('ofertas')
+      .select('id,monto,comentario')
+      .eq('tarea_id', TAREA_ID)
+      .eq('tasker_id', miUserId)
+      .maybeSingle();
+
+    if (!oferta) return; // No ofertó → mostrar form normal
+
+    // Ya ofertó → ocultar form y mostrar opciones
+    document.getElementById('of-form').style.display = 'none';
+    const enviada = document.getElementById('of-enviada');
+    enviada.classList.add('show');
+    enviada.innerHTML = `
+      <div class="oferta-enviada-ico">✅</div>
+      <div class="oferta-enviada-titulo">Ya enviaste una oferta</div>
+      <div class="oferta-enviada-txt" style="margin-bottom:14px">
+        Tu oferta: <strong style="color:var(--verde-o)">$${Number(oferta.monto).toLocaleString('es-AR')}</strong>
+        ${oferta.comentario ? `<br><span style="font-size:.78rem;color:var(--suave)">${escH(oferta.comentario.substring(0,80))}</span>` : ''}
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button onclick="editarOferta('${oferta.id}',${oferta.monto},\`${escH(oferta.comentario||'')}\`)"
+          style="padding:9px 18px;background:var(--verde);color:#fff;border:none;border-radius:var(--radio-pill);font-family:Nunito,sans-serif;font-weight:900;font-size:.84rem;cursor:pointer">
+          ✏️ Editar oferta
+        </button>
+        <button onclick="cancelarOferta('${oferta.id}')"
+          style="padding:9px 18px;background:transparent;color:var(--rojo);border:1.5px solid var(--rojo);border-radius:var(--radio-pill);font-family:Nunito,sans-serif;font-weight:900;font-size:.84rem;cursor:pointer">
+          🗑️ Cancelar oferta
+        </button>
+      </div>`;
+  } catch(e) { console.warn(e); }
+}
+
+function editarOferta(ofertaId, montoActual, comentActual) {
+  document.getElementById('of-enviada').classList.remove('show');
+  document.getElementById('of-form').style.display = 'block';
+  document.getElementById('of-input').value = montoActual;
+  document.getElementById('of-coment').value = comentActual;
+  document.getElementById('btn-ofertar').textContent = '💾 Actualizar oferta';
+  window._editandoOfertaId = ofertaId;
+}
+
+async function cancelarOferta(ofertaId) {
+  if (!confirm('¿Cancelar tu oferta? El dueño ya no la podrá ver.')) return;
+  try {
+    const { error } = await db.from('ofertas').delete().eq('id', ofertaId).eq('tasker_id', miUserId);
+    if (error) throw error;
+    document.getElementById('of-enviada').classList.remove('show');
+    document.getElementById('of-form').style.display = 'block';
+    document.getElementById('of-input').value = '';
+    document.getElementById('of-coment').value = '';
+    document.getElementById('btn-ofertar').textContent = '📩 Enviar oferta privada';
+    window._editandoOfertaId = null;
+    showToast('Oferta cancelada');
+  } catch(e) { showToast('Error: ' + e.message); }
+}
+
 async function enviarOferta() {
   if (!currentUser) { showToast('Iniciá sesión para ofertar'); return; }
   if (esAutor) { showToast('No podés ofertar en tu propia tarea'); return; }
