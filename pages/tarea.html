@@ -658,15 +658,17 @@ async function cargarPerfilAutor(uid) {
   const nomEl = document.getElementById('h-autor-nombre');
   try {
     const { data } = await db.from('profiles').select('nombre,avatar_url').eq('id', uid).maybeSingle();
-    const nombre = data?.nombre || (esAutor ? (currentUser?.user_metadata?.nombre||currentUser?.user_metadata?.full_name||currentUser?.email?.split('@')[0]||'Vos') : 'Usuario');
+    // Nombre real del perfil siempre — nunca "Usuario" genérico
+    const nombre = data?.nombre
+      || (esAutor ? (currentUser?.user_metadata?.nombre || currentUser?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || 'Vos') : null)
+      || 'Tasker';
     const foto = data?.avatar_url || (esAutor ? currentUser?.user_metadata?.avatar_url : null);
     nomEl.textContent = esAutor ? 'Vos' : nombre;
-    if (foto) { avEl.innerHTML = `<img src="${foto}" alt="${nombre}">`; }
+    if (foto) { avEl.innerHTML = `<img src="${foto}" alt="${escH(nombre)}">`; }
     else { avEl.textContent = nombre.charAt(0).toUpperCase(); }
   } catch(e) {
-    const nombre = esAutor ? 'Vos' : 'Usuario';
-    nomEl.textContent = nombre;
-    avEl.textContent = nombre.charAt(0).toUpperCase();
+    nomEl.textContent = esAutor ? 'Vos' : '?';
+    avEl.textContent = '?';
   }
 }
 
@@ -910,6 +912,17 @@ function agregarPreguntaDOM(preg, resp, perfil) {
   let respHTML = '';
   if (resp) {
     const rHora = new Date(resp.created_at).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+    // Si el visitante es quien hizo la pregunta, puede responder a la respuesta del propietario
+    const puedeReplicar = currentUser && !esAutor && preg.user_id === currentUser.id;
+    const replicaForm = puedeReplicar ? `
+      <div class="qa-resp-form" id="replica-${preg.id}" style="margin-top:8px">
+        <textarea class="qa-resp-input" id="replicainput-${preg.id}" placeholder="Respondé al propietario..." rows="2" maxlength="300"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarReplica('${preg.id}')}"></textarea>
+        <div class="qa-resp-btns">
+          <button class="btn-resp" onclick="enviarReplica('${preg.id}')">Responder</button>
+          <button class="btn-resp-cancel" onclick="document.getElementById('replicainput-${preg.id}').value=''">Limpiar</button>
+        </div>
+      </div>` : '';
     respHTML = `
       <div class="qa-resp-wrap" id="resp-wrap-${preg.id}">
         <div class="qa-resp-row">
@@ -920,6 +933,8 @@ function agregarPreguntaDOM(preg, resp, perfil) {
             <div class="qa-resp-hora">${rHora}</div>
           </div>
         </div>
+        ${replicaForm}
+        <div id="replicas-${preg.id}"></div>
       </div>`;
   } else if (esAutor) {
     respHTML = `
@@ -1014,6 +1029,54 @@ async function enviarPregunta() {
   } finally {
     btn.disabled = false;
     inp.focus();
+  }
+}
+
+// ══ REPLICA DEL VISITANTE A LA RESPUESTA DEL PROPIETARIO ══
+async function enviarReplica(pregId) {
+  if (!currentUser || esAutor) return;
+  const inp = document.getElementById('replicainput-' + pregId);
+  const texto = inp?.value.trim();
+  if (!texto) return;
+  const btn = inp?.parentElement?.querySelector('.btn-resp');
+  if (btn) { btn.textContent = '...'; btn.disabled = true; }
+  try {
+    // La réplica se guarda como un comentario de respuesta (es_respuesta:true, parent_id: pregId)
+    // con un flag extra para indicar que es réplica del visitante
+    const { data, error } = await db.from('comentarios').insert({
+      tarea_id: TAREA_ID,
+      user_id: currentUser.id,
+      mensaje: texto,
+      es_respuesta: true,
+      parent_id: pregId
+    }).select().single();
+    if (error) throw error;
+    inp.value = '';
+    // Mostrar la réplica en el DOM
+    const replicasEl = document.getElementById('replicas-' + pregId);
+    if (replicasEl) {
+      const hora = new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+      const miNombre = window.chambaUser?.user_metadata?.nombre || 'Vos';
+      const miIni = miNombre.charAt(0).toUpperCase();
+      replicasEl.innerHTML += `
+        <div class="qa-resp-row" style="margin-top:8px">
+          <div class="qa-resp-av" style="background:var(--azul);border-color:var(--azul);color:#fff">${miIni}</div>
+          <div class="qa-resp-body">
+            <div class="qa-resp-etiqueta" style="color:var(--azul)">Vos respondiste</div>
+            <div class="qa-resp-burbuja" style="background:var(--azul-c);color:#1D4ED8">${escH(texto)}</div>
+            <div class="qa-resp-hora">${hora}</div>
+          </div>
+        </div>`;
+    }
+    // Notificar al propietario
+    await crearNotificacion(autorId, 'respuesta', '↩️ Respuesta en tu tarea',
+      texto.substring(0,80),
+      currentUser.user_metadata?.nombre || currentUser.email?.split('@')[0] || 'Un usuario'
+    );
+    if (btn) { btn.textContent = 'Responder'; btn.disabled = false; }
+  } catch(e) {
+    showToast('Error: ' + e.message);
+    if (btn) { btn.textContent = 'Responder'; btn.disabled = false; }
   }
 }
 

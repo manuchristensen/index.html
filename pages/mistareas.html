@@ -356,8 +356,8 @@
   </div>
   <div class="nav-right">
     <a href="ayuda.html"          class="nav-right-link">Ayuda</a>
-    <a href="notificaciones.html" class="nav-right-link" id="nav-notif-link" style="position:relative">Notificaciones</a>
-    <a href="mensajes.html"       class="nav-right-link" id="nav-mensajes-link" style="position:relative">Mensajes</a>
+    <a href="notificaciones.html" class="nav-right-link">Notificaciones</a>
+    <a href="mensajes.html"       class="nav-right-link">Mensajes</a>
     <div class="nav-av-wrap">
       <div class="nav-av" id="nav-av" onclick="toggleDropdown(event)">
         <span class="nav-av-inicial" id="nav-av-inicial">?</span>
@@ -412,6 +412,11 @@
       <button class="mt-tab" id="tab-cancelada" onclick="cambiarTab('cancelada')">
         <div class="mt-tab-left"><span class="mt-tab-ico">❌</span> Canceladas</div>
         <span class="mt-badge" id="badge-cancelada">0</span>
+      </button>
+      <div style="height:1px;background:var(--borde);margin:8px 0"></div>
+      <button class="mt-tab" id="tab-ofertas" onclick="cambiarTab('ofertas')">
+        <div class="mt-tab-left"><span class="mt-tab-ico">📩</span> Mis ofertas</div>
+        <span class="mt-badge" id="badge-ofertas">0</span>
       </button>
     </div>
   </aside>
@@ -487,6 +492,7 @@ const DEMO_TAREAS = [
   if (!session) { window.location.replace('login.html'); return; }
 
   await cargarTareas(session.user.id);
+  await cargarMisOfertas(session.user.id);
 })();
 
 async function cargarTareas(userId) {
@@ -539,7 +545,7 @@ function actualizarBadges() {
 // ══ RENDER ══
 function renderLista() {
   const lista = document.getElementById('mt-lista');
-  const titulos = { todas:'Todas mis tareas', activa:'Tareas activas', 'en-curso':'Tareas en curso', terminada:'Tareas terminadas', cancelada:'Tareas canceladas' };
+  const titulos = { todas:'Todas mis tareas', activa:'Tareas activas', 'en-curso':'Tareas en curso', terminada:'Tareas terminadas', cancelada:'Tareas canceladas', ofertas:'Mis ofertas enviadas' };
   document.getElementById('main-titulo').textContent = titulos[tabActual] || 'Mis tareas';
 
   let filtradas = tabActual === 'todas' ? todasTareas : todasTareas.filter(t => t.estado === tabActual);
@@ -639,6 +645,7 @@ function renderEmpty() {
 
 // ══ FILTROS ══
 function cambiarTab(tab) {
+  if (tab === 'ofertas') { cambiarTabOfertas(); return; }
   tabActual = tab;
   document.querySelectorAll('.mt-tab').forEach(t => t.classList.remove('activo'));
   document.getElementById('tab-' + tab)?.classList.add('activo');
@@ -648,6 +655,61 @@ function cambiarTab(tab) {
 function filtrarBusqueda(val) {
   busqueda = val.trim();
   renderLista();
+}
+
+async function cargarMisOfertas(userId) {
+  try {
+    const { data: ofertas } = await db.from('ofertas')
+      .select('id,monto,comentario,estado,created_at,tarea_id,tareas(id,titulo,estado,cat_icon,categoria)')
+      .eq('tasker_id', userId)
+      .order('created_at', { ascending: false });
+    window._misOfertas = ofertas || [];
+    const b = document.getElementById('badge-ofertas');
+    if (b) b.textContent = window._misOfertas.length;
+  } catch(e) { console.warn('Error ofertas:', e); }
+}
+
+function cambiarTabOfertas() {
+  tabActual = 'ofertas';
+  document.querySelectorAll('.mt-tab').forEach(t => t.classList.remove('activo'));
+  const tabEl = document.getElementById('tab-ofertas');
+  if (tabEl) tabEl.classList.add('activo');
+  document.getElementById('main-titulo').textContent = 'Mis ofertas enviadas';
+  const cont = document.getElementById('tareas-grid');
+  const sub  = document.getElementById('lista-sub');
+  const ofertas = window._misOfertas || [];
+  if (sub) sub.textContent = ofertas.length + ' oferta' + (ofertas.length !== 1 ? 's' : '');
+  if (!ofertas.length) {
+    cont.innerHTML = `<div class="mt-empty"><div class="mt-empty-ico">📩</div><div class="mt-empty-titulo">No enviaste ofertas todavía</div><div class="mt-empty-sub">Cuando ofertés en una tarea, va a aparecer acá.</div></div>`;
+    return;
+  }
+  const catBg = { limpieza:'#D1FAE5', plomeria:'#E0F2FE', pintura:'#FCE7F3', electricidad:'#FEF9C3', jardin:'#D1FAE5', mudanza:'#E0E7FF' };
+  const estadoMap = {
+    pendiente: { cls:'ep-activa',    txt:'⏳ Pendiente' },
+    aceptada:  { cls:'ep-en-curso',  txt:'✅ Aceptada'  },
+    rechazada: { cls:'ep-cancelada', txt:'❌ Rechazada' }
+  };
+  cont.innerHTML = ofertas.map(o => {
+    const t      = o.tareas || {};
+    const titulo = t.titulo ? t.titulo.charAt(0).toUpperCase() + t.titulo.slice(1) : 'Tarea';
+    const icon   = t.cat_icon || '📋';
+    const bg     = catBg[t.categoria] || '#F1F5F9';
+    const monto  = o.monto > 0 ? '$' + Number(o.monto).toLocaleString('es-AR') : 'A convenir';
+    const est    = estadoMap[o.estado] || estadoMap.pendiente;
+    const fecha  = new Date(o.created_at).toLocaleDateString('es-AR', { day:'numeric', month:'short', year:'numeric' });
+    return `<a href="tarea.html?id=${t.id}" class="mt-card">
+      <div class="mt-card-icon" style="background:${bg}">${icon}</div>
+      <div class="mt-card-body">
+        <div class="mt-card-titulo">${escHTML(titulo)}</div>
+        <div class="mt-card-meta">
+          <span>💰 Tu oferta: <strong style="color:var(--verde-o)">${monto}</strong></span>
+          ${o.comentario ? `<span style="color:var(--suave);font-size:.78rem">${escHTML(o.comentario.substring(0,60))}${o.comentario.length>60?'…':''}</span>` : ''}
+          <span>📅 ${fecha}</span>
+        </div>
+        <span class="mt-estado ${est.cls}">${est.txt}</span>
+      </div>
+    </a>`;
+  }).join('');
 }
 
 function escHTML(t) {
