@@ -658,20 +658,16 @@ async function cargarPerfilAutor(uid) {
   const nomEl = document.getElementById('h-autor-nombre');
   try {
     const { data } = await db.from('profiles').select('nombre,avatar_url').eq('id', uid).maybeSingle();
-    const nombre = data?.nombre
-      || currentUser?.user_metadata?.nombre
-      || currentUser?.user_metadata?.full_name
-      || currentUser?.email?.split('@')[0]
-      || 'Usuario';
-    const foto = data?.avatar_url || (esAutor ? (currentUser?.user_metadata?.avatar_url || currentUser?.user_metadata?.picture || null) : null);
-    // Siempre mostrar el nombre real — nunca "Vos" genérico
+    // NUNCA usar currentUser como fallback — currentUser es el visitante, no el autor
+    const nombre = data?.nombre || 'Usuario';
+    const foto = data?.avatar_url || null;
     nomEl.textContent = nombre;
     nomEl.style.cursor = 'pointer';
     nomEl.onclick = () => window.location.href = 'perfil.html?id=' + uid;
     avEl.href = 'perfil.html?id=' + uid;
     if (foto) { avEl.innerHTML = `<img src="${foto}" alt="${escH(nombre)}">`; }
     else { avEl.textContent = nombre.charAt(0).toUpperCase(); }
-    // Guardar el nombre del autor para usarlo en el Q&A
+    // Guardar datos del autor (propietario de la tarea) para el Q&A
     window._autorNombre = nombre;
     window._autorFoto = foto;
     window._autorIni = nombre.charAt(0).toUpperCase();
@@ -870,7 +866,7 @@ async function cargarPreguntas() {
       try {
         const { data: ap } = await db.from('profiles').select('nombre,avatar_url').eq('id', autorId).maybeSingle();
         if (ap) {
-          window._autorNombre = ap.nombre || 'Propietario';
+          window._autorNombre = ap.nombre || 'Usuario';
           window._autorFoto = ap.avatar_url || null;
           window._autorIni = window._autorNombre.charAt(0).toUpperCase();
         }
@@ -890,28 +886,41 @@ async function cargarPreguntas() {
     // Guardar quién hizo cada pregunta (para notificarles al responder)
     pregs.forEach(p => { preguntaAutores[p.id] = p.user_id; });
 
-    // Cargar respuestas en batch
-    const { data: resps } = await db.from('comentarios')
+    // Cargar TODOS los comentarios hijos (respuestas del propietario + réplicas del visitante)
+    const { data: todos } = await db.from('comentarios')
       .select('*').eq('tarea_id', TAREA_ID).eq('es_respuesta', true)
-      .in('parent_id', pregs.map(p => p.id));
+      .in('parent_id', pregs.map(p => p.id))
+      .order('created_at', { ascending: true });
 
-    const respsMap = {};
-    (resps || []).forEach(r => respsMap[r.parent_id] = r);
+    // Separar: primer hijo del propietario = respuesta; el resto = réplicas del visitante
+    const respMap = {};    // parent_id → respuesta del propietario
+    const replicasMap = {}; // parent_id → array de réplicas del visitante
+    (todos || []).forEach(r => {
+      if (r.user_id === autorId && !respMap[r.parent_id]) {
+        respMap[r.parent_id] = r;
+      } else {
+        if (!replicasMap[r.parent_id]) replicasMap[r.parent_id] = [];
+        replicasMap[r.parent_id].push(r);
+      }
+    });
 
-    // Cargar perfiles de quienes preguntaron
-    const userIds = [...new Set(pregs.map(p => p.user_id))];
-    const { data: profs } = await db.from('profiles').select('id,nombre,avatar_url').in('id', userIds);
+    // Cargar perfiles de quienes preguntaron + quienes replicaron
+    const allUserIds = [...new Set((todos || []).map(r => r.user_id).concat(pregs.map(p => p.user_id)))];
+    const { data: profs } = await db.from('profiles').select('id,nombre,avatar_url').in('id', allUserIds);
     const profsMap = {};
     (profs || []).forEach(p => profsMap[p.id] = p);
 
     pregs.forEach(preg => {
-      const resp = respsMap[preg.id] || null;
-      agregarPreguntaDOM(preg, resp, profsMap[preg.user_id]);
+      const resp = respMap[preg.id] || null;
+      const replicas = replicasMap[preg.id] || [];
+      agregarPreguntaDOM(preg, resp, profsMap[preg.user_id], replicas, profsMap);
     });
   } catch(e) { console.warn('Error preguntas:', e); }
 }
 
-function agregarPreguntaDOM(preg, resp, perfil) {
+function agregarPreguntaDOM(preg, resp, perfil, replicas, profsMap) {
+  replicas = replicas || [];
+  profsMap = profsMap || {};
   const lista = document.getElementById('qa-lista');
   document.getElementById('qa-empty').style.display = 'none';
 
@@ -933,29 +942,68 @@ function agregarPreguntaDOM(preg, resp, perfil) {
     ? `<a class="qa-av" href="perfil.html?id=${preg.user_id}"><img src="${foto}" alt="${nombre}"></a>`
     : `<a class="qa-av" href="perfil.html?id=${preg.user_id}">${ini}</a>`;
 
+  // ── Avatar y datos del propietario ──
+  const aNombre = window._autorNombre || 'Usuario';
+  const aFoto = window._autorFoto || null;
+  const aIni = window._autorIni || aNombre.charAt(0).toUpperCase();
+  const autorRespAvHtml = aFoto
+    ? `<a href="perfil.html?id=${autorId}" style="width:28px;height:28px;border-radius:50%;overflow:hidden;border:2px solid var(--verde);flex-shrink:0;display:block"><img src="${escH(aFoto)}" style="width:100%;height:100%;object-fit:cover"></a>`
+    : `<div class="qa-resp-av" style="cursor:pointer" onclick="window.location.href='perfil.html?id=${autorId}'">${aIni}</div>`;
+
+  // ── Réplicas ya existentes renderizadas ──
+  let replicasHTML = '';
+  replicas.forEach(r => {
+    const rp = profsMap[r.user_id] || {};
+    const rNombre = rp.nombre || 'Usuario';
+    const rFoto = rp.avatar_url || null;
+    const rIni = rNombre.charAt(0).toUpperCase();
+    const rHora = new Date(r.created_at).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+    const esDelAutor = r.user_id === autorId;
+    if (esDelAutor) {
+      // Réplica del propietario dentro del thread
+      const rAvHtml = aFoto
+        ? `<a href="perfil.html?id=${autorId}" style="width:28px;height:28px;border-radius:50%;overflow:hidden;border:2px solid var(--verde);flex-shrink:0;display:block"><img src="${escH(aFoto)}" style="width:100%;height:100%;object-fit:cover"></a>`
+        : `<div class="qa-resp-av" style="cursor:pointer" onclick="window.location.href='perfil.html?id=${autorId}'">${aIni}</div>`;
+      replicasHTML += `
+        <div class="qa-resp-row" style="margin-top:8px">
+          ${rAvHtml}
+          <div class="qa-resp-body">
+            <a href="perfil.html?id=${autorId}" class="qa-nombre" style="color:var(--verde-o);font-size:.72rem;font-weight:900;text-decoration:none;display:block;margin-bottom:2px">${escH(aNombre)}</a>
+            <div class="qa-resp-burbuja">${escH(r.mensaje)}</div>
+            <div class="qa-resp-hora">${rHora}</div>
+          </div>
+        </div>`;
+    } else {
+      // Réplica del visitante
+      const rAvHtml = rFoto
+        ? `<a href="perfil.html?id=${r.user_id}" style="width:28px;height:28px;border-radius:50%;overflow:hidden;border:2px solid var(--azul);flex-shrink:0;display:block"><img src="${escH(rFoto)}" style="width:100%;height:100%;object-fit:cover"></a>`
+        : `<div class="qa-resp-av" style="background:var(--azul);border-color:var(--azul);color:#fff;cursor:pointer" onclick="window.location.href='perfil.html?id=${r.user_id}'">${rIni}</div>`;
+      replicasHTML += `
+        <div class="qa-resp-row" style="margin-top:8px">
+          ${rAvHtml}
+          <div class="qa-resp-body">
+            <a href="perfil.html?id=${r.user_id}" class="qa-nombre" style="color:#1D4ED8;font-size:.72rem;font-weight:900;text-decoration:none;display:block;margin-bottom:2px">${escH(rNombre)}</a>
+            <div class="qa-resp-burbuja" style="background:var(--azul-c);color:#1D4ED8">${escH(r.mensaje)}</div>
+            <div class="qa-resp-hora">${rHora}</div>
+          </div>
+        </div>`;
+    }
+  });
+
+  // ── Form de réplica — siempre AL FINAL del thread ──
+  const puedeReplicar = currentUser && !esAutor && preg.user_id === currentUser.id;
+  const replicaForm = (resp && puedeReplicar) ? `
+    <div class="qa-resp-form" id="replica-${preg.id}" style="margin-top:10px">
+      <textarea class="qa-resp-input" id="replicainput-${preg.id}" placeholder="Respondé al propietario..." rows="2" maxlength="300"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarReplica('${preg.id}')}"></textarea>
+      <div class="qa-resp-btns">
+        <button class="btn-resp" onclick="enviarReplica('${preg.id}')">Responder</button>
+      </div>
+    </div>` : '';
+
   let respHTML = '';
   if (resp) {
-    const rHora = new Date(resp.created_at).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
-    // Si el visitante es quien hizo la pregunta, puede responder a la respuesta del propietario
-    const puedeReplicar = currentUser && !esAutor && preg.user_id === currentUser.id;
-    const replicaForm = puedeReplicar ? `
-      <div class="qa-resp-form" id="replica-${preg.id}" style="margin-top:8px">
-        <textarea class="qa-resp-input" id="replicainput-${preg.id}" placeholder="Respondé al propietario..." rows="2" maxlength="300"
-          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarReplica('${preg.id}')}"></textarea>
-        <div class="qa-resp-btns">
-          <button class="btn-resp" onclick="enviarReplica('${preg.id}')">Responder</button>
-          <button class="btn-resp-cancel" onclick="document.getElementById('replicainput-${preg.id}').value=''">Limpiar</button>
-        </div>
-      </div>` : '';
-
-    // Avatar del propietario (autor de la tarea)
-    const aNombre = window._autorNombre || 'Propietario';
-    const aFoto = window._autorFoto || null;
-    const aIni = window._autorIni || aNombre.charAt(0).toUpperCase();
-    const autorRespAvHtml = aFoto
-      ? `<a href="perfil.html?id=${autorId}" style="width:28px;height:28px;border-radius:50%;overflow:hidden;border:2px solid var(--verde);flex-shrink:0;display:block"><img src="${escH(aFoto)}" style="width:100%;height:100%;object-fit:cover"></a>`
-      : `<div class="qa-resp-av" style="cursor:pointer" onclick="window.location.href='perfil.html?id=${autorId}'">${aIni}</div>`;
-
+    const rHoraResp = new Date(resp.created_at).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
     respHTML = `
       <div class="qa-resp-wrap" id="resp-wrap-${preg.id}">
         <div class="qa-resp-row">
@@ -963,11 +1011,12 @@ function agregarPreguntaDOM(preg, resp, perfil) {
           <div class="qa-resp-body">
             <a href="perfil.html?id=${autorId}" class="qa-nombre" style="color:var(--verde-o);font-size:.72rem;font-weight:900;text-decoration:none;display:block;margin-bottom:2px">${escH(aNombre)}</a>
             <div class="qa-resp-burbuja">${escH(resp.mensaje)}</div>
-            <div class="qa-resp-hora">${rHora}</div>
+            <div class="qa-resp-hora">${rHoraResp}</div>
           </div>
         </div>
-        ${replicaForm}
+        ${replicasHTML}
         <div id="replicas-${preg.id}"></div>
+        ${replicaForm}
       </div>`;
   } else if (esAutor) {
     respHTML = `
@@ -976,7 +1025,6 @@ function agregarPreguntaDOM(preg, resp, perfil) {
           onkeydown="onRespKey(event,'${preg.id}')"></textarea>
         <div class="qa-resp-btns">
           <button class="btn-resp" onclick="enviarRespuesta('${preg.id}')">Responder</button>
-          <button class="btn-resp-cancel" onclick="document.getElementById('respinput-${preg.id}').value=''">Limpiar</button>
         </div>
       </div>`;
   } else {
@@ -1095,7 +1143,7 @@ async function enviarReplica(pregId) {
       const replicaAvHtml = miFoto
         ? `<a href="perfil.html?id=${miUserId}" style="width:28px;height:28px;border-radius:50%;overflow:hidden;border:2px solid var(--azul);flex-shrink:0;display:block"><img src="${escH(miFoto)}" style="width:100%;height:100%;object-fit:cover"></a>`
         : `<div class="qa-resp-av" style="background:var(--azul);border-color:var(--azul);color:#fff;cursor:pointer" onclick="window.location.href='perfil.html?id=${miUserId}'">${miIni}</div>`;
-      replicasEl.innerHTML += `
+      replicasEl.insertAdjacentHTML('beforeend', `
         <div class="qa-resp-row" style="margin-top:8px">
           ${replicaAvHtml}
           <div class="qa-resp-body">
@@ -1103,7 +1151,10 @@ async function enviarReplica(pregId) {
             <div class="qa-resp-burbuja" style="background:var(--azul-c);color:#1D4ED8">${escH(texto)}</div>
             <div class="qa-resp-hora">${hora}</div>
           </div>
-        </div>`;
+        </div>`);
+      // Limpiar el textarea — el form ya está al final del thread
+      inp.value = '';
+      inp.style.height = '';
     }
     // Notificar al propietario
     await crearNotificacion(autorId, 'respuesta', '↩️ Respuesta en tu tarea',
@@ -1147,7 +1198,7 @@ async function enviarRespuesta(pregId) {
     const formEl = document.getElementById('respform-' + pregId);
     if (formEl) {
       const hora = new Date().toLocaleTimeString('es-AR', {hour:'2-digit', minute:'2-digit'});
-      const aNombre = window._autorNombre || currentUser.user_metadata?.nombre || currentUser.email?.split('@')[0] || 'Propietario';
+      const aNombre = window._autorNombre || currentUser.user_metadata?.nombre || currentUser.email?.split('@')[0] || 'Usuario';
       const aFoto = window._autorFoto || currentUser.user_metadata?.avatar_url || currentUser.user_metadata?.picture || null;
       const aIni = aNombre.charAt(0).toUpperCase();
       const autorAvHtml = aFoto
@@ -1163,6 +1214,7 @@ async function enviarRespuesta(pregId) {
               <div class="qa-resp-hora">${hora}</div>
             </div>
           </div>
+          <div id="replicas-${pregId}"></div>
         </div>`;
     }
 
