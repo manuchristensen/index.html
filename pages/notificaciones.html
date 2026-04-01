@@ -48,7 +48,7 @@
 .ni:last-child{border-bottom:none}
 .ni:hover{background:#F8FAFC}
 .ni.nueva{background:#F0FDF9}
-.ni-av{flex-shrink:0;width:44px;height:44px;border-radius:50%;overflow:hidden;background:#6B7280;display:flex;align-items:center;justify-content:center}
+.ni-av{flex-shrink:0;width:44px;height:44px;border-radius:50%;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle}
 .ni-img{width:44px;height:44px;border-radius:50%;object-fit:cover;display:inline-block!important;vertical-align:middle}
 .ni-ini{width:44px;height:44px;border-radius:50%;color:#fff;font-size:.9rem;font-weight:900;display:flex;align-items:center;justify-content:center}
 .ni-txt{flex:1;min-width:0;font-size:.875rem;font-weight:700;color:var(--suave);line-height:1.4;padding:0 4px}
@@ -269,6 +269,7 @@ function itemHTML(n) {
   const link = n.tarea_id?`tarea.html?id=${n.tarea_id}`:'#';
   const titulo=n._titulo||null;
 
+  // La foto NO es clickeable — el href está solo en el nombre del actor
   const avHTML = p?.avatar_url
     ? `<img class="ni-img" src="${escH(p.avatar_url)}" alt="${escH(actor)}">`
     : `<div class="ni-ini" style="background:${cfg.bg}">${ini}</div>`;
@@ -291,7 +292,9 @@ function itemHTML(n) {
   else if (n.tipo==='oferta_rechazada') accion = 'oferta no seleccionada en';
   else                                  accion = escH(n.titulo || '');
 
-  return `<a class="ni${nueva?' nueva':''}" href="${link}" onclick="leerUna('${n.id}')"><div class="ni-av">${avHTML}</div><div class="ni-txt">${aLink} ${accion} ${tLink}</div><span class="ni-hora">${hace}</span></a>`;
+  // Estructura: [foto][nombre clickeable] accion [tarea clickeable]   hora
+  // La foto NO es clickeable. El <a> principal lleva a la tarea.
+  return `<a class="ni${nueva?' nueva':''}" href="${link}" onclick="leerUna('${n.id}')"><span class="ni-av" onclick="event.stopPropagation()">${avHTML}</span><span class="ni-txt">${aLink} ${accion} ${tLink}</span><span class="ni-hora">${hace}</span></a>`;
 }
 
 function setTab(tipo,el){
