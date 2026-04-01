@@ -143,6 +143,31 @@ body{overflow:hidden}
   .exp-lista-wrap{height:55vh}
   .exp-mapa{height:45vh}
 }
+
+/* ── FILTROS AVANZADOS ── */
+.filtros-avanzados{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:0 16px 10px;border-bottom:1.5px solid var(--borde);background:var(--blanco)}
+.filtro-adv-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;border:1.5px solid var(--borde);border-radius:var(--radio-pill);background:var(--blanco);font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:800;color:var(--suave);cursor:pointer;transition:all .2s;white-space:nowrap}
+.filtro-adv-btn:hover{border-color:var(--verde);color:var(--verde-o)}
+.filtro-adv-btn.activo{border-color:var(--verde);background:var(--verde-c);color:var(--verde-o)}
+.filtro-adv-sep{width:1px;height:24px;background:var(--borde);flex-shrink:0}
+
+/* Modal de filtros */
+.filtro-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:3000;align-items:center;justify-content:center}
+.filtro-modal-overlay.show{display:flex}
+.filtro-modal{background:var(--blanco);border-radius:20px;padding:28px;width:360px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.fm-titulo{font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:1px;color:var(--suave);margin-bottom:14px}
+.fm-opciones{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.fm-opt{padding:10px 20px;border:2px solid var(--borde);border-radius:var(--radio-pill);font-family:'Nunito',sans-serif;font-size:.88rem;font-weight:800;color:var(--suave);cursor:pointer;background:var(--blanco);transition:all .2s}
+.fm-opt:hover,.fm-opt.sel{border-color:var(--verde);color:var(--verde-o);background:var(--verde-c)}
+.fm-slider-wrap{margin-bottom:8px}
+.fm-slider{width:100%;accent-color:var(--verde);cursor:pointer}
+.fm-valor{font-size:1.1rem;font-weight:900;color:var(--texto);text-align:center;margin-bottom:8px}
+.fm-subtxt{font-size:.75rem;font-weight:700;color:var(--suave);text-align:center;margin-bottom:20px}
+.fm-btns{display:flex;gap:10px}
+.fm-cancel{flex:1;padding:12px;border:1.5px solid var(--borde);border-radius:var(--radio-pill);background:transparent;font-family:'Nunito',sans-serif;font-weight:900;font-size:.88rem;cursor:pointer;color:var(--suave);transition:all .2s}
+.fm-cancel:hover{border-color:var(--texto);color:var(--texto)}
+.fm-apply{flex:1;padding:12px;border:none;border-radius:var(--radio-pill);background:var(--verde);font-family:'Nunito',sans-serif;font-weight:900;font-size:.88rem;cursor:pointer;color:#fff;transition:all .2s}
+.fm-apply:hover{background:var(--verde-o)}
 </style>
 </head>
 <body>
@@ -178,7 +203,7 @@ body{overflow:hidden}
   <div class="exp-filtros">
     <div class="exp-search-wrap">
       <span class="exp-search-ico">&#128269;</span>
-      <input type="text" class="exp-search" id="exp-search" placeholder="Buscar tareas..." oninput="filtrar()">
+      <input type="text" class="exp-search" id="exp-search" placeholder="Buscar tareas... Ej: limpieza, plomería, jardín" oninput="filtrar()">
     </div>
     <button class="filtro-btn activo" id="f-todas" onclick="setFiltro('todas',this)">&#127775; Todas</button>
     <button class="filtro-btn" onclick="setFiltro('limpieza',this)">&#129529; Limpieza</button>
@@ -187,6 +212,20 @@ body{overflow:hidden}
     <button class="filtro-btn" onclick="setFiltro('electricidad',this)">&#9889; Electricidad</button>
     <button class="filtro-btn" onclick="setFiltro('jardin',this)">&#127807; Jardin</button>
     <button class="filtro-btn" onclick="setFiltro('mudanza',this)">&#128230; Mudanza</button>
+  </div>
+  <!-- Filtros avanzados: distancia y precio -->
+  <div class="filtros-avanzados">
+    <button class="filtro-adv-btn" id="btn-distancia" onclick="abrirModalDistancia()">
+      &#128205; <span id="lbl-distancia">Distancia</span>
+    </button>
+    <div class="filtro-adv-sep"></div>
+    <button class="filtro-adv-btn" id="btn-precio" onclick="abrirModalPrecio()">
+      &#128176; <span id="lbl-precio">Precio</span>
+    </button>
+    <div class="filtro-adv-sep"></div>
+    <button class="filtro-adv-btn" id="btn-ordenar" onclick="toggleOrden(this)">
+      &#8645; <span id="lbl-orden">Más cercanas</span>
+    </button>
   </div>
 
   <!-- CONTENIDO -->
@@ -231,6 +270,26 @@ body{overflow:hidden}
 // db disponible desde navbar.js
 
 let todasTareas = [];
+// Filtros avanzados
+let filtroDistancia = null;  // null = sin límite, número = km máximo
+let filtroPrecioMin = -1;    // -1 = sin filtro
+let filtroPrecioMax = -1;    // -1 = sin filtro  
+let filtroPrecioLabel = 'Precio';
+let ordenActual = 'cercanas'; // 'cercanas' | 'precio-asc' | 'precio-desc'
+let _precioSelMin = -1, _precioSelMax = -1;
+
+// Alias semánticos para el buscador
+const ALIAS_BUSQUEDA = {
+  limpieza: ['limpiar','limpieza','barrer','fregar','lustrar','desinfect','ordenar','cocina','baño','departamento','casa'],
+  plomeria: ['plomeria','plomero','canilla','cañeria','perdida','destape','desague','pileta','grifo','agua','caño','filtra'],
+  pintura:  ['pintura','pintor','pintar','pared','livin','habitacion','esmalte','barniz','repint','ambiente'],
+  electricidad:['electrica','electricidad','electricista','luz','cable','enchufe','tablero','corto','foco','lampara','aire','split'],
+  jardin:   ['jardin','jardineria','pasto','planta','arbol','poda','cesped','riego','hojas','yuyos','cortar'],
+  mudanza:  ['mudanza','mudarse','mueble','caja','transport','flete','traslado','camion'],
+  carpinteria:['carpinteria','carpintero','puerta','ventana','madera','estanteria','placard','armario'],
+  tecnologia:['tecnologia','computadora','celular','wifi','router','internet','virus','tecnico','pc'],
+  mandados: ['mandado','tramite','banco','super','compra','delivery','fila'],
+};
 let filtradas = [];
 let filtroActual = 'todas';
 let markers = {};
@@ -405,18 +464,62 @@ function resaltarCard(id) {
 function filtrar() {
   const q = document.getElementById('exp-search').value.toLowerCase().trim();
 
+  // Busqueda semántica: expandir el query con alias relacionados
+  let categoriasQ = [];
+  if (q) {
+    for (const [cat, aliases] of Object.entries(ALIAS_BUSQUEDA)) {
+      if (aliases.some(a => a.includes(q) || q.includes(a))) {
+        categoriasQ.push(cat);
+      }
+    }
+  }
+
   filtradas = todasTareas.filter(t => {
+    // Filtro categoría del botón
     const matchCat = filtroActual === 'todas' || t.categoria === filtroActual;
-    const matchQ = !q || t.titulo.toLowerCase().includes(q) || (t.descripcion || '').toLowerCase().includes(q) || (t.direccion || '').toLowerCase().includes(q);
-    return matchCat && matchQ;
+
+    // Búsqueda: texto directo O categoría semántica relacionada
+    let matchQ = true;
+    if (q) {
+      const enTexto = t.titulo.toLowerCase().includes(q)
+        || (t.descripcion || '').toLowerCase().includes(q)
+        || (t.categoria || '').toLowerCase().includes(q);
+      const enAliases = categoriasQ.some(cat =>
+        (t.categoria || '').toLowerCase() === cat ||
+        ALIAS_BUSQUEDA[cat]?.some(a => t.titulo.toLowerCase().includes(a))
+      );
+      matchQ = enTexto || enAliases;
+    }
+
+    // Filtro distancia
+    let matchDist = true;
+    if (filtroDistancia !== null && miUbicacion && t.lat != null && t.lng != null) {
+      const d = distancia(t.lat, t.lng, miUbicacion.lat, miUbicacion.lng);
+      matchDist = !isNaN(d) && d <= filtroDistancia;
+    }
+
+    // Filtro precio
+    let matchPrecio = true;
+    if (filtroPrecioMin === 0 && filtroPrecioMax === 0) {
+      matchPrecio = !t.presupuesto || t.presupuesto === 0; // Solo "a convenir"
+    } else if (filtroPrecioMax > 0) {
+      matchPrecio = t.presupuesto > 0 && t.presupuesto <= filtroPrecioMax;
+      if (filtroPrecioMin > 0) matchPrecio = matchPrecio && t.presupuesto >= filtroPrecioMin;
+    }
+
+    return matchCat && matchQ && matchDist && matchPrecio;
   });
 
-  // Ordenar por distancia si tenemos ubicacion
-  if (miUbicacion) {
+  // Ordenar
+  if (ordenActual === 'precio-asc') {
+    filtradas.sort((a,b) => (a.presupuesto||0) - (b.presupuesto||0));
+  } else if (ordenActual === 'precio-desc') {
+    filtradas.sort((a,b) => (b.presupuesto||0) - (a.presupuesto||0));
+  } else if (miUbicacion) {
+    // Por distancia (default)
     filtradas.sort((a, b) => {
       const dA = distancia(a.lat, a.lng, miUbicacion.lat, miUbicacion.lng);
       const dB = distancia(b.lat, b.lng, miUbicacion.lat, miUbicacion.lng);
-      // Tareas sin coords al final
       if (isNaN(dA)) return 1;
       if (isNaN(dB)) return -1;
       return dA - dB;
@@ -426,6 +529,72 @@ function filtrar() {
   renderLista();
   actualizarVisibilidadMarkers();
 }
+
+// ── FUNCIONES DE FILTROS AVANZADOS ──
+function abrirModalDistancia() {
+  if (!miUbicacion) {
+    showToast('📍 Primero habilitá tu ubicación haciendo clic en el pin del mapa');
+    pedirUbicacion();
+    return;
+  }
+  document.getElementById('modal-distancia').classList.add('show');
+  if (filtroDistancia) document.getElementById('dist-slider').value = filtroDistancia;
+  document.getElementById('dist-valor').textContent = document.getElementById('dist-slider').value;
+}
+
+function abrirModalPrecio() {
+  document.getElementById('modal-precio').classList.add('show');
+}
+
+function cerrarModales() {
+  document.getElementById('modal-distancia').classList.remove('show');
+  document.getElementById('modal-precio').classList.remove('show');
+}
+
+function aplicarDistancia() {
+  const km = parseInt(document.getElementById('dist-slider').value);
+  filtroDistancia = km;
+  document.getElementById('lbl-distancia').textContent = km + ' km';
+  document.getElementById('btn-distancia').classList.add('activo');
+  cerrarModales();
+  filtrar();
+}
+
+function selPrecio(el, min, max) {
+  document.querySelectorAll('#modal-precio .fm-opt').forEach(b => b.classList.remove('sel'));
+  el.classList.add('sel');
+  _precioSelMin = min; _precioSelMax = max;
+}
+
+function aplicarPrecio() {
+  filtroPrecioMin = _precioSelMin;
+  filtroPrecioMax = _precioSelMax;
+  let lbl = 'Precio';
+  if (filtroPrecioMin === 0 && filtroPrecioMax === 0) lbl = 'A convenir';
+  else if (filtroPrecioMax > 0) lbl = 'Hasta $' + Number(filtroPrecioMax).toLocaleString('es-AR');
+  else lbl = 'Cualquier precio';
+  document.getElementById('lbl-precio').textContent = lbl;
+  document.getElementById('btn-precio').classList.toggle('activo', filtroPrecioMax !== -1 || filtroPrecioMin === 0);
+  cerrarModales();
+  filtrar();
+}
+
+function toggleOrden(btn) {
+  if (ordenActual === 'cercanas') {
+    ordenActual = 'precio-asc';
+    document.getElementById('lbl-orden').textContent = 'Menor precio';
+  } else if (ordenActual === 'precio-asc') {
+    ordenActual = 'precio-desc';
+    document.getElementById('lbl-orden').textContent = 'Mayor precio';
+  } else {
+    ordenActual = 'cercanas';
+    document.getElementById('lbl-orden').textContent = miUbicacion ? 'Más cercanas' : 'Más recientes';
+  }
+  btn.classList.toggle('activo', ordenActual !== 'cercanas');
+  filtrar();
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModales(); });
 
 function setFiltro(cat, el) {
   filtroActual = cat;
@@ -554,5 +723,40 @@ function escHTML(t) {
   return div.innerHTML;
 }
 </script>
+
+<!-- Modal distancia -->
+<div class="filtro-modal-overlay" id="modal-distancia" onclick="if(event.target===this)cerrarModales()">
+  <div class="filtro-modal">
+    <div class="fm-titulo">📍 Distancia desde tu ubicación</div>
+    <div class="fm-valor"><span id="dist-valor">10</span> km</div>
+    <div class="fm-slider-wrap">
+      <input type="range" class="fm-slider" id="dist-slider" min="1" max="100" value="10" oninput="document.getElementById('dist-valor').textContent=this.value">
+    </div>
+    <div class="fm-subtxt">Solo muestra tareas dentro de este radio</div>
+    <div class="fm-btns">
+      <button class="fm-cancel" onclick="cerrarModales()">Cancelar</button>
+      <button class="fm-apply" onclick="aplicarDistancia()">Aplicar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal precio -->
+<div class="filtro-modal-overlay" id="modal-precio" onclick="if(event.target===this)cerrarModales()">
+  <div class="filtro-modal">
+    <div class="fm-titulo">💵 Rango de precio</div>
+    <div class="fm-opciones">
+      <button class="fm-opt" onclick="selPrecio(this,0,0)">A convenir</button>
+      <button class="fm-opt" onclick="selPrecio(this,0,5000)">Hasta $5.000</button>
+      <button class="fm-opt" onclick="selPrecio(this,0,15000)">Hasta $15.000</button>
+      <button class="fm-opt" onclick="selPrecio(this,0,50000)">Hasta $50.000</button>
+      <button class="fm-opt" onclick="selPrecio(this,0,100000)">Hasta $100.000</button>
+      <button class="fm-opt sel" onclick="selPrecio(this,-1,-1)">Cualquier precio</button>
+    </div>
+    <div class="fm-btns">
+      <button class="fm-cancel" onclick="cerrarModales()">Cancelar</button>
+      <button class="fm-apply" onclick="aplicarPrecio()">Aplicar</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
