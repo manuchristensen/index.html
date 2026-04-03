@@ -57,7 +57,7 @@
           <div class="perf-av-overlay-txt">Cambiar<br>foto</div>
         </div>
       </div>
-      <input type="file" id="file-avatar" accept="image/jpeg,image/png,image/webp" onchange="onFotoSeleccionada(this)">
+      <input type="file" id="file-avatar" accept="image/jpeg,image/png,image/webp" onchange="onFotoSeleccionada(this)" style="display:none">
 
       <!-- NOMBRE -->
       <div class="perf-nombre-wrap" id="nombre-wrap">
@@ -440,11 +440,17 @@ async function onFotoSeleccionada(input) {
     const { data: urlData } = db.storage.from('Fotos').getPublicUrl(path);
     const url = urlData.publicUrl;
 
-    // Guardar URL y path en profiles
+    // Guardar URL en profiles (foto_path es opcional, puede no existir la columna aún)
     const { error: dbErr } = await db.from('profiles')
       .update({ foto_url: url, foto_path: path })
       .eq('id', miUserId);
-    if (dbErr) throw dbErr;
+    if (dbErr) {
+      // Reintentar sin foto_path si falla (columna puede no existir)
+      const { error: dbErr2 } = await db.from('profiles')
+        .update({ foto_url: url })
+        .eq('id', miUserId);
+      if (dbErr2) throw dbErr2;
+    }
 
     // Actualizar UI y cache local
     document.getElementById('perf-av').innerHTML = `<img src="${url}?t=${Date.now()}" alt="Foto">`;
