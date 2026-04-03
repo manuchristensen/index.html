@@ -25,12 +25,7 @@
 .perf-av-wrap:hover .perf-av{border-color:var(--verde)}
 .perf-av-wrap.editable:hover .perf-av-overlay{opacity:1}
 .perf-av-overlay-txt{color:#fff;font-size:.7rem;font-weight:900;text-align:center;line-height:1.3}
-.perf-av-badge{
-  position:absolute;bottom:2px;right:2px;
-  width:26px;height:26px;background:var(--verde);border:2px solid #fff;
-  border-radius:50%;display:none;align-items:center;justify-content:center;font-size:.75rem;
-}
-.perf-av-wrap.editable .perf-av-badge{display:flex}
+.perf-av-badge{display:none !important}
 #file-avatar{display:none}
 
 /* NOMBRE */
@@ -525,38 +520,37 @@ async function onFotoSeleccionada(input) {
   showToast('Subiendo foto...');
   try {
     const ext = file.name.split('.').pop().toLowerCase();
-    const path = `avatars/${miUserId}.${ext}`;
+    // Usar timestamp en el path para evitar conflictos con archivos existentes
+    const path = `avatars/${miUserId}_${Date.now()}.${ext}`;
 
-    // Borrar archivos previos del usuario (puede ser .jpg, .png, .webp)
-    await db.storage.from('Fotos').remove([
-      `avatars/${miUserId}.jpg`,
-      `avatars/${miUserId}.jpeg`,
-      `avatars/${miUserId}.png`,
-      `avatars/${miUserId}.webp`,
-    ]);
+    // Borrar archivos previos del usuario en background
+    db.storage.from('Fotos').list('avatars').then(({ data: files }) => {
+      if (!files) return;
+      const previos = files.filter(f => f.name.startsWith(miUserId)).map(f => `avatars/${f.name}`);
+      if (previos.length) db.storage.from('Fotos').remove(previos);
+    });
 
-    // Subir nuevo archivo
+    // Subir nuevo archivo (siempre nuevo path → siempre INSERT, nunca UPDATE)
     const { error: upErr } = await db.storage.from('Fotos').upload(path, file, {
-      upsert: true,
       contentType: file.type
     });
     if (upErr) throw upErr;
 
-    // Obtener URL pública con cache-bust para forzar recarga
+    // URL pública
     const { data: urlData } = db.storage.from('Fotos').getPublicUrl(path);
-    const url = urlData.publicUrl + '?t=' + Date.now();
+    const url = urlData.publicUrl;
 
     // Guardar en profiles.foto_url
     const { error: dbErr } = await db.from('profiles').update({ foto_url: url }).eq('id', miUserId);
     if (dbErr) throw dbErr;
 
-    // Mostrar en UI
-    document.getElementById('perf-av').innerHTML = `<img src="${url}" alt="Foto">`;
+    // Mostrar en UI con cache-bust
+    document.getElementById('perf-av').innerHTML = `<img src="${url}?t=${Date.now()}" alt="Foto">`;
     perfilData.foto_url = url;
     showToast('✅ Foto actualizada');
   } catch(e) {
     console.error('Error foto:', e);
-    showToast('Error al subir foto: ' + e.message);
+    showToast('Error: ' + e.message);
   }
   input.value = '';
 }
