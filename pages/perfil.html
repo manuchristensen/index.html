@@ -524,26 +524,38 @@ async function onFotoSeleccionada(input) {
 
   showToast('Subiendo foto...');
   try {
-    // Subir a Supabase Storage bucket "Fotos"
-    const ext = file.name.split('.').pop();
+    const ext = file.name.split('.').pop().toLowerCase();
     const path = `avatars/${miUserId}.${ext}`;
-    const { error: upErr } = await db.storage.from('Fotos').upload(path, file, { upsert: true });
+
+    // Borrar archivos previos del usuario (puede ser .jpg, .png, .webp)
+    await db.storage.from('Fotos').remove([
+      `avatars/${miUserId}.jpg`,
+      `avatars/${miUserId}.jpeg`,
+      `avatars/${miUserId}.png`,
+      `avatars/${miUserId}.webp`,
+    ]);
+
+    // Subir nuevo archivo
+    const { error: upErr } = await db.storage.from('Fotos').upload(path, file, {
+      upsert: true,
+      contentType: file.type
+    });
     if (upErr) throw upErr;
 
-    // Obtener URL pública
+    // Obtener URL pública con cache-bust para forzar recarga
     const { data: urlData } = db.storage.from('Fotos').getPublicUrl(path);
-    const url = urlData.publicUrl + '?t=' + Date.now(); // cache-bust
+    const url = urlData.publicUrl + '?t=' + Date.now();
 
     // Guardar en profiles.foto_url
-    const { error: dbErr } = await db.from('profiles').upsert({ id: miUserId, foto_url: url });
+    const { error: dbErr } = await db.from('profiles').update({ foto_url: url }).eq('id', miUserId);
     if (dbErr) throw dbErr;
 
     // Mostrar en UI
-    const avEl = document.getElementById('perf-av');
-    avEl.innerHTML = `<img src="${url}" alt="Foto">`;
+    document.getElementById('perf-av').innerHTML = `<img src="${url}" alt="Foto">`;
     perfilData.foto_url = url;
     showToast('✅ Foto actualizada');
   } catch(e) {
+    console.error('Error foto:', e);
     showToast('Error al subir foto: ' + e.message);
   }
   input.value = '';
