@@ -394,6 +394,8 @@ async function cargarPerfil(authUser) {
 
         const updates = {};
         if (!p.avatar_url && googleFoto) updates.avatar_url = googleFoto;
+        // Siempre guardar el email si no está en profiles (clave para resolver nombres en otras páginas)
+        if (!p.email && authUser?.email) updates.email = authUser.email;
         // Si el nombre es "Usuario", el prefijo del email sin formatear, o está vacío → intentar mejorar
         const nombreEsDefault = !p.nombre || p.nombre === 'Usuario' || p.nombre === authUser?.email?.split('@')[0];
         if (nombreEsDefault) {

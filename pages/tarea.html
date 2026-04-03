@@ -423,17 +423,17 @@ const TELEFONO_RE = /(\+?54\s?)?(\(?\d{2,4}\)?[\s\-]?)?\d{3,4}[\s\-]?\d{4}|\d{10
 
 // ══ HELPER: resolver nombre real desde un registro de profiles ══
 // Si el nombre es vacío, "Usuario", o el prefijo crudo del email, lo formatea desde el email
-function resolverNombre(perfil) {
-  if (!perfil) return null;
-  const email = perfil.email || '';
+function resolverNombre(perfil, emailFallback) {
+  if (!perfil && !emailFallback) return null;
+  const email = perfil?.email || emailFallback || '';
   const emailLocal = email.split('@')[0];
   const nombreFormateado = emailLocal
     ? emailLocal.replace(/[._\-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
     : null;
-  const nombre = perfil.nombre || '';
+  const nombre = perfil?.nombre || '';
   // Considerar "malo" si es vacío, "Usuario", o igual al prefijo crudo sin formatear
   const esMalo = !nombre || nombre === 'Usuario' || nombre === emailLocal;
-  if (esMalo) return nombreFormateado || 'Usuario';
+  if (esMalo) return nombreFormateado || null;
   return nombre;
 }
 
@@ -448,10 +448,19 @@ function resolverNombre(perfil) {
   if (miUserId) {
     try {
       const { data: mp } = await db.from('profiles').select('nombre,avatar_url,email').eq('id', miUserId).maybeSingle();
-      window._miPerfil = mp || null;
-      // Pre-resolver el nombre para uso inmediato
-      if (window._miPerfil) window._miPerfil._nombreResuelto = resolverNombre(window._miPerfil);
-    } catch(e) { /* silencioso */ }
+      window._miPerfil = mp || {};
+      // Siempre inyectar el email desde auth si no está en profiles — es la clave para resolver el nombre
+      if (!window._miPerfil.email && currentUser?.email) {
+        window._miPerfil.email = currentUser.email;
+        db.from('profiles').upsert({ id: miUserId, email: currentUser.email }).then(() => {});
+      }
+      // Pre-resolver el nombre (usa email para formatear si nombre es "Usuario" o vacío)
+      window._miPerfil._nombreResuelto = resolverNombre(window._miPerfil) || currentUser?.email?.split('@')[0]?.replace(/[._\-]/g, ' ')?.replace(/\b\w/g, c => c.toUpperCase()) || 'Usuario';
+    } catch(e) {
+      // Fallback total: formatear email directo de auth
+      const emailLocal = currentUser?.email?.split('@')[0] || '';
+      window._miPerfil = { email: currentUser?.email, _nombreResuelto: emailLocal.replace(/[._\-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || 'Usuario' };
+    }
   }
 
   await cargarTarea();
@@ -615,7 +624,13 @@ async function cargarInfoAsignado(tareaId, miId) {
     const { data: perfil } = await db.from('profiles')
       .select('nombre,avatar_url,email').eq('id', oferta.tasker_id).maybeSingle();
 
-    const nombre = resolverNombre(perfil) || 'Usuario';
+    // Si el usuario logueado ES el tasker, tenemos su email en currentUser
+    const emailFallbackTasker = (miUserId === oferta.tasker_id && currentUser?.email) ? currentUser.email : null;
+    const nombre = resolverNombre(perfil, emailFallbackTasker) || 'Usuario';
+    // Si el email faltaba, guardarlo en background
+    if (emailFallbackTasker && !perfil?.email) {
+      db.from('profiles').upsert({ id: oferta.tasker_id, email: emailFallbackTasker }).then(() => {});
+    }
     const ini = nombre.charAt(0).toUpperCase();
     const foto = perfil?.avatar_url;
     const chatLink = 'mensajes.html?conv=' + oferta.id;
@@ -689,7 +704,9 @@ async function cargarPerfilAutor(uid) {
   const nomEl = document.getElementById('h-autor-nombre');
   try {
     const { data } = await db.from('profiles').select('nombre,avatar_url,email').eq('id', uid).maybeSingle();
-    const nombre = resolverNombre(data) || 'Usuario';
+    // Si el usuario logueado ES el autor, tenemos su email en currentUser
+    const emailFallback = (esAutor && currentUser?.email) ? currentUser.email : null;
+    const nombre = resolverNombre(data, emailFallback) || 'Usuario';
     const foto = data?.avatar_url || null;
     nomEl.textContent = nombre;
     nomEl.style.cursor = 'pointer';
@@ -700,6 +717,10 @@ async function cargarPerfilAutor(uid) {
     window._autorNombre = nombre;
     window._autorFoto = foto;
     window._autorIni = nombre.charAt(0).toUpperCase();
+    // Si el email faltaba, guardarlo en background para futuras cargas
+    if (esAutor && emailFallback && !data?.email) {
+      db.from('profiles').upsert({ id: uid, email: emailFallback }).then(() => {});
+    }
   } catch(e) {
     nomEl.textContent = '?';
     avEl.textContent = '?';
@@ -938,6 +959,11 @@ async function cargarPreguntas() {
     const { data: profs } = await db.from('profiles').select('id,nombre,avatar_url,email').in('id', allUserIds);
     const profsMap = {};
     (profs || []).forEach(p => profsMap[p.id] = p);
+    // Si el usuario logueado aparece en el hilo y su perfil no tiene email, inyectarlo desde auth
+    if (miUserId && currentUser?.email && profsMap[miUserId] && !profsMap[miUserId].email) {
+      profsMap[miUserId] = { ...profsMap[miUserId], email: currentUser.email };
+      db.from('profiles').upsert({ id: miUserId, email: currentUser.email }).then(() => {});
+    }
 
     pregs.forEach(preg => {
       const resp = respMap[preg.id] || null;
