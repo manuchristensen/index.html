@@ -1,31 +1,23 @@
 /* ══════════════════════════════════════════════════
    fonts.css — ChambaYa
-   Fuentes globales. Para cambiar la tipografía
-   de toda la app, solo modificá este archivo.
 ══════════════════════════════════════════════════ */
 
-/* Importar desde Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+/* DM Sans — limpia, geométrica, moderna */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;0,9..40,900;1,9..40,400&display=swap');
 
-/* ── FUENTE PRINCIPAL ──
-   Cambiá --font-principal para cambiar
-   la tipografía en toda la app de una vez */
 :root {
-  --font-principal: 'Nunito', sans-serif;
+  --font-principal: 'DM Sans', sans-serif;
   --font-size-base: 16px;
-  --font-size-sm:   0.875rem;   /* 14px */
-  --font-size-md:   1rem;       /* 16px */
-  --font-size-lg:   1.125rem;   /* 18px */
-  --font-size-xl:   1.25rem;    /* 20px */
-  --font-size-2xl:  1.5rem;     /* 24px */
-  --font-size-3xl:  1.875rem;   /* 30px */
-  --font-size-4xl:  2.25rem;    /* 36px */
+  --font-size-sm:   0.875rem;
+  --font-size-md:   1rem;
+  --font-size-lg:   1.125rem;
+  --font-size-xl:   1.25rem;
+  --font-size-2xl:  1.5rem;
+  --font-size-3xl:  1.875rem;
+  --font-size-4xl:  2.25rem;
 }
 
-/* Aplicar a todo el documento */
-html {
-  font-size: var(--font-size-base);
-}
+html { font-size: var(--font-size-base); }
 
 body {
   font-family: var(--font-principal);
@@ -35,7 +27,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Botones y inputs heredan la fuente */
 button, input, select, textarea {
   font-family: var(--font-principal);
 }
