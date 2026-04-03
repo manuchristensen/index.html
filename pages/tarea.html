@@ -716,13 +716,11 @@ async function cargarPerfilAutor(uid) {
   const avEl = document.getElementById('h-autor-av');
   const nomEl = document.getElementById('h-autor-nombre');
   try {
-    const { data } = await db.from('profiles').select('nombre,avatar_url,email').eq('id', uid).maybeSingle();
-    // Si soy el autor, mi nombre real viene de auth (igual que perfil.html)
-    // Si soy visitante, usar lo que hay en profiles
+    const { data, error } = await db.from('profiles').select('nombre,avatar_url,email').eq('id', uid).maybeSingle();
+    console.log('[ChambaYa] cargarPerfilAutor uid:', uid, '| data:', data, '| error:', error);
     let nombre;
     if (esAutor) {
       nombre = nombreDelUsuarioLogueado();
-      // Guardar nombre correcto en DB si profiles tiene "Usuario" o vacío
       const nombreEnDB = data?.nombre || '';
       if (!nombreEnDB || nombreEnDB === 'Usuario') {
         const updates = { nombre };
@@ -743,6 +741,7 @@ async function cargarPerfilAutor(uid) {
     window._autorFoto = foto;
     window._autorIni = nombre.charAt(0).toUpperCase();
   } catch(e) {
+    console.error('[ChambaYa] cargarPerfilAutor error:', e);
     nomEl.textContent = '?';
     avEl.textContent = '?';
   }
@@ -977,7 +976,8 @@ async function cargarPreguntas() {
 
     // Cargar perfiles de quienes preguntaron + quienes replicaron (con email para resolverNombre)
     const allUserIds = [...new Set((todos || []).map(r => r.user_id).concat(pregs.map(p => p.user_id)))];
-    const { data: profs } = await db.from('profiles').select('id,nombre,avatar_url,email').in('id', allUserIds);
+    const { data: profs, error: eProfs } = await db.from('profiles').select('id,nombre,avatar_url,email').in('id', allUserIds);
+    console.log('[ChambaYa] profiles batch | ids:', allUserIds, '| data:', profs, '| error:', eProfs);
     const profsMap = {};
     (profs || []).forEach(p => profsMap[p.id] = p);
     // Si el usuario logueado aparece en el hilo y su perfil no tiene email, inyectarlo desde auth
