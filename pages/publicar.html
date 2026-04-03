@@ -96,6 +96,28 @@
 .res-key{font-size:.82rem;font-weight:800;color:var(--suave)}
 .res-val{font-size:.88rem;font-weight:900;color:var(--texto);text-align:right}
 @media(max-width:900px){.pub-sidebar{display:none}.pub-footer{left:0;padding:14px 20px}.pub-main{padding:32px 20px 120px}}
+
+/* ══ TASKER CARD en publicar ══ */
+.tasker-banner {
+  display:flex;align-items:center;gap:16px;
+  background:linear-gradient(135deg,#F0FDF9,#DCFCE7);
+  border:1.5px solid var(--verde);border-radius:var(--radio-lg);
+  padding:18px 22px;margin-bottom:32px;
+}
+.tasker-banner-av {
+  width:56px;height:56px;border-radius:50%;
+  background:var(--verde-c);border:2px solid var(--verde);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;font-weight:900;color:var(--verde-o);
+  overflow:hidden;flex-shrink:0;
+}
+.tasker-banner-av img { width:100%;height:100%;object-fit:cover;border-radius:50%; }
+.tasker-banner-txt { flex:1; }
+.tasker-banner-lbl { font-size:.7rem;font-weight:900;text-transform:uppercase;letter-spacing:.8px;color:var(--verde-o);margin-bottom:2px; }
+.tasker-banner-nombre { font-size:1.05rem;font-weight:900;color:var(--texto); }
+.tasker-banner-sub { font-size:.8rem;font-weight:700;color:var(--suave);margin-top:2px; }
+.tasker-banner-x { width:28px;height:28px;border-radius:50%;background:transparent;border:none;cursor:pointer;font-size:1rem;color:var(--suave);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s; }
+.tasker-banner-x:hover { background:rgba(0,0,0,.06); }
 </style>
 </head>
 <body>
@@ -108,8 +130,8 @@
   </div>
   <div class="nav-right">
     <a href="ayuda.html" class="nav-right-link">Ayuda</a>
-    <a href="notificaciones.html" class="nav-right-link" id="nav-notif-link" style="position:relative">Notificaciones</a>
-    <a href="mensajes.html" class="nav-right-link" id="nav-mensajes-link" style="position:relative">Mensajes</a>
+    <a href="notificaciones.html" class="nav-right-link">Notificaciones</a>
+    <a href="mensajes.html" class="nav-right-link">Mensajes</a>
     <div class="nav-av-wrap">
       <div class="nav-av" id="nav-av" onclick="toggleDropdown(event)"><span class="nav-av-inicial" id="nav-av-inicial">?</span></div>
       <div class="nav-dropdown" id="nav-dropdown">
@@ -140,7 +162,17 @@
 
     <!-- PASO 1: TAREA Y FECHA -->
     <div class="pub-panel activo" id="panel-1">
-      <div class="pub-titulo">Que necesitas que te hagan?</div>
+      <!-- Mini-card del tasker (se muestra solo si viene desde perfil.html con ?tasker_id=) -->
+      <div class="tasker-banner" id="tasker-banner" style="display:none">
+        <div class="tasker-banner-av" id="tasker-banner-av">?</div>
+        <div class="tasker-banner-txt">
+          <div class="tasker-banner-lbl">Tu tarea va a ser enviada a</div>
+          <div class="tasker-banner-nombre" id="tasker-banner-nombre">—</div>
+          <div class="tasker-banner-sub">También quedará visible para otros taskers</div>
+        </div>
+        <button class="tasker-banner-x" onclick="quitarTasker()" title="Quitar">✕</button>
+      </div>
+      <div class="pub-titulo" id="pub-titulo-1">Que necesitas que te hagan?</div>
       <div class="pub-sub">Describilo en pocas palabras. Los detalles los completas despues.</div>
       <div class="pub-field">
         <label class="pub-label">Cual es tu tarea?<span class="req">*</span></label>
@@ -277,6 +309,34 @@
 // db disponible desde navbar.js
 let paso = 1;
 let cpTimer = null;
+
+// ══ TASKER DESDE PERFIL ══
+const pubParams    = new URLSearchParams(window.location.search);
+let taskerIdDest   = pubParams.get('tasker_id')   || null;
+let taskerNombre   = pubParams.get('tasker_nombre')|| null;
+let taskerFoto     = pubParams.get('tasker_foto')  || null;
+
+function iniciarTaskerBanner() {
+  if (!taskerIdDest || !taskerNombre) return;
+  const banner = document.getElementById('tasker-banner');
+  const av     = document.getElementById('tasker-banner-av');
+  banner.style.display = 'flex';
+  document.getElementById('tasker-banner-nombre').textContent = taskerNombre;
+  document.getElementById('pub-titulo-1').textContent = `¿Qué le querés pedir a ${taskerNombre}?`;
+  if (taskerFoto && taskerFoto !== 'null' && taskerFoto !== '') {
+    av.innerHTML = `<img src="${taskerFoto}" alt="${taskerNombre}">`;
+  } else {
+    av.textContent = taskerNombre.charAt(0).toUpperCase();
+  }
+}
+
+function quitarTasker() {
+  taskerIdDest = null; taskerNombre = null; taskerFoto = null;
+  document.getElementById('tasker-banner').style.display = 'none';
+  document.getElementById('pub-titulo-1').textContent = '¿Que necesitas que te hagan?';
+}
+
+iniciarTaskerBanner();
 
 const d = {
   titulo:'', cuando:'', fecha:'',
@@ -730,6 +790,23 @@ async function publicar() {
       showToast('Error al publicar: ' + error.message);
       btn.textContent = 'Publicar tarea'; btn.disabled = false;
       return;
+    }
+
+    // ══ Notificar al tasker si la tarea fue dirigida desde su perfil ══
+    if (taskerIdDest && taskerIdDest !== session.user.id) {
+      try {
+        await db.from('notificaciones').insert({
+          user_id:  taskerIdDest,
+          tipo:     'tarea_dirigida',
+          titulo:   '¡Te enviaron una tarea!',
+          mensaje:  `Alguien vio tu perfil y publicó una tarea para vos: "${d.titulo}"`,
+          tarea_id: tarea.id,
+          leida:    false
+        });
+      } catch(notifErr) {
+        console.warn('Error al enviar notificacion al tasker:', notifErr);
+        // No bloquear el flujo principal si falla la notif
+      }
     }
 
     document.getElementById('link-tarea').href = 'tarea.html?id=' + tarea.id;

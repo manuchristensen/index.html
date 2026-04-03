@@ -6,8 +6,214 @@
 <title>ChambaYa — Perfil</title>
 <link rel="stylesheet" href="../fonts.css">
 <link rel="stylesheet" href="../styles.css">
+<style>
+/* ══ LAYOUT ══ */
+.pf-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 32px 120px;
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 28px;
+  align-items: start;
+}
+.pf-left  { display: flex; flex-direction: column; gap: 20px; }
+.pf-right { display: flex; flex-direction: column; gap: 20px; }
+
+/* ══ CARD BASE ══ */
+.pf-card {
+  background: var(--blanco);
+  border-radius: var(--radio-lg);
+  border: 1.5px solid var(--borde);
+  padding: 28px;
+  box-shadow: var(--sombra);
+}
+
+/* ══ CARD HERO ══ */
+.pf-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Avatar grande */
+.pf-av-wrap {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 18px;
+  cursor: pointer;
+}
+.pf-av {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E0F2FE, #DBEAFE);
+  border: 4px solid var(--borde);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3.4rem;
+  font-weight: 900;
+  color: #64748B;
+  overflow: hidden;
+  margin: 0 auto;
+  transition: border-color .2s;
+}
+.pf-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.pf-av-overlay {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: rgba(0,0,0,.52);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity .2s; pointer-events: none;
+}
+.pf-av-overlay span { color: #fff; font-size: .72rem; font-weight: 900; text-align: center; }
+.pf-av-wrap.editable:hover .pf-av { border-color: var(--verde); }
+.pf-av-wrap.editable:hover .pf-av-overlay { opacity: 1; }
+
+/* Nombre */
+.pf-nombre-wrap { margin-bottom: 6px; width: 100%; }
+.pf-nombre { font-size: 1.6rem; font-weight: 900; color: var(--texto); cursor: default; line-height: 1.2; }
+.pf-nombre.editable { cursor: pointer; }
+.pf-nombre.editable:hover { color: var(--verde-o); }
+.pf-nombre-input {
+  font-size: 1.2rem; font-weight: 900; color: var(--texto); text-align: center;
+  border: 2px solid var(--verde); border-radius: var(--radio); padding: 7px 12px;
+  font-family: 'Nunito', sans-serif; outline: none; width: 100%;
+  background: var(--blanco); box-shadow: 0 0 0 3px rgba(0,201,107,.1);
+}
+.pf-nombre-btns { display: flex; gap: 6px; justify-content: center; margin-top: 8px; }
+.btn-nombre-ok { padding: 6px 16px; border: none; border-radius: var(--radio-pill); background: var(--verde); color: #fff; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .8rem; cursor: pointer; }
+.btn-nombre-cancel { padding: 6px 12px; border: 1.5px solid var(--borde); border-radius: var(--radio-pill); background: var(--blanco); color: var(--suave); font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .8rem; cursor: pointer; }
+
+/* Online */
+.pf-online { display: inline-flex; align-items: center; gap: 6px; font-size: .8rem; font-weight: 700; color: var(--suave); margin-bottom: 14px; }
+.pf-online-dot { width: 8px; height: 8px; border-radius: 50%; background: #9CA3AF; flex-shrink: 0; }
+.pf-online-dot.verde { background: #10B981; }
+
+/* Meta */
+.pf-meta {
+  display: flex; flex-direction: column; gap: 9px; width: 100%;
+  padding: 16px 0; border-top: 1.5px solid var(--borde); border-bottom: 1.5px solid var(--borde);
+  margin-bottom: 18px; text-align: left;
+}
+.pf-meta-row { display: flex; align-items: center; gap: 9px; font-size: .86rem; font-weight: 700; color: var(--suave); }
+.pf-meta-ico { font-size: 1rem; flex-shrink: 0; }
+
+/* Zona editable */
+.pf-zona-input {
+  font-size: .86rem; font-weight: 700; color: var(--texto);
+  border: 1.5px solid var(--verde); border-radius: 8px; padding: 4px 10px;
+  font-family: 'Nunito', sans-serif; outline: none; background: var(--blanco);
+  width: 100%; box-shadow: 0 0 0 2px rgba(0,201,107,.1);
+}
+.pf-zona-btns { display: flex; gap: 6px; margin-top: 6px; }
+.btn-zona-ok { padding: 4px 12px; border: none; border-radius: 20px; background: var(--verde); color: #fff; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .75rem; cursor: pointer; }
+.btn-zona-cancel { padding: 4px 10px; border: 1.5px solid var(--borde); border-radius: 20px; background: var(--blanco); color: var(--suave); font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .75rem; cursor: pointer; }
+.pf-zona-edit-wrap { display: none; width: 100%; }
+
+/* Stats */
+.pf-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; width: 100%; margin-bottom: 18px; }
+.pf-stat { background: var(--fondo); border-radius: var(--radio); padding: 10px 6px; text-align: center; }
+.pf-stat-num { font-size: 1.25rem; font-weight: 900; color: var(--texto); line-height: 1.1; }
+.pf-stat-lbl { font-size: .62rem; font-weight: 800; color: var(--suave); text-transform: uppercase; letter-spacing: .4px; margin-top: 2px; }
+
+/* Botones */
+.btn-editar-perfil { width: 100%; padding: 11px; border: 2px solid var(--verde); border-radius: var(--radio-pill); background: transparent; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .9rem; cursor: pointer; color: var(--verde-o); transition: all .2s; }
+.btn-editar-perfil:hover { background: var(--verde-c); }
+
+/* ══ SECCIONES CARD ══ */
+.pf-sec-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.pf-sec-titulo { font-size: .72rem; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; color: var(--suave); }
+.btn-sec-edit { padding: 5px 12px; border: 1.5px solid var(--borde); border-radius: var(--radio-pill); background: var(--blanco); font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .75rem; cursor: pointer; color: var(--suave); transition: all .2s; display: none; }
+.btn-sec-edit:hover { border-color: var(--verde); color: var(--verde-o); }
+
+.pf-bio { font-size: .92rem; font-weight: 700; color: var(--texto); line-height: 1.7; }
+.pf-bio-empty { font-size: .88rem; font-weight: 700; color: var(--suave); font-style: italic; }
+.bio-textarea { width: 100%; border: 2px solid var(--borde); border-radius: var(--radio); padding: 13px 15px; font-family: 'Nunito', sans-serif; font-size: .9rem; font-weight: 700; color: var(--texto); resize: vertical; outline: none; min-height: 110px; transition: border-color .2s; }
+.bio-textarea:focus { border-color: var(--verde); box-shadow: 0 0 0 3px rgba(0,201,107,.1); }
+.edit-btns { display: flex; gap: 10px; margin-top: 12px; }
+.btn-save { padding: 9px 22px; border: none; border-radius: var(--radio-pill); background: var(--verde); font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .86rem; cursor: pointer; color: #fff; transition: all .2s; }
+.btn-save:hover { background: var(--verde-o); }
+.btn-cancel-edit { padding: 9px 18px; border: 1.5px solid var(--borde); border-radius: var(--radio-pill); background: var(--blanco); font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .86rem; cursor: pointer; color: var(--suave); transition: all .2s; }
+.btn-cancel-edit:hover { border-color: var(--texto); color: var(--texto); }
+
+/* Chips */
+.chips-wrap { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { padding: 6px 14px; border: 1.5px solid var(--borde); border-radius: var(--radio-pill); font-size: .8rem; font-weight: 800; color: var(--suave); cursor: pointer; background: var(--fondo); transition: all .18s; }
+.chip.sel { background: var(--verde-c); border-color: var(--verde); color: var(--verde-o); }
+.chip.sel.readonly { cursor: default; }
+.agregar-custom { display: flex; gap: 8px; margin-top: 12px; }
+.custom-input { flex: 1; border: 1.5px solid var(--borde); border-radius: var(--radio); padding: 8px 12px; font-family: 'Nunito', sans-serif; font-size: .82rem; font-weight: 700; color: var(--texto); outline: none; background: var(--blanco); transition: border-color .2s; }
+.custom-input:focus { border-color: var(--verde); }
+.btn-agregar-custom { padding: 7px 14px; border: none; border-radius: var(--radio-pill); background: var(--verde); color: #fff; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .78rem; cursor: pointer; white-space: nowrap; transition: background .2s; }
+.btn-agregar-custom:hover { background: var(--verde-o); }
+.custom-hint { font-size: .7rem; font-weight: 700; color: var(--suave); margin-top: 4px; }
+
+/* ══ SOBRE MÍ (derecha, prominente) ══ */
+.pf-sobre-card { background: var(--blanco); border-radius: var(--radio-lg); border: 1.5px solid var(--borde); padding: 28px 32px; box-shadow: var(--sombra); }
+.pf-sobre-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.pf-sobre-titulo { font-size: 1.05rem; font-weight: 900; color: var(--texto); }
+.pf-sobre-texto { font-size: .95rem; font-weight: 700; color: var(--texto); line-height: 1.75; }
+.pf-sobre-empty { font-size: .9rem; font-weight: 700; color: var(--suave); font-style: italic; }
+
+/* ══ REVIEWS ══ */
+.pf-reviews-card { background: var(--blanco); border-radius: var(--radio-lg); border: 1.5px solid var(--borde); padding: 28px 32px; box-shadow: var(--sombra); }
+.pf-reviews-titulo { font-size: 1.05rem; font-weight: 900; color: var(--texto); margin-bottom: 20px; }
+.rv-summary { display: flex; align-items: center; gap: 18px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1.5px solid var(--borde); }
+.rv-avg { font-size: 3.8rem; font-weight: 900; color: var(--texto); line-height: 1; }
+.rv-summary-info { flex: 1; }
+.rv-stars-row { display: flex; gap: 3px; margin-bottom: 4px; }
+.rv-count { font-size: .82rem; font-weight: 700; color: var(--suave); }
+.rv-item { padding: 18px 0; border-bottom: 1.5px solid var(--borde); }
+.rv-item:last-child { border-bottom: none; padding-bottom: 0; }
+.rv-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.rv-av { width: 42px; height: 42px; border-radius: 50%; background: var(--fondo); border: 2px solid var(--borde); display: flex; align-items: center; justify-content: center; font-size: .9rem; font-weight: 900; color: var(--suave); overflow: hidden; flex-shrink: 0; text-decoration: none; }
+.rv-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.rv-autor { font-size: .9rem; font-weight: 900; color: var(--texto); }
+.rv-fecha { font-size: .75rem; font-weight: 700; color: var(--suave); margin-top: 1px; }
+.rv-stars { display: flex; gap: 2px; margin-bottom: 8px; }
+.star { color: #D1D5DB; font-size: 1rem; }
+.star.on { color: #F59E0B; }
+.rv-coment { font-size: .88rem; font-weight: 700; color: var(--texto); line-height: 1.65; background: var(--fondo); border-radius: var(--radio); padding: 12px 14px; }
+.reviews-empty { text-align: center; padding: 32px 16px; color: var(--suave); }
+
+/* ══ BANNER NOMBRE ══ */
+#banner-nombre { max-width: 1100px; margin: 16px auto 0; padding: 0 32px; }
+.banner-nombre { background: linear-gradient(135deg,#FFFBEB,#FEF3C7); border: 1.5px solid #FCD34D; border-radius: var(--radio-lg); padding: 18px 22px; display: flex; align-items: center; gap: 14px; box-shadow: var(--sombra); }
+.banner-nombre-ico { font-size: 1.8rem; flex-shrink: 0; }
+.banner-nombre-txt { flex: 1; }
+.banner-nombre-titulo { font-size: .88rem; font-weight: 900; color: #92400E; margin-bottom: 3px; }
+.banner-nombre-sub { font-size: .76rem; font-weight: 700; color: #B45309; }
+.banner-nombre-btn { padding: 8px 18px; border: none; border-radius: var(--radio-pill); background: #F59E0B; color: #fff; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .82rem; cursor: pointer; white-space: nowrap; transition: background .2s; flex-shrink: 0; }
+.banner-nombre-btn:hover { background: #D97706; }
+
+/* ══ HIRE BAR (sticky bottom) ══ */
+.hire-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--blanco); border-top: 2px solid var(--borde);
+  padding: 16px 40px; display: none;
+  align-items: center; justify-content: space-between;
+  z-index: 150; box-shadow: 0 -4px 24px rgba(0,0,0,.09); gap: 20px;
+}
+.hire-bar-txt { flex: 1; min-width: 0; }
+.hire-bar-titulo { font-size: 1rem; font-weight: 900; color: var(--texto); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hire-bar-sub { font-size: .82rem; font-weight: 700; color: var(--suave); margin-top: 1px; }
+.btn-hire { padding: 13px 32px; border: none; border-radius: var(--radio-pill); background: var(--verde); font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .95rem; cursor: pointer; color: #fff; transition: all .2s; white-space: nowrap; flex-shrink: 0; display: flex; align-items: center; gap: 8px; }
+.btn-hire:hover { background: var(--verde-o); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,196,107,.35); }
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:820px) {
+  .pf-wrap { grid-template-columns: 1fr; padding: 20px 16px 120px; }
+  .hire-bar { padding: 14px 20px; }
+  .hire-bar-titulo { font-size: .9rem; }
+  .btn-hire { padding: 11px 22px; font-size: .88rem; }
+}
+</style>
 </head>
 <body>
+
+<!-- ══ NAVBAR ══ -->
 <nav class="nav">
   <a href="home.html" class="nav-logo">Chamba<em>Ya</em></a>
   <a href="publicar.html" class="nav-publicar" style="margin-left:32px">Publicar tarea</a>
@@ -22,7 +228,10 @@
     <div class="nav-av-wrap">
       <div class="nav-av" id="nav-av" onclick="toggleDropdown(event)"><span class="nav-av-inicial" id="nav-av-inicial">?</span></div>
       <div class="nav-dropdown" id="nav-dropdown">
-        <div class="dd-header"><div class="dd-nombre" id="dd-nombre">Cargando...</div><div class="dd-sub" onclick="window.location.href='perfil.html?id='+miUserId">Ver perfil público</div></div>
+        <div class="dd-header">
+          <div class="dd-nombre" id="dd-nombre">Cargando...</div>
+          <div class="dd-sub" onclick="window.location.href='perfil.html'">Ver perfil público</div>
+        </div>
         <a href="mistareas.html" class="dd-item">Mis tareas <span class="dd-arrow">›</span></a>
         <div class="dd-sep"></div>
         <a href="configuracion.html" class="dd-item">Configuración <span class="dd-arrow">›</span></a>
@@ -33,7 +242,8 @@
   </div>
 </nav>
 
-<div id="banner-nombre" style="display:none;max-width:1060px;margin:20px auto 0;padding:0 32px">
+<!-- Banner nombre incompleto -->
+<div id="banner-nombre" style="display:none">
   <div class="banner-nombre">
     <div class="banner-nombre-ico">👤</div>
     <div class="banner-nombre-txt">
@@ -44,13 +254,14 @@
   </div>
 </div>
 
+<!-- ══ LAYOUT PRINCIPAL ══ -->
 <div class="pf-wrap">
 
-  <!-- COLUMNA IZQUIERDA -->
+  <!-- ── COLUMNA IZQUIERDA ── -->
   <div class="pf-left">
 
-    <!-- Card principal del perfil -->
-    <div class="pf-card">
+    <!-- Card hero -->
+    <div class="pf-card pf-hero">
       <div class="pf-av-wrap" id="av-wrap" onclick="clickAvatar()">
         <div class="pf-av" id="perf-av">?</div>
         <div class="pf-av-overlay"><span>Cambiar foto</span></div>
@@ -66,47 +277,61 @@
         </div>
       </div>
 
+      <div class="pf-online">
+        <div class="pf-online-dot" id="online-dot"></div>
+        <span id="pf-online-txt">Miembro de ChambaYa</span>
+      </div>
+
       <div class="pf-meta">
-        <div class="pf-meta-row"><span class="pf-meta-ico">🟢</span><span id="pf-online-txt">Miembro de ChambaYa</span></div>
-        <div class="pf-meta-row"><span class="pf-meta-ico">📍</span><span id="perf-zona">Argentina</span></div>
-        <div class="pf-meta-row"><span class="pf-meta-ico">💼</span><span id="perf-ocupacion-mini">—</span></div>
-      </div>
-
-      <div class="pf-stats">
-        <div class="pf-stat"><div class="pf-stat-num" id="stat-tareas">0</div><div class="pf-stat-lbl">Tareas</div></div>
-        <div class="pf-stat"><div class="pf-stat-num" id="stat-rating">—</div><div class="pf-stat-lbl">Rating</div></div>
-      </div>
-
-      <div id="perf-botones"></div>
-    </div>
-
-    <!-- Sobre mí -->
-    <div class="pf-card">
-      <div class="pf-sec-header">
-        <div class="pf-sec-titulo">Sobre mí</div>
-        <button class="btn-sec-edit" id="btn-edit-bio" style="display:none" onclick="editarBio()">✏️ Editar</button>
-      </div>
-      <div id="bio-vista">
-        <div class="pf-bio" id="perf-bio-txt" style="display:none"></div>
-        <div class="pf-bio-empty" id="perf-bio-empty">Contá brevemente quién sos y qué podés hacer.</div>
-      </div>
-      <div id="bio-edit" style="display:none">
-        <textarea class="bio-textarea" id="bio-input" placeholder="Ej: Plomero con 10 años de experiencia..." maxlength="400"></textarea>
-        <div style="font-size:.72rem;color:var(--suave);font-weight:700;text-align:right;margin-top:4px"><span id="bio-count">0</span>/400</div>
-        <div class="edit-btns">
-          <button class="btn-save" onclick="guardarBio()">💾 Guardar</button>
-          <button class="btn-cancel-edit" onclick="cancelarBio()">Cancelar</button>
+        <!-- Zona editable -->
+        <div class="pf-meta-row" id="zona-vista-row" style="flex-wrap:wrap;gap:6px">
+          <span class="pf-meta-ico">📍</span>
+          <span id="perf-zona" style="cursor:pointer" onclick="editarZona()">Argentina</span>
+          <span id="zona-edit-ico" style="display:none;font-size:.7rem;color:var(--verde-o);cursor:pointer" onclick="editarZona()">✏️</span>
+        </div>
+        <div class="pf-zona-edit-wrap" id="zona-edit-wrap">
+          <input type="text" class="pf-zona-input" id="zona-input" placeholder="Ej: Mar del Plata, Buenos Aires" maxlength="60">
+          <div class="pf-zona-btns">
+            <button class="btn-zona-ok" onclick="guardarZona()">✓ Guardar</button>
+            <button class="btn-zona-cancel" onclick="cancelarZona()">✕</button>
+          </div>
+        </div>
+        <!-- Ocupación -->
+        <div class="pf-meta-row">
+          <span class="pf-meta-ico">💼</span>
+          <span id="perf-ocupacion-mini">—</span>
         </div>
       </div>
+
+      <!-- Stats: 3 columnas -->
+      <div class="pf-stats">
+        <div class="pf-stat">
+          <div class="pf-stat-num" id="stat-tareas">0</div>
+          <div class="pf-stat-lbl">Tareas</div>
+        </div>
+        <div class="pf-stat">
+          <div class="pf-stat-num" id="stat-rating">—</div>
+          <div class="pf-stat-lbl">Rating</div>
+        </div>
+        <div class="pf-stat">
+          <div class="pf-stat-num" id="stat-reviews">0</div>
+          <div class="pf-stat-lbl">Reseñas</div>
+        </div>
+      </div>
+
+      <div id="perf-botones" style="width:100%"></div>
     </div>
 
-    <!-- A qué me dedico -->
+    <!-- ¿A qué me dedico? -->
     <div class="pf-card">
       <div class="pf-sec-header">
         <div class="pf-sec-titulo">¿A qué me dedico?</div>
-        <button class="btn-sec-edit" id="btn-edit-ocup" style="display:none" onclick="editarOcup()">✏️ Editar</button>
+        <button class="btn-sec-edit" id="btn-edit-ocup" onclick="editarOcup()">✏️ Editar</button>
       </div>
-      <div id="ocup-vista"><div class="chips-wrap" id="ocup-chips-vista"></div><div class="pf-bio-empty" id="ocup-empty">No especificado.</div></div>
+      <div id="ocup-vista">
+        <div class="chips-wrap" id="ocup-chips-vista"></div>
+        <div class="pf-bio-empty" id="ocup-empty">No especificado.</div>
+      </div>
       <div id="ocup-edit" style="display:none">
         <div class="chips-wrap" id="ocup-chips-edit"></div>
         <div class="agregar-custom">
@@ -125,9 +350,12 @@
     <div class="pf-card">
       <div class="pf-sec-header">
         <div class="pf-sec-titulo">Especialidades</div>
-        <button class="btn-sec-edit" id="btn-edit-esp" style="display:none" onclick="editarEsp()">✏️ Editar</button>
+        <button class="btn-sec-edit" id="btn-edit-esp" onclick="editarEsp()">✏️ Editar</button>
       </div>
-      <div id="esp-vista"><div class="chips-wrap" id="esp-chips-vista"></div><div class="pf-bio-empty" id="esp-empty">Sin especialidades.</div></div>
+      <div id="esp-vista">
+        <div class="chips-wrap" id="esp-chips-vista"></div>
+        <div class="pf-bio-empty" id="esp-empty">Sin especialidades.</div>
+      </div>
       <div id="esp-edit" style="display:none">
         <div class="chips-wrap" id="esp-chips-edit"></div>
         <div class="agregar-custom">
@@ -146,9 +374,12 @@
     <div class="pf-card">
       <div class="pf-sec-header">
         <div class="pf-sec-titulo">Idiomas</div>
-        <button class="btn-sec-edit" id="btn-edit-idiomas" style="display:none" onclick="editarIdiomas()">✏️ Editar</button>
+        <button class="btn-sec-edit" id="btn-edit-idiomas" onclick="editarIdiomas()">✏️ Editar</button>
       </div>
-      <div id="idiomas-vista"><div class="chips-wrap" id="idiomas-chips-vista"></div><div class="pf-bio-empty" id="idiomas-empty">Sin idiomas especificados.</div></div>
+      <div id="idiomas-vista">
+        <div class="chips-wrap" id="idiomas-chips-vista"></div>
+        <div class="pf-bio-empty" id="idiomas-empty">Sin idiomas especificados.</div>
+      </div>
       <div id="idiomas-edit" style="display:none">
         <div class="chips-wrap" id="idiomas-chips-edit"></div>
         <div class="edit-btns">
@@ -158,14 +389,34 @@
       </div>
     </div>
 
-  </div>
+  </div><!-- /pf-left -->
 
-  <!-- COLUMNA DERECHA — REVIEWS -->
+  <!-- ── COLUMNA DERECHA ── -->
   <div class="pf-right">
-    <div class="pf-card">
-      <div class="pf-sec-header">
-        <div class="pf-sec-titulo">Reseñas</div>
+
+    <!-- Sobre mí — prominente arriba -->
+    <div class="pf-sobre-card">
+      <div class="pf-sobre-header">
+        <div class="pf-sobre-titulo">Sobre mí</div>
+        <button class="btn-sec-edit" id="btn-edit-bio" onclick="editarBio()">✏️ Editar</button>
       </div>
+      <div id="bio-vista">
+        <div class="pf-sobre-texto" id="perf-bio-txt" style="display:none"></div>
+        <div class="pf-sobre-empty" id="perf-bio-empty">Todavía no hay descripción. ¡Contá quién sos y qué podés hacer!</div>
+      </div>
+      <div id="bio-edit" style="display:none">
+        <textarea class="bio-textarea" id="bio-input" placeholder="Ej: Plomero con 10 años de experiencia en instalaciones y reparaciones urgentes. Trabajo prolijo, puntual y con garantía..." maxlength="500"></textarea>
+        <div style="font-size:.72rem;color:var(--suave);font-weight:700;text-align:right;margin-top:4px"><span id="bio-count">0</span>/500</div>
+        <div class="edit-btns">
+          <button class="btn-save" onclick="guardarBio()">💾 Guardar</button>
+          <button class="btn-cancel-edit" onclick="cancelarBio()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reviews -->
+    <div class="pf-reviews-card">
+      <div class="pf-reviews-titulo">Reseñas</div>
       <div id="reviews-empty" class="reviews-empty">
         <div style="font-size:2rem;margin-bottom:10px">⭐</div>
         <div style="font-size:.9rem;font-weight:800;color:var(--texto);margin-bottom:4px">Sin reseñas todavía</div>
@@ -173,256 +424,355 @@
       </div>
       <div id="reviews-lista"></div>
     </div>
-  </div>
 
+  </div><!-- /pf-right -->
+</div>
+
+<!-- ══ HIRE BAR — sticky bottom, solo visitantes ══ -->
+<div class="hire-bar" id="hire-bar">
+  <div class="hire-bar-txt">
+    <div class="hire-bar-titulo" id="hire-bar-titulo">¿Querés trabajar con este tasker?</div>
+    <div class="hire-bar-sub">Publicá una tarea y pedí un presupuesto</div>
+  </div>
+  <button class="btn-hire" onclick="irAPublicar()">
+    💬 Pedir presupuesto
+  </button>
 </div>
 
 <div id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../navbar.js"></script>
 <script>
-const params = new URLSearchParams(window.location.search);
-let perfilId = params.get('id');
-let miUserId = null;
+const params   = new URLSearchParams(window.location.search);
+let perfilId   = params.get('id');
+let miUserId   = null;
 let esMiPerfil = false;
 let perfilData = {};
+let perfilNombreCompleto = '';
 
-const OCUPACIONES = ['Plomero/a','Electricista','Pintor/a','Limpieza','Jardinero/a','Carpintero/a','Mudanzas','Tecnología','Delivery/Mandados','Fotografía','Marketing','Gastronomía','Cuidado de niños','Cuidado de mascotas','Entrenador/a','Peluquería','Educación/Tutorías','Construcción','Mecánico/a','Diseño'];
+const OCUPACIONES    = ['Plomero/a','Electricista','Pintor/a','Limpieza','Jardinero/a','Carpintero/a','Mudanzas','Tecnología','Delivery/Mandados','Fotografía','Marketing','Gastronomía','Cuidado de niños','Cuidado de mascotas','Entrenador/a','Peluquería','Educación/Tutorías','Construcción','Mecánico/a','Diseño'];
 const ESPECIALIDADES = ['Trabajos urgentes','Fines de semana','Disponibilidad 24h','Trabajo en altura','Con vehículo propio','Con herramientas','Con materiales','Factura A/B','+5 años experiencia','Trabajo en equipo','Solo/a','Zona CABA','Zona GBA','Todo el país','Trabajo remoto','Lun a Vie'];
-const IDIOMAS = ['🇦🇷 Español','🇺🇸 Inglés','🇧🇷 Portugués','🇫🇷 Francés','🇩🇪 Alemán','🇮🇹 Italiano','🇨🇳 Chino','🇷🇺 Ruso','🌐 Otro'];
-let ocupSelTemp=[], espSelTemp=[], idiomasSelTemp=[];
+const IDIOMAS        = ['🇦🇷 Español','🇺🇸 Inglés','🇧🇷 Portugués','🇫🇷 Francés','🇩🇪 Alemán','🇮🇹 Italiano','🇨🇳 Chino','🇷🇺 Ruso','🌐 Otro'];
+let ocupSelTemp = [], espSelTemp = [], idiomasSelTemp = [];
 
+// ══ INIT ══
 (async () => {
   const { data: { session } } = await db.auth.getSession();
   if (!session) { window.location.replace('login.html'); return; }
-  miUserId = session.user.id;
+  miUserId   = session.user.id;
   if (!perfilId) perfilId = miUserId;
   esMiPerfil = perfilId === miUserId;
+
   await cargarPerfil(session.user);
   await cargarStats();
   await cargarReviews();
   mostrarBotones();
   if (esMiPerfil) activarEdicion();
+  else mostrarHireBar();
 })();
 
+// ══ HIRE BAR ══
+function mostrarHireBar() {
+  document.getElementById('hire-bar').style.display = 'flex';
+}
+
+function irAPublicar() {
+  const primerNombre = perfilNombreCompleto.split(' ')[0] || 'este tasker';
+  const url = `publicar.html?tasker_id=${encodeURIComponent(perfilId)}&tasker_nombre=${encodeURIComponent(primerNombre)}&tasker_foto=${encodeURIComponent(perfilData.foto_url || '')}`;
+  window.location.href = url;
+}
+
+// ══ CARGAR PERFIL ══
 async function cargarPerfil(authUser) {
   try {
     const { data: p } = await db.from('profiles').select('*').eq('id', perfilId).maybeSingle();
     function nombreDesdeEmail(email) {
       if (!email) return null;
-      return email.split('@')[0].replace(/[._\-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+      return email.split('@')[0].replace(/[._\-]/g,' ').replace(/\b\w/g, c => c.toUpperCase());
     }
     if (!p && esMiPerfil) {
-      const nombre = authUser?.user_metadata?.nombre||authUser?.user_metadata?.full_name||nombreDesdeEmail(authUser?.email)||'Usuario';
-      const { data: nuevo } = await db.from('profiles').insert({id:miUserId,nombre,email:authUser?.email}).select().single();
-      perfilData = nuevo||{nombre};
+      const nombre = authUser?.user_metadata?.nombre || authUser?.user_metadata?.full_name || nombreDesdeEmail(authUser?.email) || 'Usuario';
+      const { data: nuevo } = await db.from('profiles').insert({ id: miUserId, nombre, email: authUser?.email }).select().single();
+      perfilData = nuevo || { nombre };
     } else {
       if (p && esMiPerfil && authUser) {
-        const updates={};
-        if (!p.email&&authUser?.email) updates.email=authUser.email;
-        if (!p.nombre||p.nombre==='Usuario') {
-          const mejor=authUser.user_metadata?.full_name||authUser.user_metadata?.nombre||nombreDesdeEmail(authUser?.email);
-          if (mejor&&mejor!=='Usuario') updates.nombre=mejor;
+        const updates = {};
+        if (!p.email && authUser?.email) updates.email = authUser.email;
+        if (!p.nombre || p.nombre === 'Usuario') {
+          const mejor = authUser.user_metadata?.full_name || authUser.user_metadata?.nombre || nombreDesdeEmail(authUser?.email);
+          if (mejor && mejor !== 'Usuario') updates.nombre = mejor;
         }
-        if (Object.keys(updates).length) { await db.from('profiles').update(updates).eq('id',miUserId); perfilData={...p,...updates}; }
-        else perfilData=p;
-      } else perfilData=p||{};
+        if (Object.keys(updates).length) {
+          await db.from('profiles').update(updates).eq('id', miUserId);
+          perfilData = { ...p, ...updates };
+        } else perfilData = p;
+      } else perfilData = p || {};
     }
     renderPerfil(perfilData);
-    if (esMiPerfil&&(!perfilData.nombre||perfilData.nombre==='Usuario')) mostrarBannerNombre();
-  } catch(e) { console.error('Error perfil:',e); }
+    if (esMiPerfil && (!perfilData.nombre || perfilData.nombre === 'Usuario')) mostrarBannerNombre();
+  } catch(e) { console.error('Error perfil:', e); }
 }
 
 function renderPerfil(p) {
   if (!p) return;
-  const nombre = p.nombre||'Usuario';
-  document.title = 'ChambaYa — '+nombre;
+  const nombre = p.nombre || 'Usuario';
+  perfilNombreCompleto = nombre;
+  document.title = 'ChambaYa — ' + nombre;
   document.getElementById('perf-nombre').textContent = nombre;
-  const ocups = p.ocupaciones||(p.ocupacion?[p.ocupacion]:[]);
-  document.getElementById('perf-ocupacion-mini').textContent = ocups.length?ocups.slice(0,2).join(' · '):'—';
-  document.getElementById('perf-zona').textContent = p.zona||'Argentina';
 
-  // Último online
+  const primerNombre = nombre.split(' ')[0];
+  document.getElementById('hire-bar-titulo').textContent = `¿Querés trabajar con ${primerNombre}?`;
+
+  const ocups = p.ocupaciones || (p.ocupacion ? [p.ocupacion] : []);
+  document.getElementById('perf-ocupacion-mini').textContent = ocups.length ? ocups.slice(0,2).join(' · ') : '—';
+  document.getElementById('perf-zona').textContent = p.zona || 'Argentina';
+
+  // Online status
   if (p.updated_at) {
-    const diff=Date.now()-new Date(p.updated_at).getTime();
-    const mins=Math.floor(diff/60000), hrs=Math.floor(mins/60), days=Math.floor(hrs/24);
-    let txt;
-    if (mins<5) txt='En línea ahora';
-    else if (mins<60) txt=`Activo hace ${mins} min`;
-    else if (hrs<24) txt=`Activo hace ${hrs}h`;
-    else if (days<7) txt=`Activo hace ${days} día${days>1?'s':''}`;
-    else txt=`Activo hace ${Math.floor(days/7)} semana${Math.floor(days/7)>1?'s':''}`;
-    document.getElementById('pf-online-txt').textContent=txt;
+    const diff = Date.now() - new Date(p.updated_at).getTime();
+    const mins = Math.floor(diff / 60000), hrs = Math.floor(mins / 60), days = Math.floor(hrs / 24);
+    let txt, esOnline = false;
+    if (mins < 5)       { txt = 'En línea ahora'; esOnline = true; }
+    else if (mins < 60) txt = `Activo hace ${mins} min`;
+    else if (hrs < 24)  txt = `Activo hace ${hrs}h`;
+    else if (days < 7)  txt = `Activo hace ${days} día${days > 1 ? 's' : ''}`;
+    else                txt = `Activo hace ${Math.floor(days/7)} semana${Math.floor(days/7) > 1 ? 's' : ''}`;
+    document.getElementById('pf-online-txt').textContent = txt;
+    if (esOnline) document.getElementById('online-dot').classList.add('verde');
   }
 
-  // Foto
+  // Avatar
   const avEl = document.getElementById('perf-av');
-  if (p.foto_url) { avEl.innerHTML=`<img src="${p.foto_url}?t=${Date.now()}" alt="${escH(nombre)}">`; }
-  else { avEl.textContent=nombre.charAt(0).toUpperCase(); }
+  if (p.foto_url) avEl.innerHTML = `<img src="${p.foto_url}?t=${Date.now()}" alt="${escH(nombre)}">`;
+  else avEl.textContent = nombre.charAt(0).toUpperCase();
 
-  if (p.bio) { document.getElementById('perf-bio-txt').textContent=p.bio; document.getElementById('perf-bio-txt').style.display='block'; document.getElementById('perf-bio-empty').style.display='none'; }
-  renderChipsVista('ocup-chips-vista','ocup-empty',ocups);
-  renderChipsVista('esp-chips-vista','esp-empty',p.especialidades||[]);
-  renderChipsVista('idiomas-chips-vista','idiomas-empty',p.idiomas||[]);
+  // Bio
+  if (p.bio) {
+    document.getElementById('perf-bio-txt').textContent = p.bio;
+    document.getElementById('perf-bio-txt').style.display = 'block';
+    document.getElementById('perf-bio-empty').style.display = 'none';
+  }
+
+  renderChipsVista('ocup-chips-vista', 'ocup-empty', ocups);
+  renderChipsVista('esp-chips-vista',  'esp-empty',  p.especialidades || []);
+  renderChipsVista('idiomas-chips-vista', 'idiomas-empty', p.idiomas || []);
 }
 
-function renderChipsVista(cId,eId,items) {
-  const c=document.getElementById(cId),e=document.getElementById(eId);
-  if(!items?.length){c.innerHTML='';e.style.display='block';return;}
-  e.style.display='none';
-  c.innerHTML=items.map(i=>`<div class="chip sel readonly">${escH(i)}</div>`).join('');
-}
-
+// ══ STATS ══
 async function cargarStats() {
-  try { const{count}=await db.from('tareas').select('*',{count:'exact',head:true}).eq('user_id',perfilId); document.getElementById('stat-tareas').textContent=count||0; } catch(e){}
+  try {
+    const { count } = await db.from('tareas').select('*', { count: 'exact', head: true }).eq('user_id', perfilId);
+    document.getElementById('stat-tareas').textContent = count || 0;
+  } catch(e) {}
 }
 
 // ══ REVIEWS ══
-function starsHtml(rating,size) {
-  return [1,2,3,4,5].map(i=>`<span class="star${i<=rating?' on':''}" style="font-size:${size||'1rem'}">★</span>`).join('');
+function starsHtml(rating, size) {
+  return [1,2,3,4,5].map(i =>
+    `<span class="star${i <= rating ? ' on' : ''}" style="font-size:${size||'1rem'}">★</span>`
+  ).join('');
 }
 
 async function cargarReviews() {
   try {
-    const{data:revs}=await db.from('reviews').select('*').eq('destinatario_id',perfilId).order('created_at',{ascending:false});
-    const lista=document.getElementById('reviews-lista'), empty=document.getElementById('reviews-empty');
-    if (!revs?.length) { empty.style.display='block'; return; }
-    const avg=(revs.reduce((s,r)=>s+r.rating,0)/revs.length).toFixed(1);
-    document.getElementById('stat-rating').textContent=avg;
-    empty.style.display='none';
-    const autorIds=[...new Set(revs.map(r=>r.autor_id))];
-    const{data:auts}=await db.from('profiles').select('id,nombre,foto_url,email').in('id',autorIds);
-    const autMap={};(auts||[]).forEach(a=>autMap[a.id]=a);
+    const { data: revs } = await db.from('reviews').select('*').eq('destinatario_id', perfilId).order('created_at', { ascending: false });
+    const lista = document.getElementById('reviews-lista');
+    const empty = document.getElementById('reviews-empty');
+    if (!revs?.length) { empty.style.display = 'block'; return; }
 
-    lista.innerHTML=`
+    const avg = (revs.reduce((s, r) => s + r.rating, 0) / revs.length).toFixed(1);
+    document.getElementById('stat-rating').textContent  = avg;
+    document.getElementById('stat-reviews').textContent = revs.length;
+    empty.style.display = 'none';
+
+    const autorIds = [...new Set(revs.map(r => r.autor_id))];
+    const { data: auts } = await db.from('profiles').select('id,nombre,foto_url,email').in('id', autorIds);
+    const autMap = {};
+    (auts || []).forEach(a => autMap[a.id] = a);
+
+    lista.innerHTML = `
       <div class="rv-summary">
         <div class="rv-avg">${avg}</div>
         <div class="rv-summary-info">
-          <div class="rv-stars-row">${starsHtml(Math.round(avg),'1.4rem')}</div>
-          <div class="rv-count">${revs.length} reseña${revs.length!==1?'s':''}</div>
+          <div class="rv-stars-row">${starsHtml(Math.round(avg), '1.4rem')}</div>
+          <div class="rv-count">${revs.length} reseña${revs.length !== 1 ? 's' : ''}</div>
         </div>
       </div>`;
 
-    revs.forEach(r=>{
-      const a=autMap[r.autor_id]||{};
-      const aNombre=(a.nombre&&a.nombre!=='Usuario')?a.nombre:(a.email?.split('@')[0]?.replace(/[._\-]/g,' ')?.replace(/\b\w/g,c=>c.toUpperCase())||'Usuario');
-      const aFoto=a.foto_url||null;
-      const fecha=new Date(r.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'});
-      const avHtml=aFoto
-        ?`<a href="perfil.html?id=${r.autor_id}" class="rv-av"><img src="${aFoto}" alt="${escH(aNombre)}"></a>`
-        :`<a href="perfil.html?id=${r.autor_id}" class="rv-av">${aNombre.charAt(0).toUpperCase()}</a>`;
-      lista.innerHTML+=`
+    revs.forEach(r => {
+      const a       = autMap[r.autor_id] || {};
+      const aNombre = (a.nombre && a.nombre !== 'Usuario') ? a.nombre
+                    : (a.email?.split('@')[0]?.replace(/[._\-]/g,' ')?.replace(/\b\w/g, c => c.toUpperCase()) || 'Usuario');
+      const aFoto   = a.foto_url || null;
+      const fecha   = new Date(r.created_at).toLocaleDateString('es-AR', { day:'numeric', month:'short', year:'numeric' });
+      const avHtml  = aFoto
+        ? `<a href="perfil.html?id=${r.autor_id}" class="rv-av"><img src="${aFoto}" alt="${escH(aNombre)}"></a>`
+        : `<a href="perfil.html?id=${r.autor_id}" class="rv-av">${aNombre.charAt(0).toUpperCase()}</a>`;
+      lista.innerHTML += `
         <div class="rv-item">
           <div class="rv-header">${avHtml}
             <div><div class="rv-autor">${escH(aNombre)}</div><div class="rv-fecha">${fecha}</div></div>
           </div>
           <div class="rv-stars">${starsHtml(r.rating)}</div>
-          ${r.comentario?`<div class="rv-coment">${escH(r.comentario)}</div>`:''}
+          ${r.comentario ? `<div class="rv-coment">${escH(r.comentario)}</div>` : ''}
         </div>`;
     });
-  } catch(e){ console.warn('Error reviews:',e); }
+  } catch(e) { console.warn('Error reviews:', e); }
 }
 
+// ══ BOTONES ══
 function mostrarBotones() {
-  const wrap=document.getElementById('perf-botones');
-  if (esMiPerfil) wrap.innerHTML=`<button class="btn-editar-perfil" onclick="editarBio()">✏️ Editar perfil</button>`;
-  else wrap.innerHTML=`<button class="btn-contactar" onclick="showToast('Mensajes disponibles próximamente')">💬 Contactar</button>`;
+  const wrap = document.getElementById('perf-botones');
+  if (esMiPerfil) wrap.innerHTML = `<button class="btn-editar-perfil" onclick="editarBio()">✏️ Editar perfil</button>`;
 }
 
 function activarEdicion() {
-  ['btn-edit-bio','btn-edit-ocup','btn-edit-esp','btn-edit-idiomas'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='block';});
+  ['btn-edit-bio','btn-edit-ocup','btn-edit-esp','btn-edit-idiomas'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'block';
+  });
   document.getElementById('av-wrap').classList.add('editable');
   document.getElementById('perf-nombre').classList.add('editable');
+  document.getElementById('zona-edit-ico').style.display = 'inline';
 }
 
-// ══ AVATAR — fix definitivo: path fijo + upsert:true ══
-function clickAvatar() { if(!esMiPerfil) return; document.getElementById('file-avatar').click(); }
-
+// ══ AVATAR ══
+function clickAvatar() { if (!esMiPerfil) return; document.getElementById('file-avatar').click(); }
 async function onFotoSeleccionada(input) {
-  const file=input.files[0];
+  const file = input.files[0];
   if (!file) return;
-  input.value=''; // limpiar YA para permitir re-selección infinita
-  if (file.size>2*1024*1024) { showToast('La imagen debe ser menor a 2MB'); return; }
+  input.value = '';
+  if (file.size > 2 * 1024 * 1024) { showToast('La imagen debe ser menor a 2MB'); return; }
   showToast('Subiendo foto...');
   try {
-    const ext=file.name.split('.').pop().toLowerCase();
-    // Path FIJO por usuario — upsert:true sobreescribe siempre sin necesitar DELETE
-    const path=`avatars/${miUserId}.${ext}`;
-    const{error:upErr}=await db.storage.from('Fotos').upload(path,file,{contentType:file.type,upsert:true});
+    const ext  = file.name.split('.').pop().toLowerCase();
+    const path = `avatars/${miUserId}.${ext}`;
+    const { error: upErr } = await db.storage.from('Fotos').upload(path, file, { contentType: file.type, upsert: true });
     if (upErr) throw upErr;
-    const{data:urlData}=db.storage.from('Fotos').getPublicUrl(path);
-    const url=urlData.publicUrl;
-    await db.from('profiles').update({foto_url:url}).eq('id',miUserId);
-    // Cache-bust con timestamp para forzar recarga de imagen en browser
-    document.getElementById('perf-av').innerHTML=`<img src="${url}?t=${Date.now()}" alt="Foto">`;
-    perfilData.foto_url=url;
+    const { data: urlData } = db.storage.from('Fotos').getPublicUrl(path);
+    const url = urlData.publicUrl;
+    await db.from('profiles').update({ foto_url: url }).eq('id', miUserId);
+    document.getElementById('perf-av').innerHTML = `<img src="${url}?t=${Date.now()}" alt="Foto">`;
+    perfilData.foto_url = url;
     showToast('✅ Foto actualizada');
-  } catch(e) { console.error('Error foto:',e); showToast('Error: '+e.message); }
+  } catch(e) { showToast('Error: ' + e.message); }
 }
 
 // ══ NOMBRE ══
 function editarNombre() {
-  if(!esMiPerfil) return;
-  document.getElementById('perf-nombre').style.display='none';
-  const inp=document.getElementById('nombre-input');
-  inp.value=perfilData.nombre||''; inp.style.display='block';
-  document.getElementById('nombre-btns').style.display='flex';
+  if (!esMiPerfil) return;
+  document.getElementById('perf-nombre').style.display = 'none';
+  const inp = document.getElementById('nombre-input');
+  inp.value = perfilData.nombre || ''; inp.style.display = 'block';
+  document.getElementById('nombre-btns').style.display = 'flex';
   inp.focus(); inp.select();
 }
-function cancelarNombre() { document.getElementById('perf-nombre').style.display='block'; document.getElementById('nombre-input').style.display='none'; document.getElementById('nombre-btns').style.display='none'; }
+function cancelarNombre() {
+  document.getElementById('perf-nombre').style.display = 'block';
+  document.getElementById('nombre-input').style.display = 'none';
+  document.getElementById('nombre-btns').style.display = 'none';
+}
 async function guardarNombre() {
-  const val=document.getElementById('nombre-input').value.trim();
-  if(!val||val.length<2){showToast('El nombre debe tener al menos 2 caracteres');return;}
-  await guardarCampo({nombre:val});
-  perfilData.nombre=val; document.getElementById('perf-nombre').textContent=val;
-  document.getElementById('banner-nombre').style.display='none'; cancelarNombre();
+  const val = document.getElementById('nombre-input').value.trim();
+  if (!val || val.length < 2) { showToast('El nombre debe tener al menos 2 caracteres'); return; }
+  await guardarCampo({ nombre: val });
+  perfilData.nombre = val; perfilNombreCompleto = val;
+  document.getElementById('perf-nombre').textContent = val;
+  document.getElementById('hire-bar-titulo').textContent = `¿Querés trabajar con ${val.split(' ')[0]}?`;
+  document.getElementById('banner-nombre').style.display = 'none';
+  cancelarNombre();
 }
 
 // ══ BIO ══
-function editarBio() { document.getElementById('bio-vista').style.display='none'; document.getElementById('bio-edit').style.display='block'; document.getElementById('btn-edit-bio').style.display='none'; const txt=perfilData.bio||''; document.getElementById('bio-input').value=txt; document.getElementById('bio-count').textContent=txt.length; document.getElementById('bio-input').oninput=function(){document.getElementById('bio-count').textContent=this.value.length;}; }
-function cancelarBio() { document.getElementById('bio-vista').style.display='block'; document.getElementById('bio-edit').style.display='none'; document.getElementById('btn-edit-bio').style.display='block'; }
+function editarBio() {
+  document.getElementById('bio-vista').style.display = 'none';
+  document.getElementById('bio-edit').style.display = 'block';
+  document.getElementById('btn-edit-bio').style.display = 'none';
+  const txt = perfilData.bio || '';
+  document.getElementById('bio-input').value = txt;
+  document.getElementById('bio-count').textContent = txt.length;
+  document.getElementById('bio-input').oninput = function() { document.getElementById('bio-count').textContent = this.value.length; };
+}
+function cancelarBio() {
+  document.getElementById('bio-vista').style.display = 'block';
+  document.getElementById('bio-edit').style.display = 'none';
+  document.getElementById('btn-edit-bio').style.display = 'block';
+}
 async function guardarBio() {
-  const bio=document.getElementById('bio-input').value.trim(); await guardarCampo({bio}); perfilData.bio=bio;
-  if(bio){document.getElementById('perf-bio-txt').textContent=bio;document.getElementById('perf-bio-txt').style.display='block';document.getElementById('perf-bio-empty').style.display='none';}
-  else{document.getElementById('perf-bio-txt').style.display='none';document.getElementById('perf-bio-empty').style.display='block';}
+  const bio = document.getElementById('bio-input').value.trim();
+  await guardarCampo({ bio }); perfilData.bio = bio;
+  if (bio) {
+    document.getElementById('perf-bio-txt').textContent = bio;
+    document.getElementById('perf-bio-txt').style.display = 'block';
+    document.getElementById('perf-bio-empty').style.display = 'none';
+  } else {
+    document.getElementById('perf-bio-txt').style.display = 'none';
+    document.getElementById('perf-bio-empty').style.display = 'block';
+  }
   cancelarBio();
 }
 
+// ══ ZONA ══
+function editarZona() {
+  if (!esMiPerfil) return;
+  document.getElementById('zona-vista-row').style.display = 'none';
+  document.getElementById('zona-edit-wrap').style.display = 'block';
+  const inp = document.getElementById('zona-input');
+  inp.value = perfilData.zona || ''; inp.focus();
+}
+function cancelarZona() {
+  document.getElementById('zona-vista-row').style.display = 'flex';
+  document.getElementById('zona-edit-wrap').style.display = 'none';
+}
+async function guardarZona() {
+  const val = document.getElementById('zona-input').value.trim();
+  await guardarCampo({ zona: val || null }); perfilData.zona = val;
+  document.getElementById('perf-zona').textContent = val || 'Argentina';
+  cancelarZona();
+}
+
 // ══ OCUPACIONES ══
-function editarOcup(){document.getElementById('ocup-vista').style.display='none';document.getElementById('ocup-edit').style.display='block';document.getElementById('btn-edit-ocup').style.display='none';ocupSelTemp=[...(perfilData.ocupaciones||(perfilData.ocupacion?[perfilData.ocupacion]:[]))];renderChipsEdit('ocup-chips-edit',OCUPACIONES,ocupSelTemp,toggleOcup);}
-function toggleOcup(val){ocupSelTemp=ocupSelTemp.includes(val)?ocupSelTemp.filter(v=>v!==val):[...ocupSelTemp,val];actualizarChipsEdit('ocup-chips-edit',OCUPACIONES,ocupSelTemp,toggleOcup,ocupSelTemp.filter(v=>!OCUPACIONES.includes(v)));}
-function agregarCustomOcup(){const inp=document.getElementById('ocup-custom-input'),val=inp.value.trim();if(!val)return;if(val.length>20){showToast('Máximo 20 caracteres');return;}if(ocupSelTemp.includes(val)){showToast('Ya está');return;}ocupSelTemp.push(val);inp.value='';actualizarChipsEdit('ocup-chips-edit',OCUPACIONES,ocupSelTemp,toggleOcup,ocupSelTemp.filter(v=>!OCUPACIONES.includes(v)));}
-function cancelarOcup(){document.getElementById('ocup-vista').style.display='block';document.getElementById('ocup-edit').style.display='none';document.getElementById('btn-edit-ocup').style.display='block';}
-async function guardarOcup(){await guardarCampo({ocupaciones:ocupSelTemp,ocupacion:ocupSelTemp[0]||null});perfilData.ocupaciones=ocupSelTemp;perfilData.ocupacion=ocupSelTemp[0]||null;document.getElementById('perf-ocupacion-mini').textContent=ocupSelTemp.length?ocupSelTemp.slice(0,2).join(' · '):'—';renderChipsVista('ocup-chips-vista','ocup-empty',ocupSelTemp);cancelarOcup();}
+function editarOcup() { document.getElementById('ocup-vista').style.display='none'; document.getElementById('ocup-edit').style.display='block'; document.getElementById('btn-edit-ocup').style.display='none'; ocupSelTemp=[...(perfilData.ocupaciones||(perfilData.ocupacion?[perfilData.ocupacion]:[])) ]; renderChipsEdit('ocup-chips-edit',OCUPACIONES,ocupSelTemp,toggleOcup); }
+function toggleOcup(val) { ocupSelTemp=ocupSelTemp.includes(val)?ocupSelTemp.filter(v=>v!==val):[...ocupSelTemp,val]; actualizarChipsEdit('ocup-chips-edit',OCUPACIONES,ocupSelTemp,toggleOcup,ocupSelTemp.filter(v=>!OCUPACIONES.includes(v))); }
+function agregarCustomOcup() { const inp=document.getElementById('ocup-custom-input'),val=inp.value.trim(); if(!val)return; if(val.length>20){showToast('Máximo 20 caracteres');return;} if(ocupSelTemp.includes(val)){showToast('Ya está');return;} ocupSelTemp.push(val);inp.value=''; actualizarChipsEdit('ocup-chips-edit',OCUPACIONES,ocupSelTemp,toggleOcup,ocupSelTemp.filter(v=>!OCUPACIONES.includes(v))); }
+function cancelarOcup() { document.getElementById('ocup-vista').style.display='block'; document.getElementById('ocup-edit').style.display='none'; document.getElementById('btn-edit-ocup').style.display='block'; }
+async function guardarOcup() { await guardarCampo({ocupaciones:ocupSelTemp,ocupacion:ocupSelTemp[0]||null}); perfilData.ocupaciones=ocupSelTemp; perfilData.ocupacion=ocupSelTemp[0]||null; document.getElementById('perf-ocupacion-mini').textContent=ocupSelTemp.length?ocupSelTemp.slice(0,2).join(' · '):'—'; renderChipsVista('ocup-chips-vista','ocup-empty',ocupSelTemp); cancelarOcup(); }
 
 // ══ ESPECIALIDADES ══
-function editarEsp(){document.getElementById('esp-vista').style.display='none';document.getElementById('esp-edit').style.display='block';document.getElementById('btn-edit-esp').style.display='none';espSelTemp=[...(perfilData.especialidades||[])];renderChipsEdit('esp-chips-edit',ESPECIALIDADES,espSelTemp,toggleEsp);}
-function toggleEsp(val){espSelTemp=espSelTemp.includes(val)?espSelTemp.filter(v=>v!==val):[...espSelTemp,val];actualizarChipsEdit('esp-chips-edit',ESPECIALIDADES,espSelTemp,toggleEsp,espSelTemp.filter(v=>!ESPECIALIDADES.includes(v)));}
-function agregarCustomEsp(){const inp=document.getElementById('esp-custom-input'),val=inp.value.trim();if(!val)return;if(val.length>20){showToast('Máximo 20 caracteres');return;}if(espSelTemp.includes(val)){showToast('Ya está');return;}espSelTemp.push(val);inp.value='';actualizarChipsEdit('esp-chips-edit',ESPECIALIDADES,espSelTemp,toggleEsp,espSelTemp.filter(v=>!ESPECIALIDADES.includes(v)));}
-function cancelarEsp(){document.getElementById('esp-vista').style.display='block';document.getElementById('esp-edit').style.display='none';document.getElementById('btn-edit-esp').style.display='block';}
-async function guardarEsp(){await guardarCampo({especialidades:espSelTemp});perfilData.especialidades=espSelTemp;renderChipsVista('esp-chips-vista','esp-empty',espSelTemp);cancelarEsp();}
+function editarEsp() { document.getElementById('esp-vista').style.display='none'; document.getElementById('esp-edit').style.display='block'; document.getElementById('btn-edit-esp').style.display='none'; espSelTemp=[...(perfilData.especialidades||[])]; renderChipsEdit('esp-chips-edit',ESPECIALIDADES,espSelTemp,toggleEsp); }
+function toggleEsp(val) { espSelTemp=espSelTemp.includes(val)?espSelTemp.filter(v=>v!==val):[...espSelTemp,val]; actualizarChipsEdit('esp-chips-edit',ESPECIALIDADES,espSelTemp,toggleEsp,espSelTemp.filter(v=>!ESPECIALIDADES.includes(v))); }
+function agregarCustomEsp() { const inp=document.getElementById('esp-custom-input'),val=inp.value.trim(); if(!val)return; if(val.length>20){showToast('Máximo 20 caracteres');return;} if(espSelTemp.includes(val)){showToast('Ya está');return;} espSelTemp.push(val);inp.value=''; actualizarChipsEdit('esp-chips-edit',ESPECIALIDADES,espSelTemp,toggleEsp,espSelTemp.filter(v=>!ESPECIALIDADES.includes(v))); }
+function cancelarEsp() { document.getElementById('esp-vista').style.display='block'; document.getElementById('esp-edit').style.display='none'; document.getElementById('btn-edit-esp').style.display='block'; }
+async function guardarEsp() { await guardarCampo({especialidades:espSelTemp}); perfilData.especialidades=espSelTemp; renderChipsVista('esp-chips-vista','esp-empty',espSelTemp); cancelarEsp(); }
 
 // ══ IDIOMAS ══
-function editarIdiomas(){document.getElementById('idiomas-vista').style.display='none';document.getElementById('idiomas-edit').style.display='block';document.getElementById('btn-edit-idiomas').style.display='none';idiomasSelTemp=[...(perfilData.idiomas||[])];renderChipsEdit('idiomas-chips-edit',IDIOMAS,idiomasSelTemp,toggleIdioma);}
-function toggleIdioma(val){idiomasSelTemp=idiomasSelTemp.includes(val)?idiomasSelTemp.filter(v=>v!==val):[...idiomasSelTemp,val];actualizarChipsEdit('idiomas-chips-edit',IDIOMAS,idiomasSelTemp,toggleIdioma);}
-function cancelarIdiomas(){document.getElementById('idiomas-vista').style.display='block';document.getElementById('idiomas-edit').style.display='none';document.getElementById('btn-edit-idiomas').style.display='block';}
-async function guardarIdiomas(){await guardarCampo({idiomas:idiomasSelTemp});perfilData.idiomas=idiomasSelTemp;renderChipsVista('idiomas-chips-vista','idiomas-empty',idiomasSelTemp);cancelarIdiomas();}
+function editarIdiomas() { document.getElementById('idiomas-vista').style.display='none'; document.getElementById('idiomas-edit').style.display='block'; document.getElementById('btn-edit-idiomas').style.display='none'; idiomasSelTemp=[...(perfilData.idiomas||[])]; renderChipsEdit('idiomas-chips-edit',IDIOMAS,idiomasSelTemp,toggleIdioma); }
+function toggleIdioma(val) { idiomasSelTemp=idiomasSelTemp.includes(val)?idiomasSelTemp.filter(v=>v!==val):[...idiomasSelTemp,val]; actualizarChipsEdit('idiomas-chips-edit',IDIOMAS,idiomasSelTemp,toggleIdioma); }
+function cancelarIdiomas() { document.getElementById('idiomas-vista').style.display='block'; document.getElementById('idiomas-edit').style.display='none'; document.getElementById('btn-edit-idiomas').style.display='block'; }
+async function guardarIdiomas() { await guardarCampo({idiomas:idiomasSelTemp}); perfilData.idiomas=idiomasSelTemp; renderChipsVista('idiomas-chips-vista','idiomas-empty',idiomasSelTemp); cancelarIdiomas(); }
 
 // ══ CHIPS HELPERS ══
 function renderChipsEdit(cId,opts,sel,fn,custom){const c=document.getElementById(cId);if(!c)return;const all=[...opts,...(custom||[]).filter(x=>!opts.includes(x))];c.innerHTML=all.map(op=>`<div class="chip${sel.includes(op)?' sel':''}" onclick="${fn.name}(${JSON.stringify(op)})">${escH(op)}</div>`).join('');}
 function actualizarChipsEdit(cId,opts,sel,fn,custom){renderChipsEdit(cId,opts,sel,fn,custom);}
+function renderChipsVista(cId,eId,items){const c=document.getElementById(cId),e=document.getElementById(eId);if(!items?.length){c.innerHTML='';e.style.display='block';return;}e.style.display='none';c.innerHTML=items.map(i=>`<div class="chip sel readonly">${escH(i)}</div>`).join('');}
 
-function mostrarBannerNombre(){const b=document.getElementById('banner-nombre');if(b)b.style.display='block';}
-
-async function guardarCampo(campos){
-  try{const{error}=await db.from('profiles').upsert({id:miUserId,...campos,updated_at:new Date().toISOString()});if(error)throw error;showToast('✅ Guardado');}
-  catch(e){showToast('❌ Error: '+e.message);}
+// ══ GUARDAR ══
+async function guardarCampo(campos) {
+  try {
+    const { error } = await db.from('profiles').upsert({ id: miUserId, ...campos, updated_at: new Date().toISOString() });
+    if (error) throw error;
+    showToast('✅ Guardado');
+  } catch(e) { showToast('❌ Error: ' + e.message); }
 }
 
-function escH(t){if(!t)return'';const d=document.createElement('div');d.textContent=String(t);return d.innerHTML;}
-document.addEventListener('DOMContentLoaded',()=>{
-  const inp=document.getElementById('nombre-input');
-  if(inp)inp.addEventListener('keydown',e=>{if(e.key==='Enter')guardarNombre();if(e.key==='Escape')cancelarNombre();});
+function mostrarBannerNombre() { const b = document.getElementById('banner-nombre'); if (b) b.style.display = 'block'; }
+function escH(t) { if(!t)return''; const d=document.createElement('div'); d.textContent=String(t); return d.innerHTML; }
+
+document.addEventListener('DOMContentLoaded', () => {
+  const inp = document.getElementById('nombre-input');
+  if (inp) inp.addEventListener('keydown', e => { if(e.key==='Enter') guardarNombre(); if(e.key==='Escape') cancelarNombre(); });
+  const zinp = document.getElementById('zona-input');
+  if (zinp) zinp.addEventListener('keydown', e => { if(e.key==='Enter') guardarZona(); if(e.key==='Escape') cancelarZona(); });
 });
 </script>
 </body>
