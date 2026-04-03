@@ -17,7 +17,7 @@
   </div>
   <div class="nav-right">
     <a href="ayuda.html" class="nav-right-link">Ayuda</a>
-    <a href="notificaciones.html" class="nav-right-link">Notificaciones</a>
+    <a href="notificaciones.html" class="nav-right-link" id="nav-notif-link">Notificaciones</a>
     <a href="mensajes.html" class="nav-right-link">Mensajes</a>
     <div class="nav-av-wrap">
       <div class="nav-av" id="nav-av" onclick="toggleDropdown(event)"><span class="nav-av-inicial" id="nav-av-inicial">?</span></div>
@@ -33,72 +33,66 @@
   </div>
 </nav>
 
-<div id="banner-nombre" style="display:none;max-width:900px;margin:20px auto 0;padding:0 32px">
+<div id="banner-nombre" style="display:none;max-width:1060px;margin:20px auto 0;padding:0 32px">
   <div class="banner-nombre">
     <div class="banner-nombre-ico">👤</div>
     <div class="banner-nombre-txt">
       <div class="banner-nombre-titulo">¡Completá tu nombre!</div>
-      <div class="banner-nombre-sub">Tu nombre aparece en todas tus tareas y comentarios. Hacé clic en tu nombre arriba para editarlo.</div>
+      <div class="banner-nombre-sub">Tu nombre aparece en todas tus tareas y comentarios.</div>
     </div>
     <button class="banner-nombre-btn" onclick="editarNombre();document.getElementById('banner-nombre').style.display='none'">Editar nombre</button>
   </div>
 </div>
 
-<div class="perfil-wrap">
+<div class="pf-wrap">
 
-  <!-- SIDEBAR -->
-  <div class="perfil-sidebar">
-    <div class="perfil-card">
+  <!-- COLUMNA IZQUIERDA -->
+  <div class="pf-left">
 
-      <!-- AVATAR -->
-      <div class="perf-av-wrap" id="av-wrap" onclick="clickAvatar()">
-        <div class="perf-av" id="perf-av">?</div>
-        <div class="perf-av-overlay">
-          <div class="perf-av-overlay-txt">Cambiar<br>foto</div>
-        </div>
+    <!-- Card principal del perfil -->
+    <div class="pf-card">
+      <div class="pf-av-wrap" id="av-wrap" onclick="clickAvatar()">
+        <div class="pf-av" id="perf-av">?</div>
+        <div class="pf-av-overlay"><span>Cambiar foto</span></div>
       </div>
       <input type="file" id="file-avatar" accept="image/jpeg,image/png,image/webp" onchange="onFotoSeleccionada(this)" style="display:none">
 
-      <!-- NOMBRE -->
-      <div class="perf-nombre-wrap" id="nombre-wrap">
-        <div class="perf-nombre" id="perf-nombre" onclick="editarNombre()">Cargando...</div>
-        <input type="text" class="perf-nombre-input" id="nombre-input" style="display:none" maxlength="40" placeholder="Tu nombre completo">
-        <div class="perf-nombre-edit-btns" id="nombre-btns" style="display:none">
+      <div class="pf-nombre-wrap" id="nombre-wrap">
+        <div class="pf-nombre" id="perf-nombre" onclick="editarNombre()">Cargando...</div>
+        <input type="text" class="pf-nombre-input" id="nombre-input" style="display:none" maxlength="40" placeholder="Tu nombre completo">
+        <div class="pf-nombre-btns" id="nombre-btns" style="display:none">
           <button class="btn-nombre-ok" onclick="guardarNombre()">✓ Guardar</button>
           <button class="btn-nombre-cancel" onclick="cancelarNombre()">✕</button>
         </div>
       </div>
 
-      <div class="perf-ocupacion-mini" id="perf-ocupacion-mini">Miembro de ChambaYa</div>
-      <div class="perf-zona" id="perf-zona">📍 Argentina</div>
+      <div class="pf-meta">
+        <div class="pf-meta-row"><span class="pf-meta-ico">🟢</span><span id="pf-online-txt">Miembro de ChambaYa</span></div>
+        <div class="pf-meta-row"><span class="pf-meta-ico">📍</span><span id="perf-zona">Argentina</span></div>
+        <div class="pf-meta-row"><span class="pf-meta-ico">💼</span><span id="perf-ocupacion-mini">—</span></div>
+      </div>
 
-      <div class="perf-stats">
-        <div class="perf-stat"><div class="perf-stat-num" id="stat-tareas">0</div><div class="perf-stat-lbl">Tareas</div></div>
-        <div class="perf-stat"><div class="perf-stat-num" id="stat-rating">—</div><div class="perf-stat-lbl">Rating</div></div>
+      <div class="pf-stats">
+        <div class="pf-stat"><div class="pf-stat-num" id="stat-tareas">0</div><div class="pf-stat-lbl">Tareas</div></div>
+        <div class="pf-stat"><div class="pf-stat-num" id="stat-rating">—</div><div class="pf-stat-lbl">Rating</div></div>
       </div>
 
       <div id="perf-botones"></div>
     </div>
-  </div>
 
-  <!-- MAIN -->
-  <div class="perfil-main">
-
-    <!-- SOBRE MÍ -->
-    <div class="sec-card">
-      <div class="sec-header">
-        <div class="sec-titulo">Sobre mí</div>
+    <!-- Sobre mí -->
+    <div class="pf-card">
+      <div class="pf-sec-header">
+        <div class="pf-sec-titulo">Sobre mí</div>
         <button class="btn-sec-edit" id="btn-edit-bio" style="display:none" onclick="editarBio()">✏️ Editar</button>
       </div>
       <div id="bio-vista">
-        <div class="perf-bio" id="perf-bio-txt" style="display:none"></div>
-        <div class="perf-bio-empty" id="perf-bio-empty">Contá brevemente quién sos y qué podés hacer.</div>
+        <div class="pf-bio" id="perf-bio-txt" style="display:none"></div>
+        <div class="pf-bio-empty" id="perf-bio-empty">Contá brevemente quién sos y qué podés hacer.</div>
       </div>
       <div id="bio-edit" style="display:none">
-        <textarea class="bio-textarea" id="bio-input" placeholder="Ej: Plomero con 10 años de experiencia en CABA. Trabajo rápido y prolijo..." maxlength="400"></textarea>
-        <div style="font-size:.72rem;color:var(--suave);font-weight:700;text-align:right;margin-top:4px">
-          <span id="bio-count">0</span>/400
-        </div>
+        <textarea class="bio-textarea" id="bio-input" placeholder="Ej: Plomero con 10 años de experiencia..." maxlength="400"></textarea>
+        <div style="font-size:.72rem;color:var(--suave);font-weight:700;text-align:right;margin-top:4px"><span id="bio-count">0</span>/400</div>
         <div class="edit-btns">
           <button class="btn-save" onclick="guardarBio()">💾 Guardar</button>
           <button class="btn-cancel-edit" onclick="cancelarBio()">Cancelar</button>
@@ -106,16 +100,13 @@
       </div>
     </div>
 
-    <!-- A QUÉ ME DEDICO (multi-select, sin íconos) -->
-    <div class="sec-card">
-      <div class="sec-header">
-        <div class="sec-titulo">¿A qué me dedico?</div>
+    <!-- A qué me dedico -->
+    <div class="pf-card">
+      <div class="pf-sec-header">
+        <div class="pf-sec-titulo">¿A qué me dedico?</div>
         <button class="btn-sec-edit" id="btn-edit-ocup" style="display:none" onclick="editarOcup()">✏️ Editar</button>
       </div>
-      <div id="ocup-vista">
-        <div class="chips-wrap" id="ocup-chips-vista"></div>
-        <div class="perf-bio-empty" id="ocup-empty">No especificado.</div>
-      </div>
+      <div id="ocup-vista"><div class="chips-wrap" id="ocup-chips-vista"></div><div class="pf-bio-empty" id="ocup-empty">No especificado.</div></div>
       <div id="ocup-edit" style="display:none">
         <div class="chips-wrap" id="ocup-chips-edit"></div>
         <div class="agregar-custom">
@@ -130,16 +121,13 @@
       </div>
     </div>
 
-    <!-- ESPECIALIDADES -->
-    <div class="sec-card">
-      <div class="sec-header">
-        <div class="sec-titulo">Especialidades</div>
+    <!-- Especialidades -->
+    <div class="pf-card">
+      <div class="pf-sec-header">
+        <div class="pf-sec-titulo">Especialidades</div>
         <button class="btn-sec-edit" id="btn-edit-esp" style="display:none" onclick="editarEsp()">✏️ Editar</button>
       </div>
-      <div id="esp-vista">
-        <div class="chips-wrap" id="esp-chips-vista"></div>
-        <div class="perf-bio-empty" id="esp-empty">Sin especialidades.</div>
-      </div>
+      <div id="esp-vista"><div class="chips-wrap" id="esp-chips-vista"></div><div class="pf-bio-empty" id="esp-empty">Sin especialidades.</div></div>
       <div id="esp-edit" style="display:none">
         <div class="chips-wrap" id="esp-chips-edit"></div>
         <div class="agregar-custom">
@@ -154,16 +142,13 @@
       </div>
     </div>
 
-    <!-- IDIOMAS -->
-    <div class="sec-card">
-      <div class="sec-header">
-        <div class="sec-titulo">Idiomas</div>
+    <!-- Idiomas -->
+    <div class="pf-card">
+      <div class="pf-sec-header">
+        <div class="pf-sec-titulo">Idiomas</div>
         <button class="btn-sec-edit" id="btn-edit-idiomas" style="display:none" onclick="editarIdiomas()">✏️ Editar</button>
       </div>
-      <div id="idiomas-vista">
-        <div class="chips-wrap" id="idiomas-chips-vista"></div>
-        <div class="perf-bio-empty" id="idiomas-empty">Sin idiomas especificados.</div>
-      </div>
+      <div id="idiomas-vista"><div class="chips-wrap" id="idiomas-chips-vista"></div><div class="pf-bio-empty" id="idiomas-empty">Sin idiomas especificados.</div></div>
       <div id="idiomas-edit" style="display:none">
         <div class="chips-wrap" id="idiomas-chips-edit"></div>
         <div class="edit-btns">
@@ -173,61 +158,46 @@
       </div>
     </div>
 
-    <!-- REVIEWS -->
-    <div class="sec-card">
-      <div class="sec-header"><div class="sec-titulo">Reseñas</div></div>
+  </div>
+
+  <!-- COLUMNA DERECHA — REVIEWS -->
+  <div class="pf-right">
+    <div class="pf-card">
+      <div class="pf-sec-header">
+        <div class="pf-sec-titulo">Reseñas</div>
+      </div>
       <div id="reviews-empty" class="reviews-empty">
-        <div style="font-size:1.6rem;margin-bottom:10px">⭐</div>
-        <div style="font-size:.9rem;font-weight:800;color:var(--texto);margin-bottom:5px">Sin reseñas todavía</div>
-        <div style="font-size:.8rem;font-weight:700;color:var(--suave)">Las reseñas aparecen después de completar tareas.</div>
+        <div style="font-size:2rem;margin-bottom:10px">⭐</div>
+        <div style="font-size:.9rem;font-weight:800;color:var(--texto);margin-bottom:4px">Sin reseñas todavía</div>
+        <div style="font-size:.82rem;font-weight:700;color:var(--suave)">Las reseñas aparecen después de completar tareas.</div>
       </div>
       <div id="reviews-lista"></div>
     </div>
-
   </div>
+
 </div>
 
 <div id="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../navbar.js"></script>
 <script>
-// db desde navbar.js
 const params = new URLSearchParams(window.location.search);
 let perfilId = params.get('id');
 let miUserId = null;
 let esMiPerfil = false;
 let perfilData = {};
 
-// ══ DATOS ══
-const OCUPACIONES = [
-  'Plomero/a','Electricista','Pintor/a','Limpieza','Jardinero/a','Carpintero/a',
-  'Mudanzas','Tecnología','Delivery/Mandados','Fotografía','Marketing','Gastronomía',
-  'Cuidado de niños','Cuidado de mascotas','Entrenador/a','Peluquería',
-  'Educación/Tutorías','Construcción','Mecánico/a','Diseño',
-];
-
-const ESPECIALIDADES = [
-  'Trabajos urgentes','Fines de semana','Disponibilidad 24h','Trabajo en altura',
-  'Con vehículo propio','Con herramientas','Con materiales','Factura A/B',
-  '+5 años experiencia','Trabajo en equipo','Solo/a','Zona CABA','Zona GBA',
-  'Todo el país','Trabajo remoto','Lun a Vie',
-];
-
+const OCUPACIONES = ['Plomero/a','Electricista','Pintor/a','Limpieza','Jardinero/a','Carpintero/a','Mudanzas','Tecnología','Delivery/Mandados','Fotografía','Marketing','Gastronomía','Cuidado de niños','Cuidado de mascotas','Entrenador/a','Peluquería','Educación/Tutorías','Construcción','Mecánico/a','Diseño'];
+const ESPECIALIDADES = ['Trabajos urgentes','Fines de semana','Disponibilidad 24h','Trabajo en altura','Con vehículo propio','Con herramientas','Con materiales','Factura A/B','+5 años experiencia','Trabajo en equipo','Solo/a','Zona CABA','Zona GBA','Todo el país','Trabajo remoto','Lun a Vie'];
 const IDIOMAS = ['🇦🇷 Español','🇺🇸 Inglés','🇧🇷 Portugués','🇫🇷 Francés','🇩🇪 Alemán','🇮🇹 Italiano','🇨🇳 Chino','🇷🇺 Ruso','🌐 Otro'];
+let ocupSelTemp=[], espSelTemp=[], idiomasSelTemp=[];
 
-// Temporales de edición
-let ocupSelTemp = [];
-let espSelTemp = [];
-let idiomasSelTemp = [];
-
-// ══ INIT ══
 (async () => {
   const { data: { session } } = await db.auth.getSession();
   if (!session) { window.location.replace('login.html'); return; }
   miUserId = session.user.id;
   if (!perfilId) perfilId = miUserId;
   esMiPerfil = perfilId === miUserId;
-
   await cargarPerfil(session.user);
   await cargarStats();
   await cargarReviews();
@@ -235,444 +205,224 @@ let idiomasSelTemp = [];
   if (esMiPerfil) activarEdicion();
 })();
 
-// ══ CARGAR PERFIL ══
 async function cargarPerfil(authUser) {
   try {
     const { data: p } = await db.from('profiles').select('*').eq('id', perfilId).maybeSingle();
-
     function nombreDesdeEmail(email) {
       if (!email) return null;
-      const local = email.split('@')[0];
-      return local.replace(/[._\-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      return email.split('@')[0].replace(/[._\-]/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
     }
-
     if (!p && esMiPerfil) {
-      const nombre = authUser?.user_metadata?.nombre
-        || authUser?.user_metadata?.full_name
-        || nombreDesdeEmail(authUser?.email)
-        || 'Usuario';
-      const zona = authUser?.user_metadata?.zona || null;
-      const { data: nuevo } = await db.from('profiles').insert({
-        id: miUserId, nombre, email: authUser?.email, zona
-      }).select().single();
-      perfilData = nuevo || { nombre };
+      const nombre = authUser?.user_metadata?.nombre||authUser?.user_metadata?.full_name||nombreDesdeEmail(authUser?.email)||'Usuario';
+      const { data: nuevo } = await db.from('profiles').insert({id:miUserId,nombre,email:authUser?.email}).select().single();
+      perfilData = nuevo||{nombre};
     } else {
       if (p && esMiPerfil && authUser) {
-        const googleNombre = authUser.user_metadata?.full_name || authUser.user_metadata?.nombre;
-        const updates = {};
-        if (!p.email && authUser?.email) updates.email = authUser.email;
-        const nombreEsDefault = !p.nombre || p.nombre === 'Usuario' || p.nombre === authUser?.email?.split('@')[0];
-        if (nombreEsDefault) {
-          const nombreMejor = googleNombre || nombreDesdeEmail(authUser?.email);
-          if (nombreMejor && nombreMejor !== 'Usuario') updates.nombre = nombreMejor;
+        const updates={};
+        if (!p.email&&authUser?.email) updates.email=authUser.email;
+        if (!p.nombre||p.nombre==='Usuario') {
+          const mejor=authUser.user_metadata?.full_name||authUser.user_metadata?.nombre||nombreDesdeEmail(authUser?.email);
+          if (mejor&&mejor!=='Usuario') updates.nombre=mejor;
         }
-        if (Object.keys(updates).length > 0) {
-          await db.from('profiles').update(updates).eq('id', miUserId);
-          perfilData = { ...p, ...updates };
-        } else {
-          perfilData = p;
-        }
-      } else {
-        perfilData = p || {};
-      }
+        if (Object.keys(updates).length) { await db.from('profiles').update(updates).eq('id',miUserId); perfilData={...p,...updates}; }
+        else perfilData=p;
+      } else perfilData=p||{};
     }
-
-    // Guardar path de foto para poder borrarla al cambiar
-    perfilData._foto_path = perfilData.foto_path || null;
-
     renderPerfil(perfilData);
-
-    if (esMiPerfil) {
-      const nombreFinal = perfilData.nombre || '';
-      if (!nombreFinal || nombreFinal === 'Usuario') mostrarBannerNombre();
-    }
-
-  } catch(e) { console.error('Error perfil:', e); }
+    if (esMiPerfil&&(!perfilData.nombre||perfilData.nombre==='Usuario')) mostrarBannerNombre();
+  } catch(e) { console.error('Error perfil:',e); }
 }
 
-// ══ RENDER ══
 function renderPerfil(p) {
   if (!p) return;
-  const nombre = p.nombre || 'Usuario';
-  document.title = 'ChambaYa — ' + nombre;
+  const nombre = p.nombre||'Usuario';
+  document.title = 'ChambaYa — '+nombre;
   document.getElementById('perf-nombre').textContent = nombre;
-  const ocups = p.ocupaciones || (p.ocupacion ? [p.ocupacion] : []);
-  document.getElementById('perf-ocupacion-mini').textContent = ocups.length ? ocups.slice(0,2).join(' · ') : 'Miembro de ChambaYa';
-  document.getElementById('perf-zona').innerHTML = '📍 ' + (p.zona || 'Argentina');
+  const ocups = p.ocupaciones||(p.ocupacion?[p.ocupacion]:[]);
+  document.getElementById('perf-ocupacion-mini').textContent = ocups.length?ocups.slice(0,2).join(' · '):'—';
+  document.getElementById('perf-zona').textContent = p.zona||'Argentina';
 
-  // Foto: usar foto_url (Storage) como fuente principal
-  const avEl = document.getElementById('perf-av');
-  const foto = p.foto_url || null;
-  if (foto) { avEl.innerHTML = `<img src="${foto}?t=${Date.now()}" alt="${nombre}">`; }
-  else { avEl.textContent = nombre.charAt(0).toUpperCase(); }
-
-  if (p.bio) {
-    document.getElementById('perf-bio-txt').textContent = p.bio;
-    document.getElementById('perf-bio-txt').style.display = 'block';
-    document.getElementById('perf-bio-empty').style.display = 'none';
+  // Último online
+  if (p.updated_at) {
+    const diff=Date.now()-new Date(p.updated_at).getTime();
+    const mins=Math.floor(diff/60000), hrs=Math.floor(mins/60), days=Math.floor(hrs/24);
+    let txt;
+    if (mins<5) txt='En línea ahora';
+    else if (mins<60) txt=`Activo hace ${mins} min`;
+    else if (hrs<24) txt=`Activo hace ${hrs}h`;
+    else if (days<7) txt=`Activo hace ${days} día${days>1?'s':''}`;
+    else txt=`Activo hace ${Math.floor(days/7)} semana${Math.floor(days/7)>1?'s':''}`;
+    document.getElementById('pf-online-txt').textContent=txt;
   }
-  renderChipsVista('ocup-chips-vista','ocup-empty', p.ocupaciones || (p.ocupacion ? [p.ocupacion] : []));
-  renderChipsVista('esp-chips-vista','esp-empty', p.especialidades || []);
-  renderChipsVista('idiomas-chips-vista','idiomas-empty', p.idiomas || []);
+
+  // Foto
+  const avEl = document.getElementById('perf-av');
+  if (p.foto_url) { avEl.innerHTML=`<img src="${p.foto_url}?t=${Date.now()}" alt="${escH(nombre)}">`; }
+  else { avEl.textContent=nombre.charAt(0).toUpperCase(); }
+
+  if (p.bio) { document.getElementById('perf-bio-txt').textContent=p.bio; document.getElementById('perf-bio-txt').style.display='block'; document.getElementById('perf-bio-empty').style.display='none'; }
+  renderChipsVista('ocup-chips-vista','ocup-empty',ocups);
+  renderChipsVista('esp-chips-vista','esp-empty',p.especialidades||[]);
+  renderChipsVista('idiomas-chips-vista','idiomas-empty',p.idiomas||[]);
 }
 
-function renderChipsVista(containerId, emptyId, items) {
-  const cont = document.getElementById(containerId);
-  const emptyEl = document.getElementById(emptyId);
-  if (!items || !items.length) { cont.innerHTML = ''; emptyEl.style.display = 'block'; return; }
-  emptyEl.style.display = 'none';
-  cont.innerHTML = items.map(i => `<div class="chip sel readonly">${escH(i)}</div>`).join('');
+function renderChipsVista(cId,eId,items) {
+  const c=document.getElementById(cId),e=document.getElementById(eId);
+  if(!items?.length){c.innerHTML='';e.style.display='block';return;}
+  e.style.display='none';
+  c.innerHTML=items.map(i=>`<div class="chip sel readonly">${escH(i)}</div>`).join('');
 }
 
 async function cargarStats() {
-  try {
-    const { count } = await db.from('tareas').select('*',{count:'exact',head:true}).eq('user_id', perfilId);
-    document.getElementById('stat-tareas').textContent = count || 0;
-  } catch(e) {}
+  try { const{count}=await db.from('tareas').select('*',{count:'exact',head:true}).eq('user_id',perfilId); document.getElementById('stat-tareas').textContent=count||0; } catch(e){}
 }
 
 // ══ REVIEWS ══
-function starsHtml(rating, size) {
-  return [1,2,3,4,5].map(i =>
-    `<span class="star${i <= rating ? ' on' : ''}" style="font-size:${size||'1rem'}"">★</span>`
-  ).join('');
+function starsHtml(rating,size) {
+  return [1,2,3,4,5].map(i=>`<span class="star${i<=rating?' on':''}" style="font-size:${size||'1rem'}">★</span>`).join('');
 }
 
 async function cargarReviews() {
   try {
-    const { data: revs } = await db.from('reviews')
-      .select('*').eq('destinatario_id', perfilId)
-      .order('created_at', { ascending: false });
+    const{data:revs}=await db.from('reviews').select('*').eq('destinatario_id',perfilId).order('created_at',{ascending:false});
+    const lista=document.getElementById('reviews-lista'), empty=document.getElementById('reviews-empty');
+    if (!revs?.length) { empty.style.display='block'; return; }
+    const avg=(revs.reduce((s,r)=>s+r.rating,0)/revs.length).toFixed(1);
+    document.getElementById('stat-rating').textContent=avg;
+    empty.style.display='none';
+    const autorIds=[...new Set(revs.map(r=>r.autor_id))];
+    const{data:auts}=await db.from('profiles').select('id,nombre,foto_url,email').in('id',autorIds);
+    const autMap={};(auts||[]).forEach(a=>autMap[a.id]=a);
 
-    const lista = document.getElementById('reviews-lista');
-    const empty = document.getElementById('reviews-empty');
-    if (!revs || !revs.length) { empty.style.display = 'block'; return; }
-
-    const avg = (revs.reduce((s,r) => s + r.rating, 0) / revs.length).toFixed(1);
-    document.getElementById('stat-rating').textContent = avg;
-    empty.style.display = 'none';
-
-    const autorIds = [...new Set(revs.map(r => r.autor_id))];
-    const { data: autores } = await db.from('profiles').select('id,nombre,foto_url,email').in('id', autorIds);
-    const autMap = {};
-    (autores || []).forEach(a => autMap[a.id] = a);
-
-    lista.innerHTML = `
-      <div class="rating-summary">
-        <div class="rating-big">${avg}</div>
-        <div class="rating-info">
-          <div class="rating-stars-row">${starsHtml(Math.round(avg), '1.2rem')}</div>
-          <div class="rating-count">${revs.length} reseña${revs.length !== 1 ? 's' : ''}</div>
+    lista.innerHTML=`
+      <div class="rv-summary">
+        <div class="rv-avg">${avg}</div>
+        <div class="rv-summary-info">
+          <div class="rv-stars-row">${starsHtml(Math.round(avg),'1.4rem')}</div>
+          <div class="rv-count">${revs.length} reseña${revs.length!==1?'s':''}</div>
         </div>
       </div>`;
 
-    revs.forEach(r => {
-      const aut = autMap[r.autor_id] || {};
-      const autNombre = (aut.nombre && aut.nombre !== 'Usuario') ? aut.nombre
-        : (aut.email?.split('@')[0]?.replace(/[._\-]/g,' ')?.replace(/\b\w/g,c=>c.toUpperCase()) || 'Usuario');
-      const autFoto = aut.foto_url || null;
-      const autIni = autNombre.charAt(0).toUpperCase();
-      const fecha = new Date(r.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'});
-      const avHtml = autFoto
-        ? `<a href="perfil.html?id=${r.autor_id}" class="review-av"><img src="${autFoto}" alt="${escH(autNombre)}"></a>`
-        : `<a href="perfil.html?id=${r.autor_id}" class="review-av">${autIni}</a>`;
-      lista.innerHTML += `
-        <div class="review-item">
-          <div class="review-header">${avHtml}
-            <div class="review-meta">
-              <div class="review-autor">${escH(autNombre)}</div>
-              <div class="review-fecha">${fecha}</div>
-            </div>
+    revs.forEach(r=>{
+      const a=autMap[r.autor_id]||{};
+      const aNombre=(a.nombre&&a.nombre!=='Usuario')?a.nombre:(a.email?.split('@')[0]?.replace(/[._\-]/g,' ')?.replace(/\b\w/g,c=>c.toUpperCase())||'Usuario');
+      const aFoto=a.foto_url||null;
+      const fecha=new Date(r.created_at).toLocaleDateString('es-AR',{day:'numeric',month:'short',year:'numeric'});
+      const avHtml=aFoto
+        ?`<a href="perfil.html?id=${r.autor_id}" class="rv-av"><img src="${aFoto}" alt="${escH(aNombre)}"></a>`
+        :`<a href="perfil.html?id=${r.autor_id}" class="rv-av">${aNombre.charAt(0).toUpperCase()}</a>`;
+      lista.innerHTML+=`
+        <div class="rv-item">
+          <div class="rv-header">${avHtml}
+            <div><div class="rv-autor">${escH(aNombre)}</div><div class="rv-fecha">${fecha}</div></div>
           </div>
-          <div class="review-stars">${starsHtml(r.rating)}</div>
-          ${r.comentario ? `<div class="review-coment">${escH(r.comentario)}</div>` : ''}
+          <div class="rv-stars">${starsHtml(r.rating)}</div>
+          ${r.comentario?`<div class="rv-coment">${escH(r.comentario)}</div>`:''}
         </div>`;
     });
-  } catch(e) { console.warn('Error reviews:', e); }
+  } catch(e){ console.warn('Error reviews:',e); }
 }
 
 function mostrarBotones() {
-  const wrap = document.getElementById('perf-botones');
-  if (esMiPerfil) {
-    wrap.innerHTML = `<button class="btn-editar-perfil" onclick="editarBio()">✏️ Editar perfil</button>`;
-  } else {
-    wrap.innerHTML = `<button class="btn-contactar" onclick="showToast('Mensajes disponibles próximamente')">💬 Contactar</button>`;
-  }
+  const wrap=document.getElementById('perf-botones');
+  if (esMiPerfil) wrap.innerHTML=`<button class="btn-editar-perfil" onclick="editarBio()">✏️ Editar perfil</button>`;
+  else wrap.innerHTML=`<button class="btn-contactar" onclick="showToast('Mensajes disponibles próximamente')">💬 Contactar</button>`;
 }
 
 function activarEdicion() {
-  ['btn-edit-bio','btn-edit-ocup','btn-edit-esp','btn-edit-idiomas'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = 'block';
-  });
+  ['btn-edit-bio','btn-edit-ocup','btn-edit-esp','btn-edit-idiomas'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='block';});
   document.getElementById('av-wrap').classList.add('editable');
   document.getElementById('perf-nombre').classList.add('editable');
 }
 
-// ══ AVATAR ══
-function clickAvatar() {
-  if (!esMiPerfil) return;
-  document.getElementById('file-avatar').click();
-}
+// ══ AVATAR — fix definitivo: path fijo + upsert:true ══
+function clickAvatar() { if(!esMiPerfil) return; document.getElementById('file-avatar').click(); }
 
 async function onFotoSeleccionada(input) {
-  const file = input.files[0];
+  const file=input.files[0];
   if (!file) return;
-  if (file.size > 2 * 1024 * 1024) { showToast('La imagen debe ser menor a 2MB'); return; }
-
+  input.value=''; // limpiar YA para permitir re-selección infinita
+  if (file.size>2*1024*1024) { showToast('La imagen debe ser menor a 2MB'); return; }
   showToast('Subiendo foto...');
   try {
-    const ext = file.name.split('.').pop().toLowerCase();
-    const path = `avatars/${miUserId}_${Date.now()}.${ext}`;
-
-    // Borrar foto anterior si guardamos el path previo
-    if (perfilData._foto_path) {
-      await db.storage.from('Fotos').remove([perfilData._foto_path]);
-    }
-
-    // Subir nueva (path único con timestamp → siempre INSERT)
-    const { error: upErr } = await db.storage.from('Fotos').upload(path, file, {
-      contentType: file.type
-    });
+    const ext=file.name.split('.').pop().toLowerCase();
+    // Path FIJO por usuario — upsert:true sobreescribe siempre sin necesitar DELETE
+    const path=`avatars/${miUserId}.${ext}`;
+    const{error:upErr}=await db.storage.from('Fotos').upload(path,file,{contentType:file.type,upsert:true});
     if (upErr) throw upErr;
-
-    // URL pública
-    const { data: urlData } = db.storage.from('Fotos').getPublicUrl(path);
-    const url = urlData.publicUrl;
-
-    // Guardar URL en profiles (foto_path es opcional, puede no existir la columna aún)
-    const { error: dbErr } = await db.from('profiles')
-      .update({ foto_url: url, foto_path: path })
-      .eq('id', miUserId);
-    if (dbErr) {
-      // Reintentar sin foto_path si falla (columna puede no existir)
-      const { error: dbErr2 } = await db.from('profiles')
-        .update({ foto_url: url })
-        .eq('id', miUserId);
-      if (dbErr2) throw dbErr2;
-    }
-
-    // Actualizar UI y cache local
-    document.getElementById('perf-av').innerHTML = `<img src="${url}?t=${Date.now()}" alt="Foto">`;
-    perfilData.foto_url = url;
-    perfilData._foto_path = path;
+    const{data:urlData}=db.storage.from('Fotos').getPublicUrl(path);
+    const url=urlData.publicUrl;
+    await db.from('profiles').update({foto_url:url}).eq('id',miUserId);
+    // Cache-bust con timestamp para forzar recarga de imagen en browser
+    document.getElementById('perf-av').innerHTML=`<img src="${url}?t=${Date.now()}" alt="Foto">`;
+    perfilData.foto_url=url;
     showToast('✅ Foto actualizada');
-  } catch(e) {
-    console.error('Error foto:', e);
-    showToast('Error: ' + e.message);
-  }
-  input.value = '';
+  } catch(e) { console.error('Error foto:',e); showToast('Error: '+e.message); }
 }
 
 // ══ NOMBRE ══
 function editarNombre() {
-  if (!esMiPerfil) return;
-  const nomEl = document.getElementById('perf-nombre');
-  const inp = document.getElementById('nombre-input');
-  const btns = document.getElementById('nombre-btns');
-  nomEl.style.display = 'none';
-  inp.value = perfilData.nombre || '';
-  inp.style.display = 'block';
-  btns.style.display = 'flex';
+  if(!esMiPerfil) return;
+  document.getElementById('perf-nombre').style.display='none';
+  const inp=document.getElementById('nombre-input');
+  inp.value=perfilData.nombre||''; inp.style.display='block';
+  document.getElementById('nombre-btns').style.display='flex';
   inp.focus(); inp.select();
 }
-
-function cancelarNombre() {
-  document.getElementById('perf-nombre').style.display = 'block';
-  document.getElementById('nombre-input').style.display = 'none';
-  document.getElementById('nombre-btns').style.display = 'none';
-}
-
+function cancelarNombre() { document.getElementById('perf-nombre').style.display='block'; document.getElementById('nombre-input').style.display='none'; document.getElementById('nombre-btns').style.display='none'; }
 async function guardarNombre() {
-  const val = document.getElementById('nombre-input').value.trim();
-  if (!val || val.length < 2) { showToast('El nombre debe tener al menos 2 caracteres'); return; }
-  await guardarCampo({ nombre: val });
-  perfilData.nombre = val;
-  document.getElementById('perf-nombre').textContent = val;
-  document.getElementById('banner-nombre').style.display = 'none';
-  cancelarNombre();
+  const val=document.getElementById('nombre-input').value.trim();
+  if(!val||val.length<2){showToast('El nombre debe tener al menos 2 caracteres');return;}
+  await guardarCampo({nombre:val});
+  perfilData.nombre=val; document.getElementById('perf-nombre').textContent=val;
+  document.getElementById('banner-nombre').style.display='none'; cancelarNombre();
 }
 
 // ══ BIO ══
-function editarBio() {
-  document.getElementById('bio-vista').style.display = 'none';
-  document.getElementById('bio-edit').style.display = 'block';
-  document.getElementById('btn-edit-bio').style.display = 'none';
-  const txt = perfilData.bio || '';
-  document.getElementById('bio-input').value = txt;
-  document.getElementById('bio-count').textContent = txt.length;
-  document.getElementById('bio-input').oninput = function() {
-    document.getElementById('bio-count').textContent = this.value.length;
-  };
-}
-function cancelarBio() {
-  document.getElementById('bio-vista').style.display = 'block';
-  document.getElementById('bio-edit').style.display = 'none';
-  document.getElementById('btn-edit-bio').style.display = 'block';
-}
+function editarBio() { document.getElementById('bio-vista').style.display='none'; document.getElementById('bio-edit').style.display='block'; document.getElementById('btn-edit-bio').style.display='none'; const txt=perfilData.bio||''; document.getElementById('bio-input').value=txt; document.getElementById('bio-count').textContent=txt.length; document.getElementById('bio-input').oninput=function(){document.getElementById('bio-count').textContent=this.value.length;}; }
+function cancelarBio() { document.getElementById('bio-vista').style.display='block'; document.getElementById('bio-edit').style.display='none'; document.getElementById('btn-edit-bio').style.display='block'; }
 async function guardarBio() {
-  const bio = document.getElementById('bio-input').value.trim();
-  await guardarCampo({ bio });
-  perfilData.bio = bio;
-  if (bio) {
-    document.getElementById('perf-bio-txt').textContent = bio;
-    document.getElementById('perf-bio-txt').style.display = 'block';
-    document.getElementById('perf-bio-empty').style.display = 'none';
-  } else {
-    document.getElementById('perf-bio-txt').style.display = 'none';
-    document.getElementById('perf-bio-empty').style.display = 'block';
-  }
+  const bio=document.getElementById('bio-input').value.trim(); await guardarCampo({bio}); perfilData.bio=bio;
+  if(bio){document.getElementById('perf-bio-txt').textContent=bio;document.getElementById('perf-bio-txt').style.display='block';document.getElementById('perf-bio-empty').style.display='none';}
+  else{document.getElementById('perf-bio-txt').style.display='none';document.getElementById('perf-bio-empty').style.display='block';}
   cancelarBio();
 }
 
-// ══ OCUPACIONES (multi-select sin íconos) ══
-function editarOcup() {
-  document.getElementById('ocup-vista').style.display = 'none';
-  document.getElementById('ocup-edit').style.display = 'block';
-  document.getElementById('btn-edit-ocup').style.display = 'none';
-
-  // Migrar de string a array si viene de versión anterior
-  const prev = perfilData.ocupaciones || (perfilData.ocupacion ? [perfilData.ocupacion] : []);
-  ocupSelTemp = [...prev];
-
-  renderChipsEdit('ocup-chips-edit', OCUPACIONES, ocupSelTemp, toggleOcup);
-}
-
-function toggleOcup(val) {
-  if (ocupSelTemp.includes(val)) { ocupSelTemp = ocupSelTemp.filter(v=>v!==val); }
-  else { ocupSelTemp.push(val); }
-  actualizarChipsEdit('ocup-chips-edit', OCUPACIONES, ocupSelTemp, toggleOcup, ocupSelTemp.filter(v=>!OCUPACIONES.includes(v)));
-}
-
-function agregarCustomOcup() {
-  const inp = document.getElementById('ocup-custom-input');
-  const val = inp.value.trim();
-  if (!val) return;
-  if (val.length > 20) { showToast('Máximo 20 caracteres'); return; }
-  if (ocupSelTemp.includes(val)) { showToast('Ya está en la lista'); return; }
-  ocupSelTemp.push(val);
-  inp.value = '';
-  actualizarChipsEdit('ocup-chips-edit', OCUPACIONES, ocupSelTemp, toggleOcup, ocupSelTemp.filter(v=>!OCUPACIONES.includes(v)));
-}
-
-function cancelarOcup() {
-  document.getElementById('ocup-vista').style.display = 'block';
-  document.getElementById('ocup-edit').style.display = 'none';
-  document.getElementById('btn-edit-ocup').style.display = 'block';
-}
-
-async function guardarOcup() {
-  await guardarCampo({ ocupaciones: ocupSelTemp, ocupacion: ocupSelTemp[0]||null });
-  perfilData.ocupaciones = ocupSelTemp;
-  perfilData.ocupacion = ocupSelTemp[0]||null;
-  document.getElementById('perf-ocupacion-mini').textContent = ocupSelTemp.length ? ocupSelTemp.slice(0,2).join(' · ') : 'Miembro de ChambaYa';
-  renderChipsVista('ocup-chips-vista','ocup-empty', ocupSelTemp);
-  cancelarOcup();
-}
+// ══ OCUPACIONES ══
+function editarOcup(){document.getElementById('ocup-vista').style.display='none';document.getElementById('ocup-edit').style.display='block';document.getElementById('btn-edit-ocup').style.display='none';ocupSelTemp=[...(perfilData.ocupaciones||(perfilData.ocupacion?[perfilData.ocupacion]:[]))];renderChipsEdit('ocup-chips-edit',OCUPACIONES,ocupSelTemp,toggleOcup);}
+function toggleOcup(val){ocupSelTemp=ocupSelTemp.includes(val)?ocupSelTemp.filter(v=>v!==val):[...ocupSelTemp,val];actualizarChipsEdit('ocup-chips-edit',OCUPACIONES,ocupSelTemp,toggleOcup,ocupSelTemp.filter(v=>!OCUPACIONES.includes(v)));}
+function agregarCustomOcup(){const inp=document.getElementById('ocup-custom-input'),val=inp.value.trim();if(!val)return;if(val.length>20){showToast('Máximo 20 caracteres');return;}if(ocupSelTemp.includes(val)){showToast('Ya está');return;}ocupSelTemp.push(val);inp.value='';actualizarChipsEdit('ocup-chips-edit',OCUPACIONES,ocupSelTemp,toggleOcup,ocupSelTemp.filter(v=>!OCUPACIONES.includes(v)));}
+function cancelarOcup(){document.getElementById('ocup-vista').style.display='block';document.getElementById('ocup-edit').style.display='none';document.getElementById('btn-edit-ocup').style.display='block';}
+async function guardarOcup(){await guardarCampo({ocupaciones:ocupSelTemp,ocupacion:ocupSelTemp[0]||null});perfilData.ocupaciones=ocupSelTemp;perfilData.ocupacion=ocupSelTemp[0]||null;document.getElementById('perf-ocupacion-mini').textContent=ocupSelTemp.length?ocupSelTemp.slice(0,2).join(' · '):'—';renderChipsVista('ocup-chips-vista','ocup-empty',ocupSelTemp);cancelarOcup();}
 
 // ══ ESPECIALIDADES ══
-function editarEsp() {
-  document.getElementById('esp-vista').style.display = 'none';
-  document.getElementById('esp-edit').style.display = 'block';
-  document.getElementById('btn-edit-esp').style.display = 'none';
-  espSelTemp = [...(perfilData.especialidades||[])];
-  renderChipsEdit('esp-chips-edit', ESPECIALIDADES, espSelTemp, toggleEsp);
-}
-
-function toggleEsp(val) {
-  if (espSelTemp.includes(val)) { espSelTemp = espSelTemp.filter(v=>v!==val); }
-  else { espSelTemp.push(val); }
-  actualizarChipsEdit('esp-chips-edit', ESPECIALIDADES, espSelTemp, toggleEsp, espSelTemp.filter(v=>!ESPECIALIDADES.includes(v)));
-}
-
-function agregarCustomEsp() {
-  const inp = document.getElementById('esp-custom-input');
-  const val = inp.value.trim();
-  if (!val) return;
-  if (val.length > 20) { showToast('Máximo 20 caracteres'); return; }
-  if (espSelTemp.includes(val)) { showToast('Ya está en la lista'); return; }
-  espSelTemp.push(val);
-  inp.value = '';
-  actualizarChipsEdit('esp-chips-edit', ESPECIALIDADES, espSelTemp, toggleEsp, espSelTemp.filter(v=>!ESPECIALIDADES.includes(v)));
-}
-
-function cancelarEsp() {
-  document.getElementById('esp-vista').style.display = 'block';
-  document.getElementById('esp-edit').style.display = 'none';
-  document.getElementById('btn-edit-esp').style.display = 'block';
-}
-
-async function guardarEsp() {
-  await guardarCampo({ especialidades: espSelTemp });
-  perfilData.especialidades = espSelTemp;
-  renderChipsVista('esp-chips-vista','esp-empty', espSelTemp);
-  cancelarEsp();
-}
+function editarEsp(){document.getElementById('esp-vista').style.display='none';document.getElementById('esp-edit').style.display='block';document.getElementById('btn-edit-esp').style.display='none';espSelTemp=[...(perfilData.especialidades||[])];renderChipsEdit('esp-chips-edit',ESPECIALIDADES,espSelTemp,toggleEsp);}
+function toggleEsp(val){espSelTemp=espSelTemp.includes(val)?espSelTemp.filter(v=>v!==val):[...espSelTemp,val];actualizarChipsEdit('esp-chips-edit',ESPECIALIDADES,espSelTemp,toggleEsp,espSelTemp.filter(v=>!ESPECIALIDADES.includes(v)));}
+function agregarCustomEsp(){const inp=document.getElementById('esp-custom-input'),val=inp.value.trim();if(!val)return;if(val.length>20){showToast('Máximo 20 caracteres');return;}if(espSelTemp.includes(val)){showToast('Ya está');return;}espSelTemp.push(val);inp.value='';actualizarChipsEdit('esp-chips-edit',ESPECIALIDADES,espSelTemp,toggleEsp,espSelTemp.filter(v=>!ESPECIALIDADES.includes(v)));}
+function cancelarEsp(){document.getElementById('esp-vista').style.display='block';document.getElementById('esp-edit').style.display='none';document.getElementById('btn-edit-esp').style.display='block';}
+async function guardarEsp(){await guardarCampo({especialidades:espSelTemp});perfilData.especialidades=espSelTemp;renderChipsVista('esp-chips-vista','esp-empty',espSelTemp);cancelarEsp();}
 
 // ══ IDIOMAS ══
-function editarIdiomas() {
-  document.getElementById('idiomas-vista').style.display = 'none';
-  document.getElementById('idiomas-edit').style.display = 'block';
-  document.getElementById('btn-edit-idiomas').style.display = 'none';
-  idiomasSelTemp = [...(perfilData.idiomas||[])];
-  renderChipsEdit('idiomas-chips-edit', IDIOMAS, idiomasSelTemp, toggleIdioma);
+function editarIdiomas(){document.getElementById('idiomas-vista').style.display='none';document.getElementById('idiomas-edit').style.display='block';document.getElementById('btn-edit-idiomas').style.display='none';idiomasSelTemp=[...(perfilData.idiomas||[])];renderChipsEdit('idiomas-chips-edit',IDIOMAS,idiomasSelTemp,toggleIdioma);}
+function toggleIdioma(val){idiomasSelTemp=idiomasSelTemp.includes(val)?idiomasSelTemp.filter(v=>v!==val):[...idiomasSelTemp,val];actualizarChipsEdit('idiomas-chips-edit',IDIOMAS,idiomasSelTemp,toggleIdioma);}
+function cancelarIdiomas(){document.getElementById('idiomas-vista').style.display='block';document.getElementById('idiomas-edit').style.display='none';document.getElementById('btn-edit-idiomas').style.display='block';}
+async function guardarIdiomas(){await guardarCampo({idiomas:idiomasSelTemp});perfilData.idiomas=idiomasSelTemp;renderChipsVista('idiomas-chips-vista','idiomas-empty',idiomasSelTemp);cancelarIdiomas();}
+
+// ══ CHIPS HELPERS ══
+function renderChipsEdit(cId,opts,sel,fn,custom){const c=document.getElementById(cId);if(!c)return;const all=[...opts,...(custom||[]).filter(x=>!opts.includes(x))];c.innerHTML=all.map(op=>`<div class="chip${sel.includes(op)?' sel':''}" onclick="${fn.name}(${JSON.stringify(op)})">${escH(op)}</div>`).join('');}
+function actualizarChipsEdit(cId,opts,sel,fn,custom){renderChipsEdit(cId,opts,sel,fn,custom);}
+
+function mostrarBannerNombre(){const b=document.getElementById('banner-nombre');if(b)b.style.display='block';}
+
+async function guardarCampo(campos){
+  try{const{error}=await db.from('profiles').upsert({id:miUserId,...campos,updated_at:new Date().toISOString()});if(error)throw error;showToast('✅ Guardado');}
+  catch(e){showToast('❌ Error: '+e.message);}
 }
 
-function toggleIdioma(val) {
-  if (idiomasSelTemp.includes(val)) { idiomasSelTemp = idiomasSelTemp.filter(v=>v!==val); }
-  else { idiomasSelTemp.push(val); }
-  actualizarChipsEdit('idiomas-chips-edit', IDIOMAS, idiomasSelTemp, toggleIdioma);
-}
-
-function cancelarIdiomas() {
-  document.getElementById('idiomas-vista').style.display = 'block';
-  document.getElementById('idiomas-edit').style.display = 'none';
-  document.getElementById('btn-edit-idiomas').style.display = 'block';
-}
-
-async function guardarIdiomas() {
-  await guardarCampo({ idiomas: idiomasSelTemp });
-  perfilData.idiomas = idiomasSelTemp;
-  renderChipsVista('idiomas-chips-vista','idiomas-empty', idiomasSelTemp);
-  cancelarIdiomas();
-}
-
-// ══ HELPERS CHIPS EDIT ══
-function renderChipsEdit(containerId, opciones, seleccionados, toggleFn, customItems) {
-  const cont = document.getElementById(containerId);
-  if (!cont) return;
-  const todosChips = [...opciones, ...(customItems||[]).filter(c=>!opciones.includes(c))];
-  cont.innerHTML = todosChips.map(op =>
-    `<div class="chip${seleccionados.includes(op)?' sel':''}" onclick="${toggleFn.name}(${JSON.stringify(op)})">${escH(op)}</div>`
-  ).join('');
-}
-
-function actualizarChipsEdit(containerId, opciones, seleccionados, toggleFn, customItems) {
-  renderChipsEdit(containerId, opciones, seleccionados, toggleFn, customItems);
-}
-
-// ══ BANNER ONBOARDING ══
-function mostrarBannerNombre() {
-  const b = document.getElementById('banner-nombre');
-  if (b) b.style.display = 'block';
-}
-
-// ══ GUARDAR ══
-async function guardarCampo(campos) {
-  try {
-    const { error } = await db.from('profiles').upsert({ id: miUserId, ...campos, updated_at: new Date().toISOString() });
-    if (error) throw error;
-    showToast('✅ Guardado');
-  } catch(e) { showToast('❌ Error: ' + e.message); }
-}
-
-// ══ UTILS ══
 function escH(t){if(!t)return'';const d=document.createElement('div');d.textContent=String(t);return d.innerHTML;}
-
-// Guardar nombre con Enter
-document.addEventListener('DOMContentLoaded', () => {
-  const inp = document.getElementById('nombre-input');
-  if (inp) inp.addEventListener('keydown', e => { if(e.key==='Enter') guardarNombre(); if(e.key==='Escape') cancelarNombre(); });
+document.addEventListener('DOMContentLoaded',()=>{
+  const inp=document.getElementById('nombre-input');
+  if(inp)inp.addEventListener('keydown',e=>{if(e.key==='Enter')guardarNombre();if(e.key==='Escape')cancelarNombre();});
 });
 </script>
 </body>
