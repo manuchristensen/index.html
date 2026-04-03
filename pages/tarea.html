@@ -422,19 +422,25 @@ const CAT_ICONS = {limpieza:'🧹',plomeria:'🔧',pintura:'🎨',electricidad:'
 const TELEFONO_RE = /(\+?54\s?)?(\(?\d{2,4}\)?[\s\-]?)?\d{3,4}[\s\-]?\d{4}|\d{10,11}|cel[^\s]*\s*:?\s*\d|\btel[^\s]*\s*:?\s*\d|whatsapp|wsp|[0-9]{7,}/gi;
 
 // ══ HELPER: resolver nombre real desde un registro de profiles ══
-// Si el nombre es vacío, "Usuario", o el prefijo crudo del email, lo formatea desde el email
+// Retorna el nombre de profiles. Si está vacío o es el genérico "Usuario",
+// intenta formatear el email como nombre más útil.
 function resolverNombre(perfil, emailFallback) {
   if (!perfil && !emailFallback) return null;
+  const nombre = (perfil?.nombre || '').trim();
+  const esVacio = !nombre;
+  const esGenerico = nombre === 'Usuario';
+  // Si tiene nombre real (no vacío y no el genérico), usarlo directo
+  if (!esVacio && !esGenerico) return nombre;
+  // Sin nombre útil: intentar formatear el email
   const email = perfil?.email || emailFallback || '';
   const emailLocal = email.split('@')[0];
-  const nombreFormateado = emailLocal
-    ? emailLocal.replace(/[._\-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-    : null;
-  const nombre = perfil?.nombre || '';
-  // Considerar "malo" si es vacío, "Usuario", o igual al prefijo crudo sin formatear
-  const esMalo = !nombre || nombre === 'Usuario' || nombre === emailLocal;
-  if (esMalo) return nombreFormateado || null;
-  return nombre;
+  if (!emailLocal) return esGenerico ? 'Usuario' : null;
+  // Solo formatear si el email parece un nombre (tiene puntos/guiones entre palabras)
+  // ej: "manuel.christensen" → "Manuel Christensen"
+  // ej: "manuchristensen14" → no tiene separadores → NO formatear, dejar "Usuario"
+  const tieneSeparador = /[._\-]/.test(emailLocal);
+  if (!tieneSeparador) return esGenerico ? 'Usuario' : emailLocal;
+  return emailLocal.replace(/[._\-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 }
 
 // ══ INIT ══
@@ -704,7 +710,7 @@ async function cargarPerfilAutor(uid) {
   const nomEl = document.getElementById('h-autor-nombre');
   try {
     const { data } = await db.from('profiles').select('nombre,avatar_url,email').eq('id', uid).maybeSingle();
-    // Si el usuario logueado ES el autor, tenemos su email en currentUser
+    // Si el usuario logueado ES el autor, tenemos sus datos completos en currentUser
     const emailFallback = (esAutor && currentUser?.email) ? currentUser.email : null;
     const nombre = resolverNombre(data, emailFallback) || 'Usuario';
     const foto = data?.avatar_url || null;
@@ -717,9 +723,21 @@ async function cargarPerfilAutor(uid) {
     window._autorNombre = nombre;
     window._autorFoto = foto;
     window._autorIni = nombre.charAt(0).toUpperCase();
-    // Si el email faltaba, guardarlo en background para futuras cargas
-    if (esAutor && emailFallback && !data?.email) {
-      db.from('profiles').upsert({ id: uid, email: emailFallback }).then(() => {});
+    // Si soy el autor y mis datos en profiles están incompletos, actualizarlos en background
+    if (esAutor) {
+      const updates = {};
+      if (!data?.email && emailFallback) updates.email = emailFallback;
+      const nombreEnDB = data?.nombre || '';
+      const nombreIncompleto = !nombreEnDB || nombreEnDB === 'Usuario';
+      if (nombreIncompleto) {
+        const nombreAuth = currentUser?.user_metadata?.full_name
+          || currentUser?.user_metadata?.nombre
+          || null;
+        if (nombreAuth) updates.nombre = nombreAuth;
+      }
+      if (Object.keys(updates).length > 0) {
+        db.from('profiles').upsert({ id: uid, ...updates }).then(() => {});
+      }
     }
   } catch(e) {
     nomEl.textContent = '?';
