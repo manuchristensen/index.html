@@ -374,7 +374,18 @@ function solicitarGPS() {
     pos => {
       document.getElementById('loc-loading').classList.remove('show');
       miUbicacion = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      mapa.setView([miUbicacion.lat, miUbicacion.lng], 14);
+
+      // Zoom inicial = radio del filtro activo (por defecto 10km)
+      const km = filtroDistancia || 10;
+      const lat = miUbicacion.lat;
+      const lng = miUbicacion.lng;
+      const latOff = km / 111;
+      const lngOff = km / (111 * Math.cos(lat * Math.PI / 180));
+      mapa.fitBounds(
+        L.latLngBounds([lat - latOff, lng - lngOff], [lat + latOff, lng + lngOff]),
+        { padding: [24, 24] }
+      );
+
       if (window._markerUsuario) mapa.removeLayer(window._markerUsuario);
       const iconUser = L.divIcon({
         html: `<div style="width:18px;height:18px;background:#3B82F6;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 10px rgba(59,130,246,.5)"></div>`,
@@ -457,7 +468,7 @@ function agregarMarker(tarea) {
       <div class="map-popup-titulo">${escHTML(tarea.titulo)}</div>
       <div class="map-popup-precio">${precio}</div>
       <div class="map-popup-zona">&#128205; ${escHTML(zona)}</div>
-      <a href="tarea.html?id=${tarea.id}" class="map-popup-btn">Ver tarea &#8594;</a>
+      <a href="tarea.html?id=${tarea.id}" style="display:block;background:var(--verde);color:#fff;text-align:center;padding:8px;border-radius:8px;text-decoration:none;font-size:.8rem;font-weight:900;margin-top:2px">Ver tarea &#8594;</a>
     </div>
   `, { maxWidth: 240 });
 
@@ -579,6 +590,24 @@ function aplicarDistancia() {
   document.getElementById('lbl-distancia').textContent = km + ' km';
   document.getElementById('btn-distancia').classList.add('activo');
   cerrarModales();
+
+  // Ajustar zoom del mapa para mostrar exactamente el radio seleccionado
+  if (miUbicacion) {
+    // Calcular zoom necesario para mostrar el diámetro (km * 2)
+    // Fórmula aproximada: zoom = log2(40075 * cos(lat) / (km * 2 * 256 / ancho_pantalla))
+    // Usamos flyToBounds con un círculo de radio=km centrado en la ubicación
+    const lat = miUbicacion.lat;
+    const lng = miUbicacion.lng;
+    // Offset en grados para el radio pedido (1 grado lat ≈ 111km)
+    const latOffset = km / 111;
+    const lngOffset = km / (111 * Math.cos(lat * Math.PI / 180));
+    const bounds = L.latLngBounds(
+      [lat - latOffset, lng - lngOffset],
+      [lat + latOffset, lng + lngOffset]
+    );
+    mapa.flyToBounds(bounds, { padding: [24, 24], duration: 0.8 });
+  }
+
   filtrar();
 }
 
@@ -678,14 +707,11 @@ function renderLista() {
   }).join('');
 }
 
+// Markers: SIEMPRE todos visibles en el mapa.
+// La distancia solo filtra la lista izquierda y ajusta el zoom.
 function actualizarVisibilidadMarkers() {
-  const filtradosIds = new Set(filtradas.map(t => t.id));
-  Object.entries(markers).forEach(([id, marker]) => {
-    if (filtradosIds.has(id)) {
-      if (!mapa.hasLayer(marker)) mapa.addLayer(marker);
-    } else {
-      if (mapa.hasLayer(marker)) mapa.removeLayer(marker);
-    }
+  Object.values(markers).forEach(marker => {
+    if (!mapa.hasLayer(marker)) mapa.addLayer(marker);
   });
 }
 
