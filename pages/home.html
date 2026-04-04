@@ -54,11 +54,11 @@
       <button class="search-btn" onclick="buscar()">Ver ofertas</button>
     </div>
     <div class="sugerencias">
-      <a href="publicar.html?cat=mudanza"  class="sug-chip">🚛 Mudanza</a>
-      <a href="publicar.html?cat=limpieza" class="sug-chip">🧹 Limpieza profunda</a>
-      <a href="publicar.html?cat=plomeria" class="sug-chip">🔧 Arreglar canilla</a>
-      <a href="publicar.html?cat=jardin"   class="sug-chip">🌿 Cortar el pasto</a>
-      <a href="publicar.html"              class="sug-chip">✨ Más ideas</a>
+      <a href="publicar.html?cat=mudanza"  class="sug-chip">Mudanza</a>
+      <a href="publicar.html?cat=limpieza" class="sug-chip">Limpieza profunda</a>
+      <a href="publicar.html?cat=plomeria" class="sug-chip">Arreglar canilla</a>
+      <a href="publicar.html?cat=jardin"   class="sug-chip">Cortar el pasto</a>
+      <a href="publicar.html"              class="sug-chip">Más ideas</a>
     </div>
   </div>
 </div>
@@ -175,20 +175,89 @@ const TASKERS_DEMO = [
   { nombre:'Diego P.',   rol:'Mi pintor',     emoji:'👨‍🎨', bg:'#F3E8FF', stars:4 },
 ];
 
-let todasTareas = [...TAREAS_DEMO];
+let todasTareas = [];
 
-function onSesionLista(user) {
+// ── SESIÓN Y DATOS REALES ──
+(async () => {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) return; // navbar.js ya redirige si no hay sesión
+
+  const userId = session.user.id;
+  const user   = session.user;
+
+  // Saludo personalizado
   const hora = new Date().getHours();
   const saludo = hora < 12 ? 'Buenos días' : hora < 19 ? 'Buenas tardes' : 'Buenas noches';
   const nombre = user.user_metadata?.nombre || user.user_metadata?.full_name || user.email?.split('@')[0] || '';
   const primerNombre = nombre.split(' ')[0];
-  document.querySelector('.hero h1').innerHTML = `${saludo}, <span>${primerNombre}.</span><br><span>¿Qué necesitás hoy?</span>`;
-}
+  if (primerNombre) {
+    document.querySelector('.hero h1').innerHTML = saludo + ', <span>' + primerNombre + '.</span><br><span>¿Qué necesitás hoy?</span>';
+  }
+
+  // Cargar tareas activas del usuario para el banner
+  try {
+    const { data: tareasActivas } = await db.from('tareas')
+      .select('id, titulo, estado')
+      .eq('user_id', userId)
+      .in('estado', ['activa', 'en-curso'])
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (tareasActivas && tareasActivas.length) {
+      const t = tareasActivas[0];
+      // Contar ofertas pendientes
+      const { count: cantOfertas } = await db.from('ofertas')
+        .select('id', { count: 'exact', head: true })
+        .eq('tarea_id', t.id)
+        .eq('estado', 'pendiente');
+
+      const bannerEl = document.getElementById('banner-activa');
+      const lbl = t.estado === 'en-curso' ? 'Tarea en curso' : 'Tarea activa';
+      const sub = cantOfertas > 0
+        ? 'Tenés ' + cantOfertas + ' oferta' + (cantOfertas !== 1 ? 's' : '') + ' esperando tu respuesta'
+        : 'Tu tarea está publicada y visible para los taskers';
+
+      document.getElementById('ba-titulo').textContent = t.titulo;
+      document.getElementById('ba-sub').textContent = sub;
+      document.querySelector('.ba-lbl').textContent = lbl.toUpperCase();
+      bannerEl.style.display = 'flex';
+    }
+  } catch(e) { console.warn('Banner:', e.message); }
+
+  // Cargar tareas reales del mapa para mostrar en home
+  try {
+    const { data: tareas } = await db.from('tareas')
+      .select('id, titulo, categoria, cat_icon, descripcion, presupuesto, fecha, direccion, user_id, profiles(nombre)')
+      .eq('estado', 'activa')
+      .order('created_at', { ascending: false })
+      .limit(12);
+
+    if (tareas && tareas.length) {
+      todasTareas = tareas.map(t => ({
+        id:          t.id,
+        cat_icon:    t.cat_icon || '📋',
+        categoria:   t.categoria || 'General',
+        descripcion: t.descripcion || '',
+        presupuesto: t.presupuesto || 0,
+        fecha:       t.fecha || 'Flexible',
+        zona:        t.direccion || '',
+        autor:       (t.profiles?.nombre || 'Usuario').split(' ')[0] + ' ' + ((t.profiles?.nombre || '').split(' ')[1]?.[0] || '') + '.'
+      }));
+      renderTareas(todasTareas);
+    } else {
+      renderTareas(TAREAS_DEMO);
+      todasTareas = [...TAREAS_DEMO];
+    }
+  } catch(e) {
+    renderTareas(TAREAS_DEMO);
+    todasTareas = [...TAREAS_DEMO];
+  }
+})();
 
 function renderTareas(tareas) {
   const cont = document.getElementById('tareas-contenido');
   if (!tareas.length) {
-    cont.innerHTML = `<div class="empty"><div class="empty-ico">📋</div><h3>No hay tareas en esta categoría</h3><p>Probá con otra o publicá la primera.</p><a href="publicar.html" style="display:inline-flex;background:var(--verde);color:#fff;font-family:Nunito,sans-serif;font-weight:900;padding:12px 24px;border-radius:50px;text-decoration:none;font-size:.95rem">Publicar tarea</a></div>`;
+    cont.innerHTML = `<div class="empty"><div class="empty-ico">📋</div><h3>No hay tareas en esta categoría</h3><p>Probá con otra o publicá la primera.</p><a href="publicar.html" style="display:inline-flex;background:var(--verde);color:#fff;font-family:var(--font-principal);font-weight:900;padding:12px 24px;border-radius:50px;text-decoration:none;font-size:.95rem">Publicar tarea</a></div>`;
     return;
   }
   const bgs = ['#E0F2FE','#FEF3C7','#D1FAE5','#F3E8FF','#FFE4E6','#E0E7FF'];
@@ -221,12 +290,6 @@ function renderTaskers() {
     </a>`).join('');
 }
 
-function mostrarBannerDemo() {
-  document.getElementById('banner-activa').style.display = 'flex';
-  document.getElementById('ba-titulo').textContent = '🔧 Arreglo canilla cocina';
-  document.getElementById('ba-sub').textContent = 'Tenés 3 ofertas esperando tu respuesta';
-}
-
 function filtrarCat(el, cat) {
   document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('activa'));
   el.classList.add('activa');
@@ -245,11 +308,12 @@ function buscar() {
   window.location.href = q ? `publicar.html?q=${encodeURIComponent(q)}` : 'publicar.html';
 }
 
-document.getElementById('search-input').addEventListener('keydown', e => { if (e.key === 'Enter') buscar(); });
+document.getElementById('search-input').addEventListener('keydown', function(e) { if (e.key === 'Enter') buscar(); });
 
-renderTareas(todasTareas);
+// Render inicial con demo mientras carga
+renderTareas(TAREAS_DEMO);
+todasTareas = [...TAREAS_DEMO];
 renderTaskers();
-mostrarBannerDemo();
 </script>
 </body>
 </html>
