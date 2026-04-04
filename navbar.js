@@ -15,7 +15,6 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 async function initNavbar() {
   const { data: { session } } = await db.auth.getSession();
   if (!session) {
-    // login.html está en /pages/ igual que las otras páginas
     window.location.replace('login.html');
     return;
   }
@@ -27,11 +26,19 @@ async function initNavbar() {
   const ddNombre = document.getElementById('dd-nombre');
   if (ddNombre) ddNombre.textContent = nombre;
 
-  // Exponemos el user globalmente por si la página lo necesita
+  // Exponemos el user globalmente
   window.chambaUser = user;
 
-  // Intentar cargar foto del perfil desde la tabla profiles (tiene prioridad)
-  // Si no hay, usar la foto de Google OAuth como fallback
+  // ── ACTUALIZAR ÚLTIMA VEZ VISTO ──
+  // Se hace en cada carga de página para que cualquier visitante
+  // vea la actividad real del usuario. Fire-and-forget, no bloquea.
+  db.from('profiles')
+    .upsert({ id: user.id, last_seen_at: new Date().toISOString() }, { onConflict: 'id' })
+    .then(() => {})
+    .catch(() => {});
+
+  // ── FOTO DE PERFIL ──
+  // Prioridad: foto subida por el usuario en profiles > foto de Google OAuth
   try {
     const { data: perfil } = await db.from('profiles').select('foto_url').eq('id', user.id).maybeSingle();
     const fotoDb    = perfil?.foto_url || null;
@@ -48,13 +55,10 @@ async function initNavbar() {
       }
     }
   } catch(e) {
-    // Fallback silencioso: mostrar inicial
-    const av  = document.getElementById('nav-av');
     const ini = document.getElementById('nav-av-inicial');
-    if (av && ini) ini.textContent = nombre.charAt(0).toUpperCase();
+    if (ini) ini.textContent = nombre.charAt(0).toUpperCase();
   }
 
-  // Chequear notificaciones no leídas
   checkNotifBadge(session.user.id);
 }
 
