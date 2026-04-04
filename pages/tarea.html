@@ -171,6 +171,78 @@
 .btn-modal-confirmar:hover{background:#DC2626}
 
 @media(max-width:820px){.tarea-wrap{grid-template-columns:1fr;padding:20px 16px 60px}.autor-panel,.oferta-card{position:static}}
+
+/* ── GALERÍA DE FOTOS ── */
+.fotos-card { background:var(--blanco); border-radius:var(--radio-lg); border:1.5px solid var(--borde); padding:22px 26px; margin-bottom:20px; box-shadow:var(--sombra); }
+.fotos-titulo { font-size:.72rem; font-weight:900; text-transform:uppercase; letter-spacing:1px; color:var(--suave); margin-bottom:14px; }
+.fotos-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(100px,1fr)); gap:8px; }
+.foto-item {
+  aspect-ratio: 1;
+  border-radius:10px;
+  overflow:hidden;
+  cursor:pointer;
+  border:1.5px solid var(--borde);
+  transition:all .18s;
+  position:relative;
+}
+.foto-item:hover { transform:scale(1.03); box-shadow:0 4px 16px rgba(0,0,0,.15); border-color:var(--verde); }
+.foto-item img { width:100%; height:100%; object-fit:cover; display:block; }
+
+/* ── LIGHTBOX ── */
+.lightbox {
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:9000;
+  background:rgba(0,0,0,.92);
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.lightbox.open { display:flex; }
+.lightbox-img {
+  max-width:90vw;
+  max-height:88vh;
+  border-radius:10px;
+  object-fit:contain;
+  box-shadow:0 20px 60px rgba(0,0,0,.6);
+  user-select:none;
+}
+.lightbox-close {
+  position:absolute;
+  top:16px; right:20px;
+  width:40px; height:40px;
+  background:rgba(255,255,255,.15);
+  border:none; border-radius:50%;
+  color:#fff; font-size:1.2rem;
+  cursor:pointer; display:flex;
+  align-items:center; justify-content:center;
+  transition:background .15s;
+}
+.lightbox-close:hover { background:rgba(255,255,255,.3); }
+.lightbox-nav {
+  position:absolute;
+  top:50%; transform:translateY(-50%);
+  width:44px; height:44px;
+  background:rgba(255,255,255,.15);
+  border:none; border-radius:50%;
+  color:#fff; font-size:1.3rem;
+  cursor:pointer; display:flex;
+  align-items:center; justify-content:center;
+  transition:background .15s;
+}
+.lightbox-nav:hover { background:rgba(255,255,255,.3); }
+.lightbox-prev { left:16px; }
+.lightbox-next { right:16px; }
+.lightbox-counter {
+  position:absolute;
+  bottom:20px; left:50%;
+  transform:translateX(-50%);
+  color:rgba(255,255,255,.7);
+  font-size:.8rem; font-weight:700;
+  background:rgba(0,0,0,.4);
+  padding:4px 14px; border-radius:20px;
+}
 </style>
 </head>
 <body>
@@ -243,6 +315,12 @@
       <div class="det-titulo-sec">Detalles</div>
       <div class="det-pills" id="det-pills"></div>
       <div class="det-coment" id="det-coment"></div>
+    </div>
+
+    <!-- GALERÍA DE FOTOS (se muestra solo si la tarea tiene fotos) -->
+    <div class="fotos-card" id="fotos-card" style="display:none">
+      <div class="fotos-titulo">📷 Fotos de la tarea</div>
+      <div class="fotos-grid" id="fotos-grid"></div>
     </div>
 
     <!-- Q&A -->
@@ -398,6 +476,15 @@
       <button class="btn-modal-confirmar" id="btn-confirmar" onclick="confirmarCancelar()">Sí, cancelar</button>
     </div>
   </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="lightboxClickFuera(event)">
+  <button class="lightbox-close" onclick="cerrarLightbox()">✕</button>
+  <button class="lightbox-nav lightbox-prev" id="lb-prev" onclick="lightboxNav(-1)">‹</button>
+  <img class="lightbox-img" id="lb-img" src="" alt="Foto de la tarea">
+  <button class="lightbox-nav lightbox-next" id="lb-next" onclick="lightboxNav(1)">›</button>
+  <div class="lightbox-counter" id="lb-counter"></div>
 </div>
 
 <div id="toast"></div>
@@ -576,6 +663,9 @@ function renderTarea(t) {
   document.getElementById('inf-zona').textContent = t.direccion || t.zona || '—';
   document.getElementById('inf-cuando').textContent = t.fecha || t.cuando || '—';
   document.getElementById('inf-pres').textContent = t.presupuesto > 0 ? '$'+Number(t.presupuesto).toLocaleString('es-AR') : 'A convenir';
+
+  // ── FOTOS ──
+  renderFotos(t.fotos);
 
   if (estado === 'cancelada') {
     document.getElementById('banner-cancelada').style.display = 'block';
@@ -1520,6 +1610,74 @@ function iniciarRealtime() {
     })
     .subscribe();
 }
+
+// ══ FOTOS ══
+var lbFotos = [];
+var lbIdx   = 0;
+
+function renderFotos(fotos) {
+  if (!fotos || !fotos.length) return;
+  var card = document.getElementById('fotos-card');
+  var grid = document.getElementById('fotos-grid');
+  if (!card || !grid) return;
+
+  lbFotos = fotos;
+  card.style.display = 'block';
+  grid.innerHTML = '';
+  fotos.forEach(function(url, i) {
+    var div = document.createElement('div');
+    div.className = 'foto-item';
+    div.setAttribute('title', 'Ver foto ' + (i + 1));
+    div.onclick = function() { abrirLightbox(i); };
+    var img = document.createElement('img');
+    img.src = url;
+    img.alt = 'Foto ' + (i + 1);
+    img.loading = 'lazy';
+    div.appendChild(img);
+    grid.appendChild(div);
+  });
+}
+
+function abrirLightbox(idx) {
+  lbIdx = idx;
+  actualizarLightbox();
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function lightboxClickFuera(e) {
+  if (e.target === document.getElementById('lightbox')) cerrarLightbox();
+}
+
+function lightboxNav(dir) {
+  lbIdx = (lbIdx + dir + lbFotos.length) % lbFotos.length;
+  actualizarLightbox();
+}
+
+function actualizarLightbox() {
+  var img  = document.getElementById('lb-img');
+  var cnt  = document.getElementById('lb-counter');
+  var prev = document.getElementById('lb-prev');
+  var next = document.getElementById('lb-next');
+  img.src  = lbFotos[lbIdx];
+  cnt.textContent = (lbIdx + 1) + ' / ' + lbFotos.length;
+  prev.style.display = lbFotos.length > 1 ? 'flex' : 'none';
+  next.style.display = lbFotos.length > 1 ? 'flex' : 'none';
+}
+
+// Escape y flechas del teclado
+document.addEventListener('keydown', function(e) {
+  var lb = document.getElementById('lightbox');
+  if (!lb || !lb.classList.contains('open')) return;
+  if (e.key === 'Escape')     { cerrarLightbox(); }
+  if (e.key === 'ArrowLeft')  { lightboxNav(-1); }
+  if (e.key === 'ArrowRight') { lightboxNav(1); }
+});
 
 // ══ UTILS ══
 function escH(t) { if(!t)return''; const d=document.createElement('div'); d.textContent=String(t); return d.innerHTML; }
