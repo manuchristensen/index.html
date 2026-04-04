@@ -15,29 +15,29 @@ body{overflow:hidden}
 /* ══ LAYOUT ══ */
 .exp-page{display:flex;flex-direction:column;height:calc(100vh - 66px)}
 
-/* FILTROS */
+/* FILTROS — una sola fila: buscador flexible + botones a la derecha */
 .exp-filtros{
   background:var(--blanco);border-bottom:1.5px solid var(--borde);
-  padding:10px 20px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  padding:10px 20px;display:flex;align-items:center;gap:10px;
   flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.05);z-index:100;
 }
-.exp-search-wrap{position:relative;flex-shrink:0}
+.exp-search-wrap{position:relative;flex:1;min-width:0}
 .exp-search-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--suave);font-size:.9rem;pointer-events:none}
 .exp-search{
   background:var(--fondo);border:1.5px solid var(--borde);border-radius:var(--radio-pill);
   padding:8px 12px 8px 32px;font-family:'Nunito',sans-serif;font-size:.85rem;
-  font-weight:700;color:var(--texto);outline:none;transition:border-color .2s;width:220px;
+  font-weight:700;color:var(--texto);outline:none;transition:border-color .2s;width:100%;
 }
 .exp-search:focus{border-color:var(--verde);background:var(--blanco)}
 .exp-search::placeholder{color:#CBD5E1}
-.filtro-btn{
-  display:inline-flex;align-items:center;gap:5px;padding:7px 14px;
+.filtro-adv-btn{
+  display:inline-flex;align-items:center;gap:5px;padding:8px 16px;
   border:1.5px solid var(--borde);border-radius:var(--radio-pill);background:var(--blanco);
-  font-family:'Nunito',sans-serif;font-size:.8rem;font-weight:800;color:var(--suave);
-  cursor:pointer;transition:all .2s;white-space:nowrap;
+  font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:800;color:var(--suave);
+  cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0;
 }
-.filtro-btn:hover{border-color:var(--verde);color:var(--verde-o);background:var(--verde-c)}
-.filtro-btn.activo{border-color:var(--verde);color:var(--verde-o);background:var(--verde-c)}
+.filtro-adv-btn:hover{border-color:var(--verde);color:var(--verde-o);background:var(--verde-c)}
+.filtro-adv-btn.activo{border-color:var(--verde);color:var(--verde-o);background:var(--verde-c);font-weight:900}
 
 /* ══ CONTENIDO PRINCIPAL ══ */
 .exp-contenido{display:grid;grid-template-columns:380px 1fr;flex:1;overflow:hidden}
@@ -144,13 +144,6 @@ body{overflow:hidden}
   .exp-mapa{height:45vh}
 }
 
-/* ── FILTROS AVANZADOS ── */
-.filtros-avanzados{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:0 16px 10px;border-bottom:1.5px solid var(--borde);background:var(--blanco)}
-.filtro-adv-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;border:1.5px solid var(--borde);border-radius:var(--radio-pill);background:var(--blanco);font-family:'Nunito',sans-serif;font-size:.82rem;font-weight:800;color:var(--suave);cursor:pointer;transition:all .2s;white-space:nowrap}
-.filtro-adv-btn:hover{border-color:var(--verde);color:var(--verde-o)}
-.filtro-adv-btn.activo{border-color:var(--verde);background:var(--verde-c);color:var(--verde-o)}
-.filtro-adv-sep{width:1px;height:24px;background:var(--borde);flex-shrink:0}
-
 /* Modal de filtros */
 .filtro-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:3000;align-items:center;justify-content:center}
 .filtro-modal-overlay.show{display:flex}
@@ -205,26 +198,11 @@ body{overflow:hidden}
       <span class="exp-search-ico">&#128269;</span>
       <input type="text" class="exp-search" id="exp-search" placeholder="Buscar tareas... Ej: limpieza, plomería, jardín" oninput="filtrar()">
     </div>
-    <button class="filtro-btn activo" id="f-todas" onclick="setFiltro('todas',this)">&#127775; Todas</button>
-    <button class="filtro-btn" onclick="setFiltro('limpieza',this)">&#129529; Limpieza</button>
-    <button class="filtro-btn" onclick="setFiltro('plomeria',this)">&#128295; Plomeria</button>
-    <button class="filtro-btn" onclick="setFiltro('pintura',this)">&#127912; Pintura</button>
-    <button class="filtro-btn" onclick="setFiltro('electricidad',this)">&#9889; Electricidad</button>
-    <button class="filtro-btn" onclick="setFiltro('jardin',this)">&#127807; Jardin</button>
-    <button class="filtro-btn" onclick="setFiltro('mudanza',this)">&#128230; Mudanza</button>
-  </div>
-  <!-- Filtros avanzados: distancia y precio -->
-  <div class="filtros-avanzados">
     <button class="filtro-adv-btn activo" id="btn-distancia" onclick="abrirModalDistancia()">
       &#128205; <span id="lbl-distancia">10 km</span>
     </button>
-    <div class="filtro-adv-sep"></div>
     <button class="filtro-adv-btn" id="btn-precio" onclick="abrirModalPrecio()">
       &#128176; <span id="lbl-precio">Precio</span>
-    </button>
-    <div class="filtro-adv-sep"></div>
-    <button class="filtro-adv-btn" id="btn-ordenar" onclick="toggleOrden(this)">
-      &#8645; <span id="lbl-orden">Más cercanas</span>
     </button>
   </div>
 
