@@ -97,6 +97,69 @@
 .res-val{font-size:.88rem;font-weight:900;color:var(--texto);text-align:right}
 @media(max-width:900px){.pub-sidebar{display:none}.pub-footer{left:0;padding:14px 20px}.pub-main{padding:32px 20px 120px}}
 
+/* ── FOTOS ── */
+.foto-drop {
+  border: 2px dashed var(--borde);
+  border-radius: var(--radio-lg);
+  padding: 28px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+  background: var(--fondo);
+  margin-top: 4px;
+}
+.foto-drop:hover { border-color: var(--verde); background: var(--verde-c); }
+.foto-drop.drag-over { border-color: var(--verde); background: var(--verde-c); transform: scale(1.01); }
+.foto-drop-ico { font-size: 2rem; margin-bottom: 8px; }
+.foto-drop-txt { font-size: .92rem; font-weight: 800; color: var(--texto); margin-bottom: 4px; }
+.foto-drop-sub { font-size: .75rem; font-weight: 700; color: var(--suave); }
+
+.foto-preview-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+.foto-thumb {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid var(--borde);
+  flex-shrink: 0;
+}
+.foto-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.foto-thumb-del {
+  position: absolute;
+  top: 3px; right: 3px;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: rgba(0,0,0,.6);
+  color: #fff;
+  font-size: .75rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  border: none;
+  line-height: 1;
+}
+.foto-thumb-del:hover { background: var(--rojo); }
+.foto-thumb-prog {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  font-size: .72rem;
+  font-weight: 900;
+}
+.foto-count {
+  font-size: .75rem;
+  font-weight: 700;
+  color: var(--suave);
+  margin-top: 6px;
+}
+
 /* ══ TASKER CARD en publicar ══ */
 .tasker-banner {
   display:flex;align-items:center;gap:16px;
@@ -249,6 +312,24 @@
         <span class="pub-hint">Cualquier info extra util para el tasker. Minimo 10 caracteres.</span>
         <textarea class="pub-input" id="inp-coment" rows="4" placeholder="Ej: Tengo los materiales, hay ascensor, necesito factura, horario preferido..." maxlength="500" oninput="onComentChange()"></textarea>
         <div class="char-count" id="coment-count">0 / 500</div>
+      </div>
+
+      <!-- FOTOS DE LA TAREA -->
+      <div class="pub-field" style="margin-top:4px">
+        <label class="pub-label">Fotos de referencia <span style="font-weight:700;color:var(--suave);font-size:.85rem">(opcional, hasta 10)</span></label>
+        <span class="pub-hint">Ayudan al tasker a entender mejor la tarea. Las fotos se muestran en el posteo.</span>
+
+        <!-- Zona de drop / click -->
+        <div class="foto-drop" id="foto-drop" onclick="document.getElementById('inp-fotos').click()">
+          <div class="foto-drop-ico">📷</div>
+          <div class="foto-drop-txt">Tocá para agregar fotos</div>
+          <div class="foto-drop-sub">JPG, PNG o WEBP · máx. 5 MB por foto</div>
+        </div>
+        <input type="file" id="inp-fotos" accept="image/jpeg,image/png,image/webp" multiple style="display:none" onchange="onFotosSeleccionadas(this)">
+
+        <!-- Preview de fotos seleccionadas -->
+        <div class="foto-preview-wrap" id="foto-preview-wrap"></div>
+        <div class="foto-count" id="foto-count" style="display:none"></div>
       </div>
     </div>
 
@@ -792,6 +873,16 @@ async function publicar() {
       return;
     }
 
+    // ── SUBIR FOTOS (si hay) ──
+    if (fotosSeleccionadas.length > 0) {
+      btn.textContent = 'Subiendo fotos...';
+      const fotoUrls = await subirFotos(tarea.id, session.user.id);
+      if (fotoUrls.length > 0) {
+        // Guardar array de URLs en la columna fotos de tareas
+        await db.from('tareas').update({ fotos: fotoUrls }).eq('id', tarea.id);
+      }
+    }
+
     // ══ Notificar al tasker si la tarea fue dirigida desde su perfil ══
     if (taskerIdDest && taskerIdDest !== session.user.id) {
       try {
@@ -827,6 +918,109 @@ function mostrarExito() {
     document.getElementById('side-' + i)?.classList.add('done');
     document.getElementById('conn-' + i)?.classList.add('done');
   }
+}
+
+// ── FOTOS ──
+var fotosSeleccionadas = []; // array de File objects
+var MAX_FOTOS = 10;
+var MAX_SIZE  = 5 * 1024 * 1024; // 5 MB
+
+function onFotosSeleccionadas(input) {
+  var files = Array.from(input.files);
+  input.value = ''; // reset para permitir re-selección
+
+  var rechazadas = 0;
+  files.forEach(function(f) {
+    if (fotosSeleccionadas.length >= MAX_FOTOS) { rechazadas++; return; }
+    if (f.size > MAX_SIZE) { showToast('❌ ' + f.name + ' supera 5 MB'); return; }
+    // Evitar duplicados por nombre+tamaño
+    var dup = fotosSeleccionadas.some(function(x) { return x.name === f.name && x.size === f.size; });
+    if (!dup) fotosSeleccionadas.push(f);
+  });
+  if (rechazadas) showToast('Máximo ' + MAX_FOTOS + ' fotos. Algunas no se agregaron.');
+  renderFotosPrev();
+}
+
+function renderFotosPrev() {
+  var wrap = document.getElementById('foto-preview-wrap');
+  var count = document.getElementById('foto-count');
+  wrap.innerHTML = '';
+  fotosSeleccionadas.forEach(function(f, i) {
+    var thumb = document.createElement('div');
+    thumb.className = 'foto-thumb';
+    var url = URL.createObjectURL(f);
+    thumb.innerHTML =
+      '<img src="' + url + '" alt="foto">' +
+      '<button class="foto-thumb-del" onclick="eliminarFoto(' + i + ')" title="Eliminar">✕</button>';
+    wrap.appendChild(thumb);
+  });
+  if (fotosSeleccionadas.length > 0) {
+    count.style.display = 'block';
+    count.textContent = fotosSeleccionadas.length + ' de ' + MAX_FOTOS + ' fotos seleccionadas';
+    // Actualizar texto del drop
+    document.querySelector('.foto-drop-txt').textContent = 'Agregar más fotos';
+  } else {
+    count.style.display = 'none';
+    document.querySelector('.foto-drop-txt').textContent = 'Tocá para agregar fotos';
+  }
+}
+
+function eliminarFoto(i) {
+  fotosSeleccionadas.splice(i, 1);
+  renderFotosPrev();
+}
+
+// Drag & drop
+(function() {
+  var drop = document.getElementById('foto-drop');
+  if (!drop) return;
+  drop.addEventListener('dragover', function(e) { e.preventDefault(); drop.classList.add('drag-over'); });
+  drop.addEventListener('dragleave', function() { drop.classList.remove('drag-over'); });
+  drop.addEventListener('drop', function(e) {
+    e.preventDefault();
+    drop.classList.remove('drag-over');
+    var fakeInput = { files: e.dataTransfer.files, value: '' };
+    onFotosSeleccionadas(fakeInput);
+  });
+})();
+
+// Subir fotos a Supabase Storage y devolver array de URLs
+async function subirFotos(tareaId, userId) {
+  if (!fotosSeleccionadas.length) return [];
+  var urls = [];
+  var wrap = document.getElementById('foto-preview-wrap');
+  var thumbs = wrap.querySelectorAll('.foto-thumb');
+
+  for (var i = 0; i < fotosSeleccionadas.length; i++) {
+    var f = fotosSeleccionadas[i];
+    var thumb = thumbs[i];
+    // Mostrar progress
+    if (thumb) {
+      var prog = document.createElement('div');
+      prog.className = 'foto-thumb-prog';
+      prog.textContent = 'Subiendo...';
+      thumb.appendChild(prog);
+    }
+    try {
+      var ext  = f.name.split('.').pop().toLowerCase().replace('jpeg','jpg');
+      var path = 'tareas/' + tareaId + '/' + userId + '_' + Date.now() + '_' + i + '.' + ext;
+      var upRes = await db.storage.from('Fotos').upload(path, f, { contentType: f.type, upsert: false });
+      if (upRes.error) throw upRes.error;
+      var urlData = db.storage.from('Fotos').getPublicUrl(path);
+      urls.push(urlData.data.publicUrl);
+      if (thumb) {
+        var p = thumb.querySelector('.foto-thumb-prog');
+        if (p) p.remove();
+      }
+    } catch(e) {
+      console.warn('Error subiendo foto ' + i + ':', e.message);
+      if (thumb) {
+        var p2 = thumb.querySelector('.foto-thumb-prog');
+        if (p2) { p2.textContent = 'Error'; p2.style.background = 'rgba(239,68,68,.7)'; }
+      }
+    }
+  }
+  return urls;
 }
 
 irPaso(1);
