@@ -377,14 +377,7 @@ function solicitarGPS() {
 
       // Zoom inicial = radio del filtro activo (por defecto 10km)
       const km = filtroDistancia || 10;
-      const lat = miUbicacion.lat;
-      const lng = miUbicacion.lng;
-      const latOff = km / 111;
-      const lngOff = km / (111 * Math.cos(lat * Math.PI / 180));
-      mapa.fitBounds(
-        L.latLngBounds([lat - latOff, lng - lngOff], [lat + latOff, lng + lngOff]),
-        { padding: [24, 24] }
-      );
+      mapa.setView([miUbicacion.lat, miUbicacion.lng], kmAZoom(km, miUbicacion.lat));
 
       if (window._markerUsuario) mapa.removeLayer(window._markerUsuario);
       const iconUser = L.divIcon({
@@ -593,19 +586,7 @@ function aplicarDistancia() {
 
   // Ajustar zoom del mapa para mostrar exactamente el radio seleccionado
   if (miUbicacion) {
-    // Calcular zoom necesario para mostrar el diámetro (km * 2)
-    // Fórmula aproximada: zoom = log2(40075 * cos(lat) / (km * 2 * 256 / ancho_pantalla))
-    // Usamos flyToBounds con un círculo de radio=km centrado en la ubicación
-    const lat = miUbicacion.lat;
-    const lng = miUbicacion.lng;
-    // Offset en grados para el radio pedido (1 grado lat ≈ 111km)
-    const latOffset = km / 111;
-    const lngOffset = km / (111 * Math.cos(lat * Math.PI / 180));
-    const bounds = L.latLngBounds(
-      [lat - latOffset, lng - lngOffset],
-      [lat + latOffset, lng + lngOffset]
-    );
-    mapa.flyToBounds(bounds, { padding: [24, 24], duration: 0.8 });
+    mapa.flyTo([miUbicacion.lat, miUbicacion.lng], kmAZoom(km, miUbicacion.lat), { duration: 0.8 });
   }
 
   filtrar();
@@ -652,6 +633,19 @@ function setFiltro(cat, el) {
   document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('activo'));
   el.classList.add('activo');
   filtrar();
+}
+
+// Convierte km de radio al zoom level correcto de Leaflet.
+// Fórmula: el mapa tiene ~ancho/2 px de radio visible.
+// metros_por_px en zoom z = 156543 * cos(lat) / 2^z
+// Queremos que radio_px * metros_por_px = km * 1000
+// → z = log2(156543 * cos(lat) * anchoPx / (km * 1000))
+function kmAZoom(km, lat) {
+  lat = lat || -38; // latitud default Argentina
+  const anchoPx = (mapa.getSize().x || 800) / 2; // radio en píxeles
+  const metrosPorPx = (km * 1000) / anchoPx;
+  const z = Math.log2(156543 * Math.cos(lat * Math.PI / 180) / metrosPorPx);
+  return Math.round(Math.max(5, Math.min(18, z)));
 }
 
 function distancia(lat1, lng1, lat2, lng2) {
