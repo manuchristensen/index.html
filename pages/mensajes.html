@@ -417,7 +417,17 @@ async function abrirConv(conv) {
   document.getElementById('chat-empty').style.display = 'none';
   document.getElementById('chat-header').style.display = 'flex';
   document.getElementById('chat-msgs').style.display = 'flex';
-  document.getElementById('chat-footer').style.display = 'block';
+
+  // Bloquear input si la tarea está terminada
+  if (conv.tarea_estado === 'terminada') {
+    document.getElementById('chat-footer').innerHTML = `
+      <div style="text-align:center;padding:12px 16px;background:var(--fondo);border-radius:var(--radio-lg);color:var(--suave);font-size:.82rem;font-weight:800">
+        🔒 Tarea completada — el chat está cerrado
+      </div>`;
+    document.getElementById('chat-footer').style.display = 'block';
+  } else {
+    document.getElementById('chat-footer').style.display = 'block';
+  }
 
   // Cargar mensajes
   await cargarMensajes(conv.conv_id);

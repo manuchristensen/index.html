@@ -500,7 +500,7 @@ async function cargarTareas(userId) {
     // Tareas que YO publiqué
     const { data: misPublicadas } = await db
       .from('tareas')
-      .select('*, ofertas(count)')
+      .select('*, ofertas(count), review_cliente, review_tasker')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
 
@@ -605,11 +605,16 @@ function renderCard(t) {
     const av = t.tasker.avatar_url
       ? `<img src="${t.tasker.avatar_url}" alt="${t.tasker.nombre}">`
       : ini;
+    const reviewBadge = (t.estado === 'terminada' && !t.review_cliente && t._rol === 'autor')
+      ? `<span style="display:inline-flex;align-items:center;gap:4px;background:#FEF3C7;color:#92400E;border:1px solid #FCD34D;border-radius:var(--radio-pill);padding:3px 10px;font-size:.7rem;font-weight:900;margin-left:8px">⭐ Reseñar</span>`
+      : (t.estado === 'terminada' && !t.review_tasker && t._rol === 'tasker')
+      ? `<span style="display:inline-flex;align-items:center;gap:4px;background:#FEF3C7;color:#92400E;border:1px solid #FCD34D;border-radius:var(--radio-pill);padding:3px 10px;font-size:.7rem;font-weight:900;margin-left:8px">⭐ Reseñar</span>`
+      : '';
     footerDer = `
       <div class="tasker-asignado">
         <div class="tasker-mini-av">${av}</div>
         <div class="tasker-mini-info">
-          <div class="tasker-mini-nombre">${t.tasker.nombre}</div>
+          <div class="tasker-mini-nombre">${t.tasker.nombre}${reviewBadge}</div>
           <div class="tasker-mini-sub">${t.estado === 'terminada' ? 'Completó la tarea' : 'Pactado: ' + (t.tasker.pactado || t.cuando)}</div>
         </div>
       </div>`;

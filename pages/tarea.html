@@ -170,6 +170,21 @@
 .btn-modal-confirmar{flex:1;padding:12px;border:none;border-radius:var(--radio-pill);background:var(--rojo);font-family:'Nunito',sans-serif;font-weight:900;font-size:.88rem;cursor:pointer;color:#fff;transition:all .2s}
 .btn-modal-confirmar:hover{background:#DC2626}
 
+/* MODAL REVIEW */
+.rv-modal-box{background:var(--blanco);border-radius:var(--radio-lg);padding:32px 28px;max-width:420px;width:92%;box-shadow:var(--sombra-lg);text-align:center}
+.rv-stars-row{display:flex;justify-content:center;gap:10px;margin:18px 0 6px}
+.rv-star{font-size:2.2rem;cursor:pointer;transition:transform .12s;line-height:1;color:#CBD5E1;user-select:none}
+.rv-star:hover,.rv-star.on{color:#F59E0B;transform:scale(1.15)}
+.rv-textarea{width:100%;background:var(--fondo);border:2px solid var(--borde);border-radius:var(--radio);padding:12px 14px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;color:var(--texto);outline:none;resize:none;min-height:80px;max-height:130px;transition:border-color .2s;margin-top:14px;box-sizing:border-box}
+.rv-textarea:focus{border-color:var(--verde);box-shadow:0 0 0 3px rgba(0,201,107,.1)}
+.rv-textarea::placeholder{color:#CBD5E1}
+.rv-label{font-size:.7rem;font-weight:800;color:var(--suave);text-transform:uppercase;letter-spacing:.6px;margin-top:10px;display:block}
+.btn-rv-enviar{width:100%;padding:13px;border:none;border-radius:var(--radio-pill);background:var(--verde);font-family:'DM Sans',sans-serif;font-weight:900;font-size:.95rem;cursor:pointer;color:#fff;transition:all .2s;margin-top:16px}
+.btn-rv-enviar:hover{background:var(--verde-o);transform:translateY(-1px)}
+.btn-rv-enviar:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-rv-omitir{background:none;border:none;font-family:'DM Sans',sans-serif;font-weight:700;font-size:.82rem;color:var(--suave);cursor:pointer;margin-top:10px;text-decoration:underline;width:100%}
+.btn-rv-omitir:hover{color:var(--texto)}
+
 @media(max-width:820px){.tarea-wrap{grid-template-columns:1fr;padding:20px 16px 60px}.autor-panel,.oferta-card{position:static}}
 
 /* ── GALERÍA DE FOTOS ── */
@@ -478,6 +493,28 @@
   </div>
 </div>
 
+<!-- MODAL REVIEW -->
+<div class="modal-overlay" id="modal-review" onclick="if(event.target===this)omitirReview()">
+  <div class="rv-modal-box">
+    <div style="font-size:2.4rem;margin-bottom:4px" id="rv-ico">⭐</div>
+    <div style="font-size:1.1rem;font-weight:900;margin-bottom:4px" id="rv-titulo">¿Cómo fue trabajar con esta persona?</div>
+    <div style="font-size:.82rem;font-weight:700;color:var(--suave);line-height:1.5" id="rv-sub">Tu reseña ayuda a la comunidad a elegir mejor.</div>
+    <div class="rv-stars-row" id="rv-stars">
+      <span class="rv-star" data-v="1" onclick="selectStar(1)">★</span>
+      <span class="rv-star" data-v="2" onclick="selectStar(2)">★</span>
+      <span class="rv-star" data-v="3" onclick="selectStar(3)">★</span>
+      <span class="rv-star" data-v="4" onclick="selectStar(4)">★</span>
+      <span class="rv-star" data-v="5" onclick="selectStar(5)">★</span>
+    </div>
+    <div id="rv-rating-label" style="font-size:.78rem;font-weight:800;color:#F59E0B;min-height:1.2em;margin-bottom:2px"></div>
+    <span class="rv-label">Dejá un comentario (opcional)</span>
+    <textarea class="rv-textarea" id="rv-comentario" placeholder="Contá cómo fue la experiencia..." maxlength="300"></textarea>
+    <div style="font-size:.68rem;font-weight:700;color:var(--suave);text-align:right;margin-top:3px"><span id="rv-chars">0</span>/300</div>
+    <button class="btn-rv-enviar" id="btn-rv-enviar" onclick="enviarReview()" disabled>Enviar reseña</button>
+    <button class="btn-rv-omitir" onclick="omitirReview()">Omitir por ahora</button>
+  </div>
+</div>
+
 <!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox" onclick="lightboxClickFuera(event)">
   <button class="lightbox-close" onclick="cerrarLightbox()">✕</button>
@@ -777,6 +814,17 @@ async function cargarInfoAsignado(tareaId, miId) {
       window._ofertaActivaId = oferta.id;
       window._taskerActivoId = oferta.tasker_id;
 
+      // Si la tarea ya está terminada, mostrar banner de review para el tasker
+      if (tareaData?.estado === 'terminada') {
+        document.getElementById('wrap-btn-termine').style.display = 'none';
+        document.getElementById('wrap-esperando-pago').style.display = 'none';
+        // Chequear si el tasker ya dejó review
+        const { data: rvExist } = await db.from('reviews')
+          .select('id').eq('tarea_id', TAREA_ID).eq('autor_id', miId).maybeSingle();
+        const yaReviewo = !!rvExist || tareaData?.review_tasker;
+        mostrarBannerReviewTasker(yaReviewo, autorId);
+      }
+
     } else {
       // SOY UN VISITANTE — mostrar quién tiene la tarea
       const infoEl = document.getElementById('asignada-info');
@@ -785,7 +833,7 @@ async function cargarInfoAsignado(tareaId, miId) {
       }
     }
 
-    // ── SOY EL DUEÑO en modo en-curso ──
+    // ── SOY EL DUEÑO en modo en-curso o terminada ──
     if (esAutor) {
       document.getElementById('btn-cancelar-wrap').style.display = 'none';
       document.getElementById('panel-en-curso-autor').style.display = 'block';
@@ -793,7 +841,26 @@ async function cargarInfoAsignado(tareaId, miId) {
       window._ofertaActivaId = oferta.id;
       window._taskerActivoId = oferta.tasker_id;
 
-      if (taskerConfirmo) {
+      if (tareaData?.estado === 'terminada') {
+        // Tarea ya terminada: mostrar panel completado + botón review si no reseñó
+        const { data: rvExist } = await db.from('reviews')
+          .select('id').eq('tarea_id', TAREA_ID).eq('autor_id', miId).maybeSingle();
+        const yaReviewo = !!rvExist || tareaData?.review_cliente;
+        document.getElementById('panel-en-curso-autor').innerHTML = yaReviewo
+          ? `<div style="background:var(--azul-c);border:1.5px solid var(--azul);border-radius:var(--radio-lg);padding:20px;text-align:center">
+              <div style="font-size:1.8rem;margin-bottom:8px">🎉</div>
+              <div style="font-size:.9rem;font-weight:900;color:#1D4ED8;margin-bottom:4px">¡Tarea completada!</div>
+              <div style="font-size:.75rem;font-weight:700;color:var(--suave)">Ya dejaste tu reseña. ¡Gracias!</div>
+            </div>`
+          : `<div style="background:var(--azul-c);border:1.5px solid var(--azul);border-radius:var(--radio-lg);padding:20px;text-align:center">
+              <div style="font-size:1.8rem;margin-bottom:8px">🎉</div>
+              <div style="font-size:.9rem;font-weight:900;color:#1D4ED8;margin-bottom:4px">¡Tarea completada!</div>
+              <div style="font-size:.75rem;font-weight:700;color:var(--suave);margin-bottom:12px">¿Querés dejar una reseña al tasker?</div>
+              <button onclick="abrirModalReview('cliente', '${oferta.tasker_id}')" style="width:100%;padding:10px;background:#3B82F6;color:#fff;border:none;border-radius:var(--radio-pill);font-family:'DM Sans',sans-serif;font-weight:900;font-size:.85rem;cursor:pointer;transition:all .2s" onmouseover="this.style.background='#2563EB'" onmouseout="this.style.background='#3B82F6'">
+                ⭐ Dejar reseña al tasker
+              </button>
+            </div>`;
+      } else if (taskerConfirmo) {
         document.getElementById('panel-confirmar-pago').style.display = 'block';
       }
     }
@@ -929,24 +996,21 @@ async function taskerConfirmaTerminado() {
   btn.textContent = '...'; btn.disabled = true;
 
   try {
-    // Guardar flag en la tarea
     const { error } = await db.from('tareas')
       .update({ tasker_confirmo: true })
       .eq('id', TAREA_ID);
     if (error) throw error;
 
-    // Notificar al dueño
-    const miNombre = currentUser.user_metadata?.nombre || currentUser.email?.split('@')[0] || 'El tasker';
+    const miNombre = await getMiNombreReal();
     await crearNotificacion(autorId, 'sistema',
       '✅ El tasker confirmó que terminó',
-      'Entrá a la tarea para confirmar el pago y cerrar.',
+      'Entrá a la tarea para confirmar que el trabajo fue completado.',
       miNombre
     );
 
-    // Actualizar UI
     document.getElementById('wrap-btn-termine').style.display = 'none';
     document.getElementById('wrap-esperando-pago').style.display = 'block';
-    showToast('✅ Confirmado. Esperando que el cliente procese el pago.');
+    showToast('✅ Confirmado. Esperando que el cliente lo verifique.');
 
   } catch(e) {
     showToast('Error: ' + e.message);
@@ -954,30 +1018,29 @@ async function taskerConfirmaTerminado() {
   }
 }
 
-// ── DUEÑO confirma pago y cierra la tarea ──
+// ── DUEÑO confirma que la tarea fue completada ──
 async function confirmarPago() {
-  if (!confirm('¿Confirmar que el trabajo fue realizado y proceder con el pago?')) return;
-
   try {
-    // Marcar tarea como terminada
     const { error: e1 } = await db.from('tareas')
       .update({ estado: 'terminada', terminada_at: new Date().toISOString() })
       .eq('id', TAREA_ID);
     if (e1) throw e1;
 
-    // Notificar al tasker
-    const miNombre = currentUser.user_metadata?.nombre || currentUser.email?.split('@')[0] || 'El cliente';
+    // Notificar al tasker para que también deje su review
+    const miNombre = await getMiNombreReal();
     if (window._taskerActivoId) {
       await crearNotificacion(window._taskerActivoId, 'sistema',
-        '💰 ¡El cliente confirmó el pago!',
-        'La tarea fue marcada como terminada. El pago se procesará en breve.',
+        '🎉 ¡Tarea completada! Dejá tu reseña',
+        'El cliente confirmó el trabajo. Entrá a la tarea y dejá tu reseña.',
         miNombre
       );
     }
 
-    // Actualizar UI
+    // Actualizar chip de estado
     document.getElementById('h-estado').className = 'estado-chip ep-terminada';
     document.getElementById('h-estado').textContent = '✅ Terminada';
+
+    // Reemplazar panel del sidebar con mensaje de completada
     document.getElementById('panel-en-curso-autor').innerHTML = `
       <div style="background:var(--azul-c);border:1.5px solid var(--azul);border-radius:var(--radio-lg);padding:20px;text-align:center">
         <div style="font-size:1.8rem;margin-bottom:8px">🎉</div>
@@ -985,7 +1048,10 @@ async function confirmarPago() {
         <div style="font-size:.75rem;font-weight:700;color:var(--suave)">El pago se procesará una vez configurados los métodos de pago.</div>
       </div>`;
 
-    showToast('🎉 ¡Tarea completada! Pago en proceso.');
+    showToast('🎉 ¡Tarea completada!');
+
+    // Abrir modal de review para el dueño (reseña sobre el tasker)
+    setTimeout(() => abrirModalReview('cliente', window._taskerActivoId), 800);
 
   } catch(e) {
     showToast('Error: ' + e.message);
@@ -1544,6 +1610,31 @@ async function crearNotificacion(userId, tipo, titulo, mensaje, actorNombreFallb
   } catch(e) { console.warn('Notif error:', e.message); }
 }
 
+// ══ BANNER REVIEW TASKER ══
+function mostrarBannerReviewTasker(yaReviewo, clienteId) {
+  const wrap = document.getElementById('panel-en-curso-tasker');
+  if (!wrap) return;
+
+  if (yaReviewo) {
+    wrap.innerHTML = `
+      <div style="background:var(--azul-c);border:1.5px solid var(--azul);border-radius:var(--radio-lg);padding:20px;text-align:center">
+        <div style="font-size:1.6rem;margin-bottom:6px">🎉</div>
+        <div style="font-size:.9rem;font-weight:900;color:#1D4ED8;margin-bottom:4px">¡Tarea completada!</div>
+        <div style="font-size:.75rem;font-weight:700;color:var(--suave)">Ya dejaste tu reseña. ¡Gracias!</div>
+      </div>`;
+  } else {
+    wrap.innerHTML = `
+      <div style="background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:1.5px solid #FCD34D;border-radius:var(--radio-lg);padding:20px;text-align:center">
+        <div style="font-size:1.6rem;margin-bottom:8px">⭐</div>
+        <div style="font-size:.92rem;font-weight:900;color:#92400E;margin-bottom:5px">¡Tarea completada!</div>
+        <div style="font-size:.76rem;font-weight:700;color:#92400E;opacity:.85;margin-bottom:14px">¿Cómo fue trabajar con el cliente? Tu reseña ayuda a la comunidad.</div>
+        <button onclick="abrirModalReview('tasker', '${clienteId}')" style="width:100%;padding:11px;background:#F59E0B;color:#fff;border:none;border-radius:var(--radio-pill);font-family:'DM Sans',sans-serif;font-weight:900;font-size:.88rem;cursor:pointer;transition:all .2s" onmouseover="this.style.background='#D97706'" onmouseout="this.style.background='#F59E0B'">
+          ⭐ Dejar reseña al cliente
+        </button>
+      </div>`;
+  }
+}
+
 // ══ CANCELAR TAREA ══
 function abrirModalCancelar() { document.getElementById('modal-cancelar').classList.add('show'); }
 function cerrarModal() { document.getElementById('modal-cancelar').classList.remove('show'); }
@@ -1678,6 +1769,105 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowLeft')  { lightboxNav(-1); }
   if (e.key === 'ArrowRight') { lightboxNav(1); }
 });
+
+// ══ SISTEMA DE REVIEWS ══
+
+let _rvRating = 0;
+let _rvDestinatario = null;
+let _rvRolAutor = null;
+const RV_LABELS = ['', 'Muy malo 😕', 'Regular 😐', 'Bueno 👍', 'Muy bueno 😊', '¡Excelente! 🌟'];
+
+function abrirModalReview(rolAutor, destinatarioId) {
+  _rvRating = 0;
+  _rvDestinatario = destinatarioId;
+  _rvRolAutor = rolAutor;
+  // Resetear UI
+  document.querySelectorAll('.rv-star').forEach(s => s.classList.remove('on'));
+  document.getElementById('rv-comentario').value = '';
+  document.getElementById('rv-chars').textContent = '0';
+  document.getElementById('rv-rating-label').textContent = '';
+  document.getElementById('btn-rv-enviar').disabled = true;
+  document.getElementById('btn-rv-enviar').textContent = 'Enviar reseña';
+  // Texto según quién reseña a quién
+  if (rolAutor === 'cliente') {
+    document.getElementById('rv-ico').textContent = '⭐';
+    document.getElementById('rv-titulo').textContent = '¿Cómo fue el tasker?';
+    document.getElementById('rv-sub').textContent = 'Tu reseña ayuda a otros clientes a elegir mejor.';
+  } else {
+    document.getElementById('rv-ico').textContent = '⭐';
+    document.getElementById('rv-titulo').textContent = '¿Cómo fue el cliente?';
+    document.getElementById('rv-sub').textContent = 'Ayudá a otros taskers a saber con quién van a trabajar.';
+  }
+  document.getElementById('modal-review').classList.add('show');
+}
+
+function selectStar(val) {
+  _rvRating = val;
+  document.querySelectorAll('.rv-star').forEach(s => {
+    s.classList.toggle('on', parseInt(s.dataset.v) <= val);
+  });
+  document.getElementById('rv-rating-label').textContent = RV_LABELS[val] || '';
+  document.getElementById('btn-rv-enviar').disabled = false;
+}
+
+// Contador caracteres textarea review
+(function() {
+  function initRvCounter() {
+    const ta = document.getElementById('rv-comentario');
+    if (ta) {
+      ta.addEventListener('input', () => {
+        document.getElementById('rv-chars').textContent = ta.value.length;
+      });
+    } else {
+      setTimeout(initRvCounter, 300);
+    }
+  }
+  initRvCounter();
+})();
+
+async function enviarReview() {
+  if (!_rvRating || !_rvDestinatario || !currentUser) return;
+  const btn = document.getElementById('btn-rv-enviar');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+  const comentario = document.getElementById('rv-comentario').value.trim();
+  try {
+    const { error } = await db.from('reviews').insert({
+      tarea_id:        TAREA_ID,
+      autor_id:        currentUser.id,
+      destinatario_id: _rvDestinatario,
+      rating:          _rvRating,
+      comentario:      comentario || null,
+      rol_autor:       _rvRolAutor
+    });
+    if (error) {
+      // Unique constraint: ya dejó review
+      if (error.code === '23505') {
+        cerrarModalReview();
+        showToast('Ya dejaste una reseña para esta tarea.');
+        return;
+      }
+      throw error;
+    }
+    // Marcar en tareas que esta parte ya reseñó
+    const campo = _rvRolAutor === 'cliente' ? 'review_cliente' : 'review_tasker';
+    await db.from('tareas').update({ [campo]: true }).eq('id', TAREA_ID);
+    cerrarModalReview();
+    showToast('⭐ ¡Reseña enviada! Gracias por tu opinión.');
+  } catch(e) {
+    showToast('Error al enviar reseña: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = 'Enviar reseña';
+  }
+}
+
+function cerrarModalReview() {
+  document.getElementById('modal-review').classList.remove('show');
+}
+
+function omitirReview() {
+  cerrarModalReview();
+}
 
 // ══ UTILS ══
 function escH(t) { if(!t)return''; const d=document.createElement('div'); d.textContent=String(t); return d.innerHTML; }
