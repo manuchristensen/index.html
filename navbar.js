@@ -39,7 +39,10 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY);
   drawer.innerHTML =
     '<div class="nav-drawer-overlay" id="nav-drawer-overlay"></div>' +
     '<div class="nav-drawer-panel">' +
-      '<a href="home.html" class="nav-drawer-logo">Chamba<em>Ya</em></a>' +
+      '<div class="nav-drawer-top">' +
+        '<a href="home.html" class="nav-drawer-logo">Chamba<em>Ya</em></a>' +
+        '<button class="nav-drawer-close" id="nav-drawer-close" aria-label="Cerrar menú">✕</button>' +
+      '</div>' +
       '<a href="perfil.html" class="nav-drawer-perfil" id="drawer-perfil-link">' +
         '<div class="nav-drawer-av" id="drawer-av"><span id="drawer-ini">?</span></div>' +
         '<div>' +
@@ -61,6 +64,9 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
   // Overlay cierra el drawer
   drawer.querySelector('#nav-drawer-overlay').addEventListener('click', cerrarDrawer);
+
+  // Botón X cierra el drawer
+  drawer.querySelector('#nav-drawer-close').addEventListener('click', cerrarDrawer);
 
   // Cerrar sesión desde drawer
   drawer.querySelector('#drawer-cerrar-sesion').addEventListener('click', function(e) {

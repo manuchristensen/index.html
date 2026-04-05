@@ -756,9 +756,28 @@ textarea.form-input { resize: none; line-height: 1.55; }
     font-weight: 900;
     color: var(--texto);
     text-decoration: none;
-    margin-bottom: 20px;
   }
   .nav-drawer-logo em { color: var(--verde); font-style: normal; }
+
+  /* Fila superior: logo + X */
+  .nav-drawer-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .nav-drawer-close {
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    color: var(--suave);
+    cursor: pointer;
+    padding: 4px 6px;
+    line-height: 1;
+    border-radius: 6px;
+    transition: color .15s, background .15s;
+  }
+  .nav-drawer-close:hover { color: var(--texto); background: var(--fondo); }
 
   /* Mini perfil en drawer */
   .nav-drawer-perfil {
