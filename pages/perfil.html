@@ -31,7 +31,7 @@
 /* Online */
 .pf-online { display:inline-flex; align-items:center; gap:6px; font-size:.88rem; font-weight:700; color:var(--suave); margin-bottom:14px; }
 .pf-online-dot { width:9px; height:9px; border-radius:50%; background:#9CA3AF; flex-shrink:0; }
-.pf-online-dot.verde { background:#10B981; }
+.pf-online-dot.verde { background:#3B82F6; }
 
 /* Meta */
 .pf-meta { display:flex; flex-direction:column; gap:9px; width:100%; padding:16px 0; border-top:1.5px solid var(--borde); border-bottom:1.5px solid var(--borde); margin-bottom:18px; text-align:left; }
@@ -64,7 +64,7 @@
 .pf-bio-txt { font-size:1rem; font-weight:700; color:var(--texto); line-height:1.8; }
 .pf-bio-empty { font-size:.95rem; font-weight:700; color:var(--suave); font-style:italic; }
 .bio-textarea { width:100%; border:2px solid var(--borde); border-radius:var(--radio); padding:13px 15px; font-family:'Nunito',sans-serif; font-size:.9rem; font-weight:700; color:var(--texto); resize:vertical; outline:none; min-height:110px; transition:border-color .2s; }
-.bio-textarea:focus { border-color:var(--verde); box-shadow:0 0 0 3px rgba(0,201,107,.1); }
+.bio-textarea:focus { border-color:var(--verde); box-shadow:0 0 0 3px rgba(37,99,235,.1); }
 
 /* Chips — estilo Airtasker: fondo gris, sin borde, texto oscuro */
 .chips-wrap { display:flex; flex-wrap:wrap; gap:10px; }
@@ -124,7 +124,7 @@
 .modal-field { margin-bottom:20px; }
 .modal-label { display:block; font-size:.85rem; font-weight:900; color:var(--texto); margin-bottom:8px; }
 .modal-input { width:100%; border:2px solid var(--borde); border-radius:var(--radio); padding:11px 14px; font-family:'Nunito',sans-serif; font-size:.95rem; font-weight:700; color:var(--texto); outline:none; transition:border-color .2s; }
-.modal-input:focus { border-color:var(--verde); box-shadow:0 0 0 3px rgba(0,201,107,.1); }
+.modal-input:focus { border-color:var(--verde); box-shadow:0 0 0 3px rgba(37,99,235,.1); }
 .modal-btns { display:flex; gap:10px; justify-content:flex-end; margin-top:24px; }
 @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 
@@ -134,7 +134,7 @@
 .hire-bar-titulo { font-size:1rem; font-weight:900; color:var(--texto); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .hire-bar-sub { font-size:.82rem; font-weight:700; color:var(--suave); margin-top:1px; }
 .btn-hire { padding:13px 32px; border:none; border-radius:var(--radio-pill); background:var(--verde); font-family:'Nunito',sans-serif; font-weight:900; font-size:.95rem; cursor:pointer; color:#fff; transition:all .2s; white-space:nowrap; flex-shrink:0; }
-.btn-hire:hover { background:var(--verde-o); transform:translateY(-1px); box-shadow:0 4px 16px rgba(0,196,107,.35); }
+.btn-hire:hover { background:var(--verde-o); transform:translateY(-1px); box-shadow:0 4px 16px rgba(37,99,235,.35); }
 
 @media(max-width:820px) {
   .pf-wrap { grid-template-columns:1fr; padding:20px 16px 120px; }
@@ -146,7 +146,7 @@
 
 <nav class="nav">
   <a href="home.html" class="nav-logo">Chamba<em>Ya</em></a>
-  <a href="publicar.html" class="nav-publicar" style="margin-left:32px">Publicar tarea</a>
+  <a href="publicar.html" class="nav-publicar">Publicar tarea</a>
   <div class="nav-links">
     <a href="explorar.html" class="nav-link">Explorar tareas</a>
     <a href="mistareas.html" class="nav-link">Mis tareas</a>
@@ -222,7 +222,7 @@
       <div class="pf-stats">
         <div class="pf-stat">
           <div class="pf-stat-num" id="stat-tareas">0</div>
-          <div class="pf-stat-lbl">Tareas</div>
+          <div class="pf-stat-lbl">Completadas</div>
         </div>
         <div class="pf-stat">
           <div class="pf-stat-num" id="stat-rating">—</div>
@@ -541,9 +541,25 @@ function renderPerfil(p) {
 // ── STATS ──
 async function cargarStats() {
   try {
-    var res = await db.from('tareas').select('*', { count: 'exact', head: true }).eq('user_id', perfilId);
-    document.getElementById('stat-tareas').textContent = res.count || 0;
-  } catch(e) {}
+    // Solo tareas TERMINADAS confirmadas por ambas partes:
+    // 1. Como dueño: tareas que creé y terminaron (estado = terminada, tasker_confirmo = true)
+    var comoDueno = await db.from('tareas')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', perfilId)
+      .eq('estado', 'terminada')
+      .eq('tasker_confirmo', true);
+
+    // 2. Como tasker: tareas donde tuve oferta aceptada y la tarea está terminada y confirmada
+    var comoTasker = await db.from('ofertas')
+      .select('tareas!inner(id)', { count: 'exact', head: true })
+      .eq('tasker_id', perfilId)
+      .eq('estado', 'aceptada')
+      .eq('tareas.estado', 'terminada')
+      .eq('tareas.tasker_confirmo', true);
+
+    var total = (comoDueno.count || 0) + (comoTasker.count || 0);
+    document.getElementById('stat-tareas').textContent = total;
+  } catch(e) { console.warn('stats:', e.message); }
 }
 
 // ── REVIEWS ──

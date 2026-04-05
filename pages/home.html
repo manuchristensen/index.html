@@ -227,7 +227,47 @@
   .taskers-row { grid-template-columns: 1fr; }
 }
 
-/* estilos móviles en styles.css */
+/* ── Móvil: search bar vertical, botón afuera del recuadro ── */
+@media(max-width: 600px) {
+  .search-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 16px 18px;
+    border-radius: 16px;
+    margin-bottom: 14px;
+  }
+  .search-bar > span { display: none; }
+  .search-btn { display: none; }
+  .search-bar input {
+    font-size: 1rem;
+    padding: 4px 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+  }
+  .search-btn-mob {
+    display: block !important;
+    width: 100%;
+    padding: 15px;
+    background: #0F172A;
+    color: #fff;
+    font-family: var(--font-principal);
+    font-weight: 800;
+    font-size: .95rem;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .tareas-grid { grid-template-columns: 1fr; }
+  .main { padding: 28px 16px 60px; }
+  .banner-activa { padding: 18px 20px; }
+  .ba-btns { flex-direction: column; width: 100%; }
+  .ba-btn { text-align: center; }
+}
+.search-btn-mob { display: none; }
 </style>
 </head>
 <body>
@@ -274,6 +314,8 @@
       <input type="text" id="search-input" placeholder="¿Qué necesitás que te hagan? Ej: arreglar canilla, pintar living...">
       <button class="search-btn" onclick="buscar()">Publicar tarea</button>
     </div>
+    <!-- Botón móvil: fuera del recuadro blanco, sobre fondo azul -->
+    <button class="search-btn-mob" onclick="buscar()">Publicar tarea</button>
     <div class="sugerencias">
       <a href="publicar.html?cat=mudanza"  class="sug-chip">Mudanza</a>
       <a href="publicar.html?cat=limpieza" class="sug-chip">Limpieza profunda</a>
