@@ -186,13 +186,16 @@
 .btn-rv-omitir:hover{color:var(--texto)}
 
 @media(max-width:820px){
-  .tarea-wrap{grid-template-columns:1fr;padding:16px 14px 80px;gap:16px}
+  .tarea-wrap{grid-template-columns:1fr;padding:16px 14px 80px;gap:0}
   .autor-panel,.oferta-card{position:static}
-  /* Sidebar sube al top en mobile */
-  .tarea-wrap > div:first-child { order: 2; }
-  .tarea-wrap > div:last-child  { order: 1; }
-  /* Ocultar info-card en mobile (queda al fondo si se quiere) */
+  /* En mobile, el sidebar (segunda columna) se oculta — los paneles
+     se inyectan en #mobile-panel-slot dentro de la columna principal */
+  .tarea-sidebar-col { display: none; }
+  #mobile-panel-slot { display: block; }
   .info-card { display: none; }
+}
+@media(min-width:821px){
+  #mobile-panel-slot { display: none; }
 }
 
 /* ── GALERÍA DE FOTOS ── */
@@ -327,6 +330,9 @@
       </div>
     </div>
 
+    <!-- SLOT MOBILE: panel de acción inyectado por JS entre header y detalles -->
+    <div id="mobile-panel-slot" style="display:none;margin-bottom:16px"></div>
+
     <div class="banner-cancelada" id="banner-cancelada" style="display:none">
       <div class="bc-ico">❌</div>
       <div class="bc-titulo">Esta tarea fue cancelada</div>
@@ -383,7 +389,7 @@
   </div>
 
   <!-- SIDEBAR -->
-  <div>
+  <div class="tarea-sidebar-col">
     <!-- PANEL AUTOR -->
     <div class="autor-panel" id="panel-autor" style="display:none">
       <div class="autor-panel-titulo">Tu tarea</div>
@@ -502,7 +508,7 @@
 </div>
 
 <!-- MODAL REVIEW -->
-<div class="modal-overlay" id="modal-review" onclick="if(event.target===this)omitirReview()">
+<div class="modal-overlay" id="modal-review">
   <div class="rv-modal-box">
     <div style="font-size:2.4rem;margin-bottom:4px" id="rv-ico">⭐</div>
     <div style="font-size:1.1rem;font-weight:900;margin-bottom:4px" id="rv-titulo">¿Cómo fue trabajar con esta persona?</div>
@@ -519,7 +525,7 @@
     <textarea class="rv-textarea" id="rv-comentario" placeholder="Contá cómo fue la experiencia..." maxlength="300"></textarea>
     <div style="font-size:.68rem;font-weight:700;color:var(--suave);text-align:right;margin-top:3px"><span id="rv-chars">0</span>/300</div>
     <button class="btn-rv-enviar" id="btn-rv-enviar" onclick="enviarReview()" disabled>Enviar reseña</button>
-    <button class="btn-rv-omitir" onclick="omitirReview()">Omitir por ahora</button>
+
   </div>
 </div>
 
@@ -888,6 +894,9 @@ async function cargarInfoAsignado(tareaId, miId) {
         infoEl.innerHTML = `Asignada a <a href="perfil.html?id=${oferta.tasker_id}" style="color:var(--verde-o);font-weight:900">${escH(nombre)}</a>`;
       }
     }
+
+    // Sync panel al slot mobile
+    syncMobilePanel();
 
   } catch(e) { console.warn(e); }
 }
@@ -1810,6 +1819,30 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowRight') { lightboxNav(1); }
 });
 
+// ══ MOBILE PANEL SYNC ══
+// En mobile (<= 820px), mover el panel activo al slot entre header y detalles
+function syncMobilePanel() {
+  if (window.innerWidth > 820) return;
+  const slot = document.getElementById('mobile-panel-slot');
+  if (!slot) return;
+
+  // Mover el panel real (con todos sus IDs y eventos intactos)
+  const panelAutor  = document.getElementById('panel-autor');
+  const panelTasker = document.getElementById('panel-tasker');
+  let panel = null;
+
+  if (panelAutor && panelAutor.style.display !== 'none') panel = panelAutor;
+  else if (panelTasker && panelTasker.style.display !== 'none') panel = panelTasker;
+
+  if (!panel) return;
+
+  panel.style.position = 'static';
+  panel.style.marginBottom = '0';
+  slot.innerHTML = '';
+  slot.appendChild(panel);
+  slot.style.display = 'block';
+}
+
 // ══ SISTEMA DE REVIEWS ══
 
 let _rvRating = 0;
@@ -1908,6 +1941,12 @@ function cerrarModalReview() {
 function omitirReview() {
   cerrarModalReview();
 }
+
+// Llamar syncMobilePanel también al terminar renderTarea para casos sin asignado
+// y escuchar resize por si rotan el dispositivo
+window.addEventListener('resize', () => {
+  if (window.innerWidth <= 820) syncMobilePanel();
+});
 
 // ══ UTILS ══
 function escH(t) { if(!t)return''; const d=document.createElement('div'); d.textContent=String(t); return d.innerHTML; }
