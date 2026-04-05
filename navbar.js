@@ -47,13 +47,13 @@ const db = createClient(SUPABASE_URL, SUPABASE_KEY);
           '<div class="nav-drawer-sub">Ver perfil público</div>' +
         '</div>' +
       '</a>' +
-      '<a href="explorar.html"       class="nav-drawer-link">🔍 Explorar tareas</a>' +
-      '<a href="mistareas.html"      class="nav-drawer-link">📋 Mis tareas</a>' +
-      '<a href="mensajes.html"       class="nav-drawer-link">💬 Mensajes</a>' +
-      '<a href="notificaciones.html" class="nav-drawer-link">🔔 Notificaciones</a>' +
+      '<a href="explorar.html"       class="nav-drawer-link">Explorar tareas</a>' +
+      '<a href="mistareas.html"      class="nav-drawer-link">Mis tareas</a>' +
+      '<a href="mensajes.html"       class="nav-drawer-link">Mensajes</a>' +
+      '<a href="notificaciones.html" class="nav-drawer-link">Notificaciones</a>' +
       '<div class="nav-drawer-sep"></div>' +
-      '<a href="configuracion.html"  class="nav-drawer-link">⚙️ Configuración</a>' +
-      '<a href="ayuda.html"          class="nav-drawer-link">❓ Ayuda</a>' +
+      '<a href="configuracion.html"  class="nav-drawer-link">Configuración</a>' +
+      '<a href="ayuda.html"          class="nav-drawer-link">Ayuda</a>' +
       '<div class="nav-drawer-sep"></div>' +
       '<a href="#" class="nav-drawer-link rojo" id="drawer-cerrar-sesion">Cerrar sesión</a>' +
     '</div>';
