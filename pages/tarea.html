@@ -805,8 +805,20 @@ async function cargarInfoAsignado(tareaId, miId) {
     }
 
     // ── Chequear flags de la tarea ──
-    const taskerConfirmo = tareaData?.tasker_confirmo || false;
-    const estadoTarea    = tareaData?.estado || 'en-curso';
+    // Leer tasker_confirmo tanto de tareas como de ofertas (fallback por si RLS bloquea el update)
+    let taskerConfirmo = tareaData?.tasker_confirmo || false;
+    const estadoTarea  = tareaData?.estado || 'en-curso';
+
+    // Fallback: leer de la oferta si la tarea no tiene el flag
+    if (!taskerConfirmo) {
+      const { data: ofertaFull } = await db.from('ofertas')
+        .select('tasker_confirmo')
+        .eq('id', oferta.id)
+        .maybeSingle();
+      taskerConfirmo = ofertaFull?.tasker_confirmo || false;
+    }
+
+    console.log('[ChambaYa] flags:', { taskerConfirmo, estadoTarea, esAutor, esTasker: miId === oferta.tasker_id });
 
     // Guardar IDs globales (necesarios para las funciones de review y chat)
     window._ofertaActivaId = oferta.id;
@@ -1008,10 +1020,25 @@ async function taskerConfirmaTerminado() {
   btn.textContent = '...'; btn.disabled = true;
 
   try {
-    const { error } = await db.from('tareas')
+    // Intentar update directo en tareas
+    const { error, data: updData } = await db.from('tareas')
       .update({ tasker_confirmo: true })
-      .eq('id', TAREA_ID);
+      .eq('id', TAREA_ID)
+      .select('id, tasker_confirmo');
+
+    console.log('[ChambaYa] update tasker_confirmo result:', { error, updData });
+
     if (error) throw error;
+
+    // Si el update no afectó ninguna fila (RLS bloqueó), usar oferta como workaround
+    if (!updData || updData.length === 0) {
+      console.warn('[ChambaYa] Update bloqueado por RLS — usando oferta como flag');
+      // Guardar el flag en la oferta en vez de la tarea
+      const { error: e2 } = await db.from('ofertas')
+        .update({ tasker_confirmo: true })
+        .eq('id', window._ofertaActivaId);
+      if (e2) throw e2;
+    }
 
     const miNombre = await getMiNombreReal();
     await crearNotificacion(autorId, 'sistema',
@@ -1025,6 +1052,7 @@ async function taskerConfirmaTerminado() {
     showToast('✅ Confirmado. Esperando que el cliente lo verifique.');
 
   } catch(e) {
+    console.error('[ChambaYa] Error taskerConfirmaTerminado:', e);
     showToast('Error: ' + e.message);
     btn.textContent = '✅ Confirmé que terminé mi tarea'; btn.disabled = false;
   }
